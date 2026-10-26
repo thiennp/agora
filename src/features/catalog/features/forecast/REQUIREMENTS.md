@@ -1,0 +1,28 @@
+# Forecast — business requirements
+
+Folder: `src/features/catalog/features/forecast/`  ·  Top level: [REQUIREMENTS.md](../../../../../REQUIREMENTS.md)
+Parent: [Catalog](../../REQUIREMENTS.md)
+
+## Purpose
+
+Tell the family what is outgrown and what is likely needed next.
+
+## Who it serves
+
+Parent owner.
+
+## Requirements
+
+| ID | Requirement | Priority | Acceptance |
+|---|---|---|---|
+| CAT-FOR-01 | Use a small stage table keyed to age in months and sizes to propose outgrown items and next needs. | Must | A 6-month profile yields a sensible list for clothing sizes and common gear. |
+| CAT-FOR-02 | Frame every suggestion as logistics, never as developmental or health guidance. | Must | No suggestion text mentions milestones, health or feeding. |
+| CAT-FOR-03 | Let the owner dismiss suggestions and remember the dismissal. | Should | Dismissed suggestions do not return. |
+
+## Out of scope
+
+- Growth tracking; milestone advice.
+
+## Traceability
+
+BR-03.
