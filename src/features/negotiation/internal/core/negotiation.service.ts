@@ -133,7 +133,7 @@ export function createNegotiationService(deps: {
         throw new NegotiationError("item_unavailable", "the wanted item is not available");
       }
 
-      let deal = createDeal({ id: newId(), appId: deps.app.id, ...match, maxRounds: deps.app.policies.maxNegotiationRounds, now: now() });
+      const deal = createDeal({ id: newId(), appId: deps.app.id, ...match, maxRounds: deps.app.policies.maxNegotiationRounds, now: now() });
       // The owner chose these terms themselves when starting the deal, so they count as approved.
       if (parsed.data.terms !== "free") deal.approvedTerms[match.wantFamilyId] = [`terms:${termsKey(parsed.data)}`];
       await repo.insert(deal);

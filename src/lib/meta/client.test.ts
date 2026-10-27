@@ -34,6 +34,20 @@ describe("meta client", () => {
     expect(s.totalUsd).toBeGreaterThan(0);
   });
 
+  it("keeps counts only in the call record: neither the prompt nor the reply text is retained (logs never hold message text)", async () => {
+    const app = await loadApp("kids-gear");
+    const sunk: unknown[] = [];
+    const adapter = createMockAdapter(() => "SECRET-REPLY-TEXT");
+    const meter = new CostMeter({ perParticipantUsd: 1, globalUsd: 10 }, (record) => sunk.push(record));
+    const client = createMetaClient({ app, adapters: { mock: adapter }, router: createRouter({ providers }), meter });
+    await client.call({ role: "negotiator", prompt: "SECRET-PROMPT-TEXT", participantId: "f1" });
+    expect(sunk).toHaveLength(1);
+    expect(Object.keys(sunk[0] as object).sort()).toEqual(
+      ["costUsd", "inputTokens", "latencyMs", "model", "ok", "outputTokens", "participantId", "provider", "role"],
+    );
+    expect(JSON.stringify(sunk)).not.toContain("SECRET");
+  });
+
   it("injects app context and the untrusted-text rule", async () => {
     const { client, seen, app } = await setup();
     await client.call({ role: "translator", prompt: "x" });
