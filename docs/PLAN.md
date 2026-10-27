@@ -41,6 +41,11 @@ Rubric (each 0–10, equal weight): Impact, Use of Meta AI tooling, Technical de
 Cut order when behind: tier 2 community polish, then circles beyond a single criteria type, then voice, dashboard polish,
 safety extras, languages. Tier 1 is never cut.
 
+**Tier gate (BR-37).** Tier 2 code does not start until tier 1 can be shown end to end: the simulation and benchmark
+produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
+(or its cut is written down). Today the building blocks exist in memory but none of these four is done, so the next work is
+tier 1, not the `community` config section. Build status is tracked in `CLAUDE.md`.
+
 ## 3. Scope
 
 Platform scope: the exchange engine and the create-an-app flow (`docs/CREATE-AN-APP.md`). The scope list below is
@@ -89,6 +94,9 @@ Out of scope (do not build)
    or change terms without the owner.
 9. Owner interruptions per deal, falling over rounds as safe standing rules accumulate (without ever auto-handling
    the always-ask topics).
+
+10. Tier 2 only: relevance precision and recall on a labelled set of posts (wrongly dropped wanted posts), share of posts
+    filtered per member, owner interruptions per community.
 
 Held-out scenarios, failures shown, no cherry-picking.
 
@@ -145,7 +153,10 @@ If working alone, follow the schedule order. If a teammate joins (max 4):
 | 1:30–1:45 | (inside the deal) the counterparty asks for a lower price and an address; the agent pauses and shows its owner a card instead of answering. |
 | 1:45–2:20 | Learning curve: approval rate rising; a declined deal changes the next proposal. |
 | 2:20–2:45 | Privacy and safety: face/address leak test, car-seat rule firing. |
-| 2:45–3:00 | What is new, what is simulated (sandbox city), cost numbers. |
+| 2:45–3:00 | What is new, what is simulated (sandbox city), cost numbers. Platform reveal in the last 15 seconds, only with what runs: paste one link into Muse and show the app config it produced; show a non-exchange app only if tier 2 passed. |
+
+The first 2:45 stay on the kids' gear problem, so the project reads as a concrete everyday-problem app with a platform
+behind it, not as a generic tool. Do not say "any community app" in the video or README until a non-exchange example runs.
 
 ## 10. Questions for Cerebral Valley (`#questions`)
 
@@ -176,7 +187,10 @@ If working alone, follow the schedule order. If a teammate joins (max 4):
 | Model access / credits delays | Claim today; keep the Meta client behind an adapter with Baseten/Modal fallback |
 | Over-abstracting the platform with 8 days left | Build only what tier 1 needs; tier 2 is a thin vertical slice; primitives are documented before they are coded; the create-an-app flow stays honest about what is supported |
 | Community noise or spam | Relevance scoring on both sides, per-member and per-community post limits, duplicate suppression; nothing unrelated is delivered |
-| Unfair grouping | Sensitive attributes never exclude; opt-in inclusion groups only; no health data |
+| Unfair grouping | Sensitive attributes never exclude; opt-in inclusion groups only; no health data; circle criteria use an allow-list of fields (BR-33) |
+| Relevance filter hides something useful | System notices bypass it; members see and review what was filtered; thresholds tunable; precision and recall measured (BR-34) |
+| Claiming a broad platform before it is proven | Say "platform for community apps" with the kids' gear demo; claim generality only after a non-exchange example runs; the create-an-app flow keeps its "cannot express it" rule |
+| Community posting without moderation | Report a post, admin hides a post or removes a member, screening on posts, before community posting ships (BR-35) |
 
 ## 12. After the hackathon (not built now)
 

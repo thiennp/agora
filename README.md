@@ -27,6 +27,9 @@ Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents wo
   documents (`REQUIREMENTS.md` in every folder) and the empty folder scaffolding were written on **Oct 26, 2026 ET,
   before the build window (Oct 27 – Nov 4)** and contained no application code. All code is written from Oct 27;
   see the status list in [CLAUDE.md](CLAUDE.md) for what exists.
+- **What is proven today.** Only the exchange use case (the kids' gear and garden tools apps) can be expressed and run. Community
+  posting, circles and a non-exchange example are designed (`docs/PRIMITIVES.md`) but not built; the platform is not claimed to
+  be general until a non-exchange example runs.
 - **Simulated parts.** The demo uses a sandbox city of synthetic families; everything it produces is labelled
   simulated. Carrier labels are test-mode.
 - **Private backend.** AgentWitch is an optional, private background provider for family memory. This repository

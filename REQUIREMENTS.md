@@ -44,40 +44,46 @@ example, garden tools, and planned examples (running club, office app, learning 
 
 ## 4. Business requirements
 
-| ID | Requirement | Priority | Where it lives |
-|---|---|---|---|
-| BR-01 | Onboard a family by voice, photo or form with language and coarse location. | Must | family, voice |
-| BR-02 | Turn a photo of a pile into separate listings without storing the original. | Must | intake |
-| BR-03 | Suggest what is outgrown and what is needed next, as logistics only. | Must | catalog |
-| BR-04 | Find nearby, compatible offers and wants and explain the match. | Must | matching |
-| BR-05 | Agents negotiate for the owners, at most 3 rounds, in each owner's language. | Must | negotiation, language |
-| BR-06 | Owners talk only through their own agent (human to agent to agent to human); no direct chat; no contact leaks. | Must | negotiation/relay, trust/screening |
-| BR-07 | Agents never decide commitment, money terms, identity or location reveals, shipping choices or safety exceptions alone; unknown topics default to asking the owner. | Must | gatekeeper, owner-cards |
-| BR-08 | A deal is confirmed only when both owners confirm. | Must | owner-cards/confirmations |
-| BR-09 | Agents agree pickup, locker or shipping; for shipping they create a label and an appointment; the platform never handles money. | Must | logistics |
-| BR-10 | Apply visible safety rules for second-hand baby gear; never give medical advice. | Must | safety |
-| BR-11 | Detect scams, take reports with an evidence bundle, restrict or ban abusers, and export reports in a format designed for Meta without claiming Meta acts on them. | Must | trust |
-| BR-12 | Only Muse agents take part, by construction: agents are platform-hosted and call Meta models only. | Must | lib/meta, trust |
-| BR-13 | Learn from accepts and declines; allow standing rules only for low-risk topics. | Must | learning, owner-cards/mandates |
-| BR-14 | Keep family memory behind an interface; AgentWitch is an optional background provider and the product works without it. | Must | memory |
-| BR-15 | Make everything visible on the platform: live feed, learning curve, cost, privacy and safety panels. | Must | dashboard |
-| BR-16 | Prove behaviour with a clearly disclosed sandbox city and a reproducible benchmark. | Must | simulation |
-| BR-17 | Support voice in and out. | Should | voice |
-| BR-18 | Protect children's data: discard originals, coarse location, encrypted addresses, retention, leak tests. | Must | intake/crops, family, db, lib |
-| BR-19 | Show cost per deal and route work to the cheapest suitable Meta model. | Should | lib/meta, dashboard |
-| BR-20 | Document the path beyond this first step without building it. | Should | docs |
-| BR-21 | A non-technical person can create an app by pasting one link into Muse and answering plain questions; the agent never asks technical questions. | Must | docs/CREATE-AN-APP.md, apps |
-| BR-22 | Keep platform and apps separate: an app is `apps/<id>` config plus data, cannot relax the safety invariants, and cannot change platform code. | Must | lib/app-config, apps, lint |
-| BR-23 | Ship at least two example apps in different domains to show the platform is general. | Should | apps |
-| BR-24 | Offer the platform as composable primitives, not use-case modules: 1:1 and community communication, learning and evolving, geo, circles and criteria, logs, plus members and roles, owner approval, records, time, workflows, matching, notifications, language, trust. | Must | docs/PRIMITIVES.md, all slices |
-| BR-25 | All member-to-member communication, including in communities, goes through agents: drafted, screened, translated and relayed. No direct human chat or posting. | Must | negotiation/relay, community |
-| BR-26 | Community posts are relevance-scored before posting (against the community's purpose) and again before delivery (against each member's interests, circles and location); unrelated or uninteresting posts are not posted and not delivered. | Must | community, language, lib/meta |
-| BR-27 | Form and dissolve circles (groups) by criteria over profile fields, distance, interests, level, availability and role; membership is consent-based. Sensitive attributes are never used to exclude people. | Must | circles |
-| BR-28 | Agents learn from accepts, declines and engagement; changes to settings, rules or circles are proposals that need the owner's approval (personal) or a vote (community), are versioned and reversible, and cannot relax any platform guarantee. | Should | learning, voting |
-| BR-29 | Members can vote on community matters through their agents. | Should | voting (post-hackathon) |
-| BR-30 | Keep only necessary logs: an audit log of decisions (no message text), aggregate metrics, and operational errors without personal data or secrets; members can view, export and erase their own entries. | Must | lib/audit, dashboard |
-| BR-31 | Location is optional per app; when used it is coarse until both parties confirm. | Must | geo, family |
-| BR-32 | Admin announcements and any direct chat are out of scope until after the hackathon. | Info | docs |
+| ID | Requirement | Priority | Scope | Tier | Where it lives |
+|---|---|---|---|---|---|
+| BR-01 | Onboard a family by voice, photo or form with language and coarse location. | Must | platform | 1 | family, voice |
+| BR-02 | Turn a photo of a pile into separate listings without storing the original. | Must | exchange recipe | 1 | intake |
+| BR-03 | Suggest what is outgrown and what is needed next, as logistics only. | Must | exchange recipe | 1 | catalog |
+| BR-04 | Find nearby, compatible offers and wants and explain the match. | Must | exchange recipe | 1 | matching |
+| BR-05 | Agents negotiate for the owners, at most 3 rounds, in each owner's language. | Must | exchange recipe | 1 | negotiation, language |
+| BR-06 | Owners talk only through their own agent (human to agent to agent to human); no direct chat; no contact leaks. | Must | platform | 1 | negotiation/relay, trust/screening |
+| BR-07 | Agents never decide commitment, money terms, identity or location reveals, shipping choices or safety exceptions alone; unknown topics default to asking the owner. | Must | platform | 1 | gatekeeper, owner-cards |
+| BR-08 | A deal is confirmed only when both owners confirm. | Must | exchange recipe | 1 | owner-cards/confirmations |
+| BR-09 | Agents agree pickup, locker or shipping; for shipping they create a label and an appointment; the platform never handles money. | Must | exchange recipe | 1 | logistics |
+| BR-10 | Apply visible safety rules for second-hand baby gear; never give medical advice. | Must | exchange recipe | 1 | safety |
+| BR-11 | Detect scams, take reports with an evidence bundle, restrict or ban abusers, and export reports in a format designed for Meta without claiming Meta acts on them. | Must | platform | 1 (1:1), 2 (posts) | trust |
+| BR-12 | Only Muse agents take part, by construction: agents are platform-hosted and call Meta models only. | Must | platform | 1 | lib/meta, trust |
+| BR-13 | Learn from accepts and declines; allow standing rules only for low-risk topics. | Must | platform | 1 | learning, owner-cards/mandates |
+| BR-14 | Keep family memory behind an interface; AgentWitch is an optional background provider and the product works without it. | Must | platform | 1 | memory |
+| BR-15 | Make everything visible on the platform: live feed, learning curve, cost, privacy and safety panels. | Must | platform | 1 | dashboard |
+| BR-16 | Prove behaviour with a clearly disclosed sandbox city and a reproducible benchmark. | Must | platform | 1 | simulation |
+| BR-17 | Support voice in and out. | Should | platform | 1 | voice |
+| BR-18 | Protect children's data: discard originals, coarse location, encrypted addresses, retention, leak tests. | Must | platform | 1 | intake/crops, family, db, lib |
+| BR-19 | Show cost per deal and route work to the cheapest suitable Meta model. | Should | platform | 1 | lib/meta, dashboard |
+| BR-20 | Document the path beyond this first step without building it. | Should | platform | 1 | docs |
+| BR-21 | A non-technical person can create an app by pasting one link into Muse and answering plain questions; the agent never asks technical questions. | Must | platform | 1 (built), 2 (tried with Muse) | docs/CREATE-AN-APP.md, apps |
+| BR-22 | Keep platform and apps separate: an app is `apps/<id>` config plus data, cannot relax the safety invariants, and cannot change platform code. | Must | platform | 1 | lib/app-config, apps, lint |
+| BR-23 | Ship example apps to show the platform is general: kids-gear and garden-tools (both exchange) at tier 1, and one non-exchange example (a running club) at tier 2. The platform is not claimed to be general until that example runs. | Should | platform | 1 (two exchange apps), 2 (non-exchange example) | apps |
+| BR-24 | Offer the platform as composable primitives, not use-case modules: 1:1 and community communication, learning and evolving, geo, circles and criteria, logs, plus members and roles, owner approval, records, time, workflows, matching, notifications, language, trust. | Must | platform | 1 | docs/PRIMITIVES.md, all slices |
+| BR-25 | All member-to-member communication, including in communities, goes through agents: drafted, screened, translated and relayed. No direct human chat or posting. | Must | platform | 1 (1:1), 2 (community) | negotiation/relay, community |
+| BR-26 | Community posts are relevance-scored before posting (against the community's purpose) and again before delivery (against each member's interests, circles and location); unrelated or uninteresting posts are not posted and not delivered. | Must | platform | 2 | community, language, lib/meta |
+| BR-27 | Form and dissolve circles (groups) by criteria over profile fields, distance, interests, level, availability and role; membership is consent-based. Sensitive attributes are never used to exclude people. | Must | platform | 2 | circles |
+| BR-28 | Agents learn from accepts, declines and engagement; changes to settings, rules or circles are proposals that need the owner's approval (personal) or a vote (community), are versioned and reversible, and cannot relax any platform guarantee. | Should | platform | 1 (learning), 3 (evolving) | learning, voting |
+| BR-29 | Members can vote on community matters through their agents. | Should | platform | 3 | voting (post-hackathon) |
+| BR-30 | Keep only necessary logs: an audit log of decisions (no message text), aggregate metrics, and operational errors without personal data or secrets; members can view, export and erase their own entries. | Must | platform | 1 | lib/audit, dashboard |
+| BR-31 | Location is optional per app; when used it is coarse until both parties confirm. | Must | platform | 1 | geo, family |
+| BR-32 | Admin announcements and any direct chat are out of scope until after the hackathon. | Info | platform | 3 | docs |
+| BR-33 | No criterion, circle, relevance filter or ranking may use gender, religion, ethnicity, health or anything about minors to exclude people from a group, post or opportunity. Such attributes may only define opt-in inclusion groups a member chose to join. Item-fit signals (size, age range) may be used for fit, kept to the minimum (no names, birth dates or photos). Circle criteria use an allow-list of fields, enforced in code. | Must | platform | 1, 2 | circles, lib/app-config, family |
+| BR-34 | Relevance filtering has safety valves: system notices (a cancelled deal, a safety warning, a change to my deals) are not posts and always reach the people they concern; each member can see how many posts were filtered for them and review them, and tune their own thresholds; filtered decisions are audited as counts without text; each post is scored once (cached similarity compared with member interests) after a deterministic prefilter, never one model call per member per post; per-community post caps apply. | Must | platform | 2 | community, lib/meta, lib/audit |
+| BR-35 | Minimal moderation comes with community posting: a member can report a post, an admin can hide a post or remove a member, and trust screening applies to posts as it does to 1:1 messages. Roles are admin and member. | Must | platform | 2 | community, trust, members |
+| BR-36 | Retention and erasure are explicit for every kind of stored data (docs/PRIVACY.md). Erasing a member unlinks their audit entries (the decision counts remain) instead of deleting the append-only log, and removes their own data everywhere else. | Must | platform | 1 | lib/audit, db, family, trust |
+| BR-37 | Tier 2 code does not start until tier 1 is demonstrable end to end: simulation and benchmark with the learning curve, the demo UI and dashboard, persistent storage, and photo intake (or its explicit, documented cut). | Info | platform | 1 | docs/PLAN.md |
+| BR-38 | Exchange-specific settings (catalog, handover modes, pricing, negotiation rounds, forecast stages) move into an optional `exchange` section of the app config, with `community` and `circles` as siblings, so apps that are not exchanges are valid. Safety settings (always-ask topics) stay top-level. This is a planned code change, not yet done. | Should | platform | 2 | lib/app-config, apps |
 
 ## 5. Non-functional requirements
 
@@ -91,6 +97,7 @@ example, garden tools, and planned examples (running club, office app, learning 
 | NFR-06 | Judges can run it with only a Meta API key. | Must |
 | NFR-07 | Hackathon compliance: public repo at submission, new work only, no health or medical advice, none of the listed generic project types, honest labelling of anything simulated. | Must |
 | NFR-08 | Observability: structured logs without personal data and an append-only audit of state changes and owner decisions. | Should |
+| NFR-09 | Cost of relevance: scoring community posts must not scale as members times posts in model calls; deterministic prefilter first, one cached similarity per post, per-member and global budgets apply. | Must |
 
 ## 6. Constraints and assumptions
 
@@ -102,8 +109,8 @@ example, garden tools, and planned examples (running club, office app, learning 
 ## 7. Out of scope for this first step
 
 Payments or escrow, direct human-to-human chat or posting, admin announcements (after the hackathon), health, medical or
-legal guidance, live paid carrier labels, cross-community learning, native mobile apps, moderation tooling for a large user
-base. Voting, evolving settings, time/scheduling depth and notifications beyond the demo are designed but come after the hackathon.
+legal guidance, live paid carrier labels, cross-community learning, native mobile apps, large-scale moderation tooling (a minimal
+report-and-hide comes with community posting at tier 2). Voting, evolving settings, time/scheduling depth and notifications beyond the demo are designed but come after the hackathon.
 
 ## 8. Success measures
 
@@ -116,6 +123,7 @@ base. Voting, evolving settings, time/scheduling depth and notifications beyond 
 7. Items reused and money saved (estimates, labelled).
 8. 0 unauthorized commitments on the red-team set.
 9. Owner interruptions per deal.
+10. Tier 2 only: relevance precision and recall on a labelled set of posts (how many wanted posts were wrongly dropped), the share of posts filtered per member, and owner interruptions per community.
 
 ## 9. Index of requirement documents
 

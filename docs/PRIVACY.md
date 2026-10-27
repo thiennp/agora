@@ -17,3 +17,22 @@ What the platform stores, and what it does not.
   AgentWitch happens only with the family's consent, because AgentWitch cannot delete what was sent.
 - **Health data:** none is collected, and app configs asking for health, sleep or feeding fields are refused.
 - **Erasure:** an owner can erase their family and everything that depends on it; relay messages, cards, rules and trust status go with it.
+
+## Retention and erasure
+
+Values marked (decided) were set by the project owner; values marked (proposed) are defaults to confirm. Retention jobs are
+not built yet; until they exist these are the rules the code must meet, not behaviour it has.
+
+| Data | Kept for | On account erasure |
+|---|---|---|
+| Audit log (decisions, no message text) | 12 months (decided) | entries are unlinked from the person; anonymous decision counts remain |
+| Metrics (aggregates) | 90 days (decided) | nothing personal to remove |
+| Errors (no personal data, secret fingerprints only) | 30 days (decided) | nothing personal to remove |
+| Relay messages (screened text, translation, hash) | until the deal ends plus 30 days (proposed) | deleted |
+| Handover place and delivery address (encrypted) | until the handoff completes plus 30 days (proposed) | deleted |
+| Lessons and deal outcomes | until the owner deletes them or erases the account | deleted |
+| Reports (hash-chained evidence, pseudonyms) | 12 months after filing (proposed) | reports about the person stay for the retention period; reports they filed are unlinked from them |
+| Community posts (tier 2) | while the community exists (proposed) | the member's own posts are removed; a post that was not delivered to someone leaves no copy for them beyond a count |
+| Filtered-post review list (tier 2) | 30 days (proposed) | deleted |
+
+Members can see and export their own audit entries ("my activity"), their lessons, and the posts filtered for them.

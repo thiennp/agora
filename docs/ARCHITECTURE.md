@@ -81,8 +81,14 @@ owner approval. Exchange is one use case, not the platform.
 The app config today describes the exchange use case: participant noun and profile fields, catalog (categories, size
 systems, conditions, stages for the forecast), policies (negotiation rounds, handoff modes, gatekeeper topic table,
 standing-rule topics, safety rules, languages, location granularity), theme, and the sandbox folder. It is validated by
-`src/lib/app-config/schema.ts`. Planned: a `community` section (purpose, topics, roles, relevance thresholds, circles) and
-one section per primitive, added as each primitive is built, with existing exchange settings kept backwards compatible.
+`src/lib/app-config/schema.ts`. Planned reshaping (not yet done, BR-38): the exchange-specific settings (catalog, handover modes, pricing, negotiation rounds, forecast
+stages) move into an optional `exchange` section, and `community` (purpose, topics, roles, relevance thresholds) and `circles`
+become sibling sections, so an app that is not an exchange is valid. The safety settings (always-ask topics, unknown-topic default)
+stay top-level. Existing apps migrate mechanically. Until this lands, only exchange apps are valid and the docs must not imply
+otherwise. The primitive-to-slice map is in `docs/PRIMITIVES.md`.
+
+Slice naming: `family`, `catalog` and the deal vocabulary are exchange-flavoured. `family` becomes `members` when the community
+section lands (cheap now, expensive later); `catalog` stays the exchange recipe's records.
 
 Invariants the platform enforces regardless of app: the always-ask topics (commitment, price/terms, identity and
 location reveal, shipping choice, safety exception) cannot be relaxed or turned into standing rules; unknown topics
@@ -112,6 +118,22 @@ exclude someone; they may define opt-in inclusion groups only. No health data is
 circle changes, approved evolutions), 12 months, no message text or secrets. Metrics: aggregate counts, cost, latency,
 interruptions, relevance pass rates, 90 days. Errors: error class, route, request id and secret fingerprints only,
 30 days. Members can view, export and erase their own audit entries.
+
+**Relevance safety valves.** System notices about a member's own deals, safety or recalls are not posts and bypass relevance
+filtering. Each member sees a count of posts filtered for them, can review them, and can tune their own thresholds; a
+"not interested" answer becomes a lesson they can see and delete. Filtering decisions are audited as counts, without text.
+Cost: a deterministic prefilter first, then one similarity per post (cached) compared with member-interest vectors, never one
+model call per member per post (NFR-09); per-member and per-community post caps bound the load.
+
+**Moderation (minimal, tier 2).** Roles are admin and member. A member can report a post (the existing hash-chained report
+flow applies), an admin can hide a post or remove a member, and trust screening runs on posts as on 1:1 messages. Admin
+announcements stay after the hackathon.
+
+**Fairness enforcement.** Circle criteria are built from an allow-list of profile fields checked by the config schema, the same
+way profile fields that look like health data are already refused. Sensitive attributes can define only opt-in inclusion groups.
+
+**Retention and erasure.** Every kind of stored data has a stated retention in `docs/PRIVACY.md`. Erasing a member removes their
+own data and unlinks their audit entries from them (only anonymous decision counts remain), so the audit log stays append-only.
 
 ## 3. Project structure (Fractal Slice Architecture)
 
