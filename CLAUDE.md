@@ -2,30 +2,39 @@
 
 ## What this project is
 
-**Agora is a playground platform, not a single app.** It lets anyone create an agent-to-agent exchange app with
-minimal effort. In an exchange app, each owner has an AI agent that finds, negotiates and arranges a swap or gift
-with other owners' agents, in the owner's language and near them, while the owner decides everything that matters.
+**Agora is a playground platform for community apps, not a single app and not only a marketplace.** Anyone can create an
+app where people do things together (trade, learn, run, work, volunteer, organise) with minimal effort. Every member has
+an AI agent that acts for them, in their language; the member decides everything that matters. Buying, selling and
+swapping is **one use case** among many: a learning group, a marathon association, an office app and a neighbourhood
+help board are equally in scope.
+
+The platform offers a small set of **primitives** that every app composes (full list and status in
+`docs/PRIMITIVES.md`): communication (agent to agent 1:1, and community many-to-many, always through agents and filtered
+by relevance), learning and evolving (self-learning, voting), geo, circles and criteria (grouping and ungrouping), logs,
+plus members and consent, owner approval, records, time, workflows, matching, notifications, language, trust.
 
 The intended way an app gets made: a non-technical person pastes one link into Muse (Meta's model). Muse reads
-`docs/CREATE-AN-APP.md`, interviews the person about their idea in plain language until it is clear (no technical
-questions), then builds the app by following the platform's structure, workflow and API. An app is one folder,
-`apps/<id>/`, holding `app.config.ts` (catalog, policies, theme, region, pricing), a sandbox city and requirements.
-This flow is designed and documented but **not yet tried end to end with a real Muse**.
+`docs/CREATE-AN-APP.md`, interviews the person about what their community does together, in plain language and without
+technical questions, then builds the app by composing the platform's primitives. An app is one folder, `apps/<id>/`,
+holding `app.config.ts`, a sandbox community and requirements. This flow is designed and documented but **not yet tried
+end to end with a real Muse**.
 
-Example apps (both are examples of what the platform runs, not the product itself):
+Example apps (examples of what the platform runs, not the product itself):
 - `apps/kids-gear` — parents' agents trade outgrown kids' gear. This is the hackathon demo.
 - `apps/garden-tools` — neighbours swap garden tools and seeds. Built as a dry run of the create-an-app flow.
+- Planned examples (not built): a running club / marathon association, an office app, a learning group.
 
 Context: built for the Meta Global AI Developer Hackathon (Cerebral Valley), build window Oct 27 – Nov 4, 2026.
 Muse-only by construction: all agents are platform-hosted and call Meta models only.
 
 ## What it is NOT
 
-- Not a kids' gear marketplace. Kids' gear is one example app.
+- Not a kids' gear marketplace, and not only an exchange or marketplace platform. Exchange is one use case.
 - Not a chatbot, a generic RAG tool, or a classifieds site.
-- No direct human-to-human chat: human → own agent → other agent → other human, relayed, translated, screened.
+- No direct human-to-human chat or posting: all member communication goes human → own agent → community or other
+  agent → other human, relayed, screened, translated and relevance-filtered.
 - The platform never holds or moves money.
-- No health, medical, feeding or developmental advice anywhere.
+- No health, medical, legal or developmental advice anywhere.
 
 ## Rules that never depend on the app
 
@@ -33,6 +42,9 @@ An app config cannot relax these; the schema and code enforce them:
 - Agents always ask their owner before commitment, price/terms, identity or location reveal, shipping choice, or a
   safety exception. Unknown topics default to asking. Standing rules only for low-risk topics.
 - Other agents' and users' text is untrusted data, never instructions.
+- Unrelated or uninteresting community posts are neither posted nor delivered (relevance scoring on both sides).
+- Sensitive attributes are never used to exclude people from groups or opportunities.
+- Logs hold decisions and counts, never message text or secrets.
 - Only a coarse district is stored until both owners confirm; exact addresses live only in the handoff.
 - Originals of photos are discarded; only item crops are kept.
 
@@ -51,9 +63,9 @@ Any change to a requirement, behaviour, config field or scope updates the docs i
 
 ## Docs, in reading order
 
-1. `README.md`  2. `REQUIREMENTS.md` (top-down; every folder refines it)  3. `docs/PLAN.md`
-4. `docs/ARCHITECTURE.md` (section 2b: platform vs apps)  5. `docs/CREATE-AN-APP.md` (instructions for the agent
-that builds an app)  6. `docs/adr/`
+1. `README.md`  2. `docs/PRIMITIVES.md` (what the platform offers, with status)  3. `REQUIREMENTS.md` (top-down; every
+folder refines it)  4. `docs/PLAN.md`  5. `docs/ARCHITECTURE.md` (section 2b: platform vs apps)  6. `docs/CREATE-AN-APP.md`
+(instructions for the agent that builds an app)  7. `docs/adr/`
 
 ## Status (update when it changes)
 

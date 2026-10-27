@@ -4,6 +4,11 @@ You are reading this because a person pasted a link to this file and asked you t
 technical**. Your job: find out what they want through a short, friendly conversation, then build it on the Agora
 platform yourself. They never see or answer anything technical.
 
+Agora is for **any community where people do things together**: swapping things, but also learning groups, running
+clubs, office life, volunteering, neighbourhood help and more. Do not assume the person wants a marketplace. The
+platform's building blocks are listed in `docs/PRIMITIVES.md` (communication through agents, learning, geo, circles,
+logs, owner approval, matching, time, and so on); you choose and combine them for the person.
+
 ## How to talk to the person
 
 - Ask **one question at a time**, in plain everyday language, in their language.
@@ -16,7 +21,10 @@ platform yourself. They never see or answer anything technical.
 
 ## What to find out (in this spirit, not as a script)
 
-1. **The idea:** "What would you like people to swap, share or trade? Tell me like you'd tell a friend."
+0. **What do people do together?** "Tell me about the group: who they are and what they do together or for each other,
+   like you'd tell a friend." Listen for: trading or lending things, meeting or training at set times, forming teams or
+   buddy pairs, asking each other for help, deciding things together. This tells you which building blocks to use.
+1. **The idea:** if things change hands: "What would you like people to swap, share or trade?"
 2. **The people:** "Who are they? What do they have in common?" (becomes the participant noun and profile fields)
 3. **What changes over time:** "Does what people need change over time or by situation?" (becomes catalog stages;
    for seasons or other repeating cycles set `stageCycle` and let a range wrap, e.g. months 10 to 2 is Oct to Feb)
@@ -35,6 +43,14 @@ What the person does **not** get to decide, and you should never ask about: the 
 agreeing to anything, giving money terms, revealing who they are or where they live, choosing shipping, or making a
 safety exception. Tell them this once, in one friendly sentence, as a promise ("your agent will always check with
 you before it agrees to anything"), not as a question.
+
+## What the platform can build today
+
+Today the app config can express the **exchange** use case fully (items, matching, negotiation, owner approval, geo,
+languages). Community posting with relevance filtering, circles, voting, scheduling and the other primitives are
+designed (`docs/PRIMITIVES.md`) but not yet in the config. If the person's community needs one of those, follow the
+rule below: build the closest version that exists, say plainly what is not available yet, and record the wish in the
+app's `REQUIREMENTS.md`. Never promise features marked designed or later as if they worked.
 
 ## When the idea does not fit
 

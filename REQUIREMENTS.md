@@ -6,35 +6,37 @@ these for its capability. Requirement IDs are stable: `BR-nn` (business), `NFR-n
 
 ## 1. Vision
 
-Agora is a **playground platform**: anyone can create an agent-to-agent exchange app with minimal effort. A person
-pastes one link into Muse, answers plain-language questions about their idea (never technical ones), and Muse builds
-the app by following the platform's structure, workflow and API. An app is configuration (catalog, policies, region,
-pricing, theme) plus data; the platform supplies matching, negotiation, owner cards, relay, logistics, trust and learning.
+Agora is a **playground platform for community apps**: anyone can create an app where people do things together (trade,
+learn, run, work, volunteer, organise) with minimal effort. A person pastes one link into Muse, answers plain-language
+questions about their community (never technical ones), and Muse builds the app by composing the platform's primitives
+(`docs/PRIMITIVES.md`). An app is configuration plus data; the platform supplies communication, learning, geo, grouping,
+logs and the safety guarantees.
 
-Inside any app, each owner's agent trades, negotiates and relays on the owner's behalf, in their language and near
-them, while the owner stays in control of every decision that matters.
+Every member has an agent that acts for them in their language, while the member stays in control of every decision that
+matters. Buying, selling and swapping is one use case; a learning group, a marathon association, an office app and a
+neighbourhood help board are equally in scope.
 
-The first example app, and the hackathon demo, is a **kids' gear exchange**: parents buy a lot of baby and kids gear
-that is outgrown in months, and each parent's Muse agent trades it for free or by agreement with nearby parents. A
-second example, garden tools, shows the platform is not tied to one domain. It is a first step: the same exchange can
-later cover more communities and trusted commerce.
+The first example app, and the hackathon demo, is a **kids' gear exchange**: parents buy a lot of baby and kids gear that
+is outgrown in months, and each parent's Muse agent trades it for free or by agreement with nearby parents. A second
+example, garden tools, and planned examples (running club, office app, learning group) show the platform is general.
 
 ## 2. Users
 
 | User | Needs |
 |---|---|
-| App creator (often non-technical) | Turn an idea into a working exchange app by answering plain questions, without learning the platform or breaking its safety rules. |
-| Owner (in an app, e.g. a parent) | Pass things on and find what is needed with little effort, without giving up control, privacy or safety. |
-| Counterpart owner | The same, possibly in another language. |
+| App creator (often non-technical) | Turn an idea for their community into a working app by answering plain questions, without learning the platform or breaking its safety rules. |
+| Community admin | Shape the community's purpose, topics, circles and rules; see what is happening without reading private messages. |
+| Member (e.g. a parent, a runner, a colleague) | Take part with little effort, through their own agent, without giving up control, privacy or safety, and without noise. |
+| Counterpart member | The same, possibly in another language. |
 | Judge | See quickly, in a live product and a three-minute video, that it works, is safe and measurably improves. |
 | Platform operator | Run it safely, see costs and abuse, and report scams. |
 | Meta (external) | Receive scam reports in a documented format, if Meta chooses to. |
 
 ## 3. Business goals
 
-0. Make creating an exchange app take one pasted link and a short plain-language conversation.
-1. Reduce what owners spend on short-lived goods (in the demo app: baby gear) and keep usable items out of waste.
-2. Save parents time: voice and photo in, a few taps to decide.
+0. Make creating a community app take one pasted link and a short plain-language conversation.
+1. Reduce what members spend on short-lived goods (in the demo app: baby gear) and keep usable items out of waste.
+2. Save members time and attention: voice and photo in, a few taps to decide, and no irrelevant noise.
 3. Keep children's data private by design.
 4. Keep owners in control of every commitment.
 5. Show creative, meaningful use of Meta models, including open-weight models.
@@ -67,6 +69,15 @@ later cover more communities and trusted commerce.
 | BR-21 | A non-technical person can create an app by pasting one link into Muse and answering plain questions; the agent never asks technical questions. | Must | docs/CREATE-AN-APP.md, apps |
 | BR-22 | Keep platform and apps separate: an app is `apps/<id>` config plus data, cannot relax the safety invariants, and cannot change platform code. | Must | lib/app-config, apps, lint |
 | BR-23 | Ship at least two example apps in different domains to show the platform is general. | Should | apps |
+| BR-24 | Offer the platform as composable primitives, not use-case modules: 1:1 and community communication, learning and evolving, geo, circles and criteria, logs, plus members and roles, owner approval, records, time, workflows, matching, notifications, language, trust. | Must | docs/PRIMITIVES.md, all slices |
+| BR-25 | All member-to-member communication, including in communities, goes through agents: drafted, screened, translated and relayed. No direct human chat or posting. | Must | negotiation/relay, community |
+| BR-26 | Community posts are relevance-scored before posting (against the community's purpose) and again before delivery (against each member's interests, circles and location); unrelated or uninteresting posts are not posted and not delivered. | Must | community, language, lib/meta |
+| BR-27 | Form and dissolve circles (groups) by criteria over profile fields, distance, interests, level, availability and role; membership is consent-based. Sensitive attributes are never used to exclude people. | Must | circles |
+| BR-28 | Agents learn from accepts, declines and engagement; changes to settings, rules or circles are proposals that need the owner's approval (personal) or a vote (community), are versioned and reversible, and cannot relax any platform guarantee. | Should | learning, voting |
+| BR-29 | Members can vote on community matters through their agents. | Should | voting (post-hackathon) |
+| BR-30 | Keep only necessary logs: an audit log of decisions (no message text), aggregate metrics, and operational errors without personal data or secrets; members can view, export and erase their own entries. | Must | lib/audit, dashboard |
+| BR-31 | Location is optional per app; when used it is coarse until both parties confirm. | Must | geo, family |
+| BR-32 | Admin announcements and any direct chat are out of scope until after the hackathon. | Info | docs |
 
 ## 5. Non-functional requirements
 
@@ -90,8 +101,9 @@ later cover more communities and trusted commerce.
 
 ## 7. Out of scope for this first step
 
-Payments or escrow, direct human-to-human chat, health or developmental guidance, live paid carrier labels, cross-family
-learning, non-baby categories, native mobile apps, moderation tooling for a large user base.
+Payments or escrow, direct human-to-human chat or posting, admin announcements (after the hackathon), health, medical or
+legal guidance, live paid carrier labels, cross-community learning, native mobile apps, moderation tooling for a large user
+base. Voting, evolving settings, time/scheduling depth and notifications beyond the demo are designed but come after the hackathon.
 
 ## 8. Success measures
 

@@ -1,16 +1,22 @@
 # Agora
 
-**Agora is a playground platform for building agent-to-agent exchange apps with minimal effort.** It is not one
-app. Each owner has an agent that finds, negotiates and arranges a swap or gift with other owners' agents, in the
-owner's language and near them, while the owner decides everything that matters. The platform supplies the hard
-parts (matching, negotiation, owner cards, relay, logistics, trust, learning); an app is mostly configuration.
+**Agora is a playground platform for community apps.** Anyone can create an app where people do things together
+(trade, learn, run, work, volunteer, organise) with minimal effort. Every member has an agent that acts for them in their
+language, while the member decides everything that matters. Exchanging things is one use case; a learning group, a
+marathon association, an office app or a neighbourhood help board are equally in scope.
 
-**The idea in one line:** paste one link into Muse, answer plain-language questions about your idea, and Muse builds
+Agora offers primitives that every app composes: communication (agent to agent, and community, always through agents
+and filtered by relevance), learning and evolving, geo, circles and criteria (grouping), logs, plus members, owner
+approval, records, time, workflows, matching, notifications, language and trust. See
+[docs/PRIMITIVES.md](docs/PRIMITIVES.md).
+
+**The idea in one line:** paste one link into Muse, answer plain-language questions about your community, and Muse builds
 the app on Agora for you. (Designed, not yet tried end to end with a real Muse.)
 
 Example apps on the platform:
 - [`apps/kids-gear`](apps/kids-gear) — parents' agents trade outgrown kids' gear. This is the hackathon demo.
 - [`apps/garden-tools`](apps/garden-tools) — neighbours swap garden tools and seeds.
+- Planned: running club, office app, learning group.
 
 Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents working in this repo should read
 [CLAUDE.md](CLAUDE.md) first.
@@ -29,9 +35,10 @@ Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents wo
 
 ## Where to start
 
-1. [REQUIREMENTS.md](REQUIREMENTS.md) — business requirements, from the top down; every folder refines them.
-2. [docs/PLAN.md](docs/PLAN.md) — scope, gates, schedule, risks.
-3. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Fractal Slice Architecture, data model, privacy, scale, testing.
+1. [docs/PRIMITIVES.md](docs/PRIMITIVES.md) — what the platform offers and what is built.
+2. [REQUIREMENTS.md](REQUIREMENTS.md) — business requirements, from the top down; every folder refines them.
+3. [docs/PLAN.md](docs/PLAN.md) — scope, gates, schedule, risks.
+4. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Fractal Slice Architecture, data model, privacy, scale, testing.
 
 ## Create an app
 

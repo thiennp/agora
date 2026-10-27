@@ -8,11 +8,14 @@ Submission deadline: **Wed Nov 4, 9:00 PM ET**. Judging Nov 5–8. Closing cerem
 
 ## 1. One-line pitch
 
-Agora is a playground platform: paste one link into Muse, answer plain questions about your idea, and Muse builds an
-agent-to-agent exchange app on it. The hackathon demo is the first example app, a kids' gear exchange (a second
-example, garden tools, shows the platform is general):
-Parents' Muse agents trade outgrown kids' gear (free or by agreement) on their owners' behalf, in their
-owners' languages, near each other — and learn from every accept and decline.
+Agora is a playground platform for community apps: paste one link into Muse, answer plain questions about your
+community, and Muse builds the app by composing the platform's primitives (communication through agents, learning,
+geo, circles, logs and more; see `docs/PRIMITIVES.md`). Trading is one use case; learning groups, marathon
+associations, office apps and neighbourhood boards are equally in scope.
+
+The hackathon demo is the first example app, a kids' gear exchange: parents' Muse agents trade outgrown kids' gear
+(free or by agreement) on their owners' behalf, in their owners' languages, near each other, and learn from every accept
+and decline. A second example (garden tools) and a non-exchange example prove the platform is general.
 
 ## 2. Hackathon fit
 
@@ -26,6 +29,17 @@ owners' languages, near each other — and learn from every accept and decline.
 | Not a banned type | No health / medical / nutrition / mental-health advice; not a generic RAG, analyzer or chatbot; no politics |
 
 Rubric (each 0–10, equal weight): Impact, Use of Meta AI tooling, Technical depth and execution, Demo.
+
+## 2b. Scope tiers (what we commit to for the hackathon)
+
+| Tier | Contents | When |
+|---|---|---|
+| 1. Demo | Kids' gear exchange end to end: 1:1 agents, geo, records, matching, learning, owner approval, logs (audit), language, trust basics, dashboard | by G3 (Nov 2) |
+| 2. Proves the platform | Circles and criteria (minimal), community communication with relevance scoring, one non-exchange example app (running club: pace circles plus community posts), app config `community` section, create-an-app flow tried with Muse | only if G1 and G2 pass; cut first if late |
+| 3. After the hackathon | Voting, evolving settings, time and scheduling depth, notifications channels, admin announcements, direct chat, more examples (office, learning group, help board) | not built now |
+
+Cut order when behind: tier 2 community polish, then circles beyond a single criteria type, then voice, dashboard polish,
+safety extras, languages. Tier 1 is never cut.
 
 ## 3. Scope
 
@@ -60,6 +74,7 @@ Out of scope (do not build)
 - Real paid carrier labels unless a test-mode integration is already working (see risks).
 - Any health, sleep, feeding or development guidance. The existing `baby-care` app is not used.
 - Real user accounts at scale, moderation tooling, native mobile app.
+- Admin announcements, direct chat, voting and evolving settings (after the hackathon; designed in `docs/PRIMITIVES.md`).
 
 ## 4. Success metrics (reported in the video and README)
 
@@ -159,10 +174,16 @@ If working alone, follow the schedule order. If a teammate joins (max 4):
 | Claiming "Muse-only" or "reported to Meta" too strongly | Say "Muse-only by construction (platform-hosted agents)"; report export is a format, not a promise of action |
 | Scams / address harvesting | Relay channel strips contact details; exact location only after both confirm; evidence bundle per report; ban list |
 | Model access / credits delays | Claim today; keep the Meta client behind an adapter with Baseten/Modal fallback |
+| Over-abstracting the platform with 8 days left | Build only what tier 1 needs; tier 2 is a thin vertical slice; primitives are documented before they are coded; the create-an-app flow stays honest about what is supported |
+| Community noise or spam | Relevance scoring on both sides, per-member and per-community post limits, duplicate suppression; nothing unrelated is delivered |
+| Unfair grouping | Sensitive attributes never exclude; opt-in inclusion groups only; no health data |
 
 ## 12. After the hackathon (not built now)
 
-The exchange is the first step of an agent-to-agent commerce layer for everyday life:
+Agora grows from a platform with one demo app into a platform for any community. After the hackathon:
+- Voting, evolving settings (approved, versioned, reversible), admin announcements and richer scheduling.
+- More example apps: office, learning group, marathon association, neighbourhood help board.
+- The exchange use case keeps growing:
 - More categories and life stages (furniture, electronics, school gear, hobby equipment).
 - Neighbourhood and community pools, with agents that coordinate group handovers.
 - Verified Muse agent identity and a real trust network, if Meta provides attestation and a reporting path.

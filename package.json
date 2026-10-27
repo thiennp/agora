@@ -2,7 +2,7 @@
   "name": "agora",
   "version": "0.1.0",
   "private": true,
-  "description": "A playground platform where owners' agents trade, negotiate and relay on their behalf. Spin up an exchange app with minimal effort.",
+  "description": "Platform for community apps: members' agents act for them, in their language, with the member in control. Create an app by pasting one link into Muse.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

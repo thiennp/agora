@@ -55,25 +55,63 @@ flowchart LR
   SIM --> API
 ```
 
-## 2b. Platform and apps
+## 2b. Platform, primitives and apps
 
-Agora is the platform; an **app** is configuration plus data that the platform runs. The kids' gear exchange is the
-first app (`apps/kids-gear/`).
+Agora is the platform; an **app** is configuration plus data that the platform runs. The full list of platform
+primitives, their status and the guarantees no app can change is in `docs/PRIMITIVES.md`. In short:
+
+- **Communication:** agent to agent (1:1, with escalation to the owner) and community (many to many). Both go only
+  through agents; community posts are relevance-scored before posting and before delivery (section 2c).
+- **Learning and evolving:** self-learning from accepts, declines and engagement; voting and evolving settings come later
+  and only as approved, versioned, reversible proposals.
+- **Geo:** coarse location and distance, optional per app.
+- **Circles and criteria:** groups formed and dissolved by conditions; sensitive attributes never exclude.
+- **Logs:** audit (decisions, no message text), metrics, errors (no personal data or secrets).
+- **Supporting services:** members, roles and consent; owner approval (gatekeeper and cards); records; time; workflows;
+  matching; notifications; language; trust; Meta client.
+
+The kids' gear exchange (`apps/kids-gear/`) is the first app and uses 1:1 agents, geo, records, matching, learning and
+owner approval. Exchange is one use case, not the platform.
 
 | Layer | Folder | Owns | May import |
 |---|---|---|---|
 | Platform core | `src/` | slices, hubs, deal state machine, gatekeeper engine, relay, trust, learning, API, UI shell | never `apps/` (except the registry in `src/lib/app-config/load-app.ts`) |
-| App | `apps/<id>/` | `app.config.ts` (catalog, policies, theme), sandbox city, golden sets, app REQUIREMENTS | only `@agora/app-config` |
+| App | `apps/<id>/` | `app.config.ts` (catalog, policies, theme), sandbox community, golden sets, app REQUIREMENTS | only `@agora/app-config` |
 
-An app config declares: participant noun and profile fields, catalog (categories, size systems, conditions, stages
-for the forecast), policies (negotiation rounds, handoff modes, gatekeeper topic table, standing-rule topics,
-safety rules, languages, location granularity), theme, and the sandbox city folder. It is validated by
-`src/lib/app-config/schema.ts`.
+The app config today describes the exchange use case: participant noun and profile fields, catalog (categories, size
+systems, conditions, stages for the forecast), policies (negotiation rounds, handoff modes, gatekeeper topic table,
+standing-rule topics, safety rules, languages, location granularity), theme, and the sandbox folder. It is validated by
+`src/lib/app-config/schema.ts`. Planned: a `community` section (purpose, topics, roles, relevance thresholds, circles) and
+one section per primitive, added as each primitive is built, with existing exchange settings kept backwards compatible.
 
 Invariants the platform enforces regardless of app: the always-ask topics (commitment, price/terms, identity and
 location reveal, shipping choice, safety exception) cannot be relaxed or turned into standing rules; unknown topics
-default to ask; the relay channel, trust screening and privacy rules are not configurable. `APP=<id>` selects the
-active app; apps are registered in `load-app.ts`. Creating a new app is covered in `docs/CREATE-AN-APP.md`.
+default to ask; the relay channel, trust screening, relevance filtering and privacy rules are not configurable.
+`APP=<id>` selects the active app; apps are registered in `load-app.ts`. Creating a new app is covered in
+`docs/CREATE-AN-APP.md`.
+
+## 2c. Community communication, circles and logs (designed, not built)
+
+**Community posting.** A member never posts or chats directly. The flow is: member asks their agent to post, the agent
+drafts, the **relevance gate** scores the draft against the community purpose and topics (`postMin`), the draft passes
+trust screening (contact details, scam patterns) and the gatekeeper (commitments, money terms and identity or location
+requests ask the owner), then it is relayed to the community as the agent's post. On the receiving side each member's
+agent scores the post against that member's interests, circles, location and engagement (`deliverMin`): below it the
+post is ignored (no notification, at most a digest count); above it, it is translated and delivered. Scores combine
+deterministic features (topic and keyword match, circle, proximity, past engagement) with an optional schema-validated
+model similarity score from the Meta client; the deterministic score is used if the model is unavailable or over
+budget. Post text is untrusted data and cannot influence its own score. Rate limits per member and per community and
+duplicate suppression apply. Admin announcements and direct chat are after the hackathon.
+
+**Circles.** A circle is a saved set of criteria (profile fields, distance, interests, level, availability, role,
+favourites, joined with and / or / not) evaluated over members. Membership is consent-based and re-evaluated when
+members or criteria change. Sensitive attributes (gender, religion, ethnicity, health, anything about minors) can never
+exclude someone; they may define opt-in inclusion groups only. No health data is stored at all.
+
+**Logs.** Audit log: append-only decisions (gatekeeper topics and outcomes, owner-card answers, consent and rule changes,
+circle changes, approved evolutions), 12 months, no message text or secrets. Metrics: aggregate counts, cost, latency,
+interruptions, relevance pass rates, 90 days. Errors: error class, route, request id and secret fingerprints only,
+30 days. Members can view, export and erase their own audit entries.
 
 ## 3. Project structure (Fractal Slice Architecture)
 
