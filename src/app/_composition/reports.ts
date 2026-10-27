@@ -42,3 +42,18 @@ export async function loadDashboard(s: Scenario) {
 }
 
 export type DashboardData = Awaited<ReturnType<typeof loadDashboard>>;
+
+/** The sandbox city as districts on its synthetic map: where the simulated families are (never real places). */
+export async function loadCityMap(appId: string) {
+  const { loadCity } = await import("@/features/simulation/public-api/infrastructure");
+  const city = await loadCity(appId, 1);
+  const byDistrict = new Map<string, { name: string; count: number; lat: number; lng: number }>();
+  for (const f of city.families) {
+    const [, lat, lng] = f.districtCode.split(":");
+    const row = byDistrict.get(f.district) ?? { name: f.district, count: 0, lat: Number(lat), lng: Number(lng) };
+    row.count++;
+    byDistrict.set(f.district, row);
+  }
+  return { label: city.label, families: city.families.length, districts: [...byDistrict.values()] };
+}
+export type CityMapData = Awaited<ReturnType<typeof loadCityMap>>;
