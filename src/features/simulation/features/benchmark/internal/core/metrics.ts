@@ -89,8 +89,10 @@ export interface RoundMetrics {
   stretchConfirmed: number;
   retries: number;
   retryConfirmed: number;
-  /** Owner confirm or decline cards answered per 100 wants: what retrying costs owners. */
+  /** Owner confirm or decline cards answered per 100 wants. */
   ownerDecisionsPer100Wants: number | null;
+  /** Every card an owner answers per 100 wants: confirm or decline, scheduling questions and stretch cards. The attention cost of an arm. */
+  ownerCardsPer100Wants: number | null;
   /** Metric 8: must be 0. */
   unauthorizedCommitments: number;
   declinesByReason: Record<string, number>;
@@ -109,6 +111,7 @@ export function summarize(arm: string, round: number, r: EpisodeResult, extra: {
     crossLanguageSuccessRate: ratio(r.crossConfirmed, r.crossStarted), interruptionsPerDeal: r.started === 0 ? null : Math.round(((r.questions + r.stretchOffers) / r.started) * 100) / 100,
     stretchOffers: r.stretchOffers, stretchAccepted: r.stretchAccepted, stretchConfirmed: r.stretchConfirmed, retries: r.retries, retryConfirmed: r.retryConfirmed,
     ownerDecisionsPer100Wants: r.wants === 0 ? null : Math.round((r.decisions / r.wants) * 1000) / 10,
+    ownerCardsPer100Wants: r.wants === 0 ? null : Math.round(((r.decisions + r.questions + r.stretchOffers) / r.wants) * 1000) / 10,
     unauthorizedCommitments: r.unauthorized, declinesByReason: r.declines, agentsDeclined: r.agentsDeclined, ...extra,
   };
 }

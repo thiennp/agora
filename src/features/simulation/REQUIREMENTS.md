@@ -25,11 +25,13 @@ Judges; developers.
 | SIM-08 | Several seeds are reported as mean and range per round. | Should | Seed summary test; `npm run simulate`. |
 | SIM-09 | Coverage-adjusted success (confirmed deals per 100 wants) is reported next to approval rate, because learning raises approval partly by proposing less. | Must | Metric and report note. |
 | SIM-10 | Not measured: cost per deal and model choices (no live model), privacy leaks (covered by screening evals); swap-only apps are not supported yet. Documented in docs/SIMULATION.md. | Info | Report notes. |
-| SIM-11 | Six arms run on the same city and seeds: learning off, learning with tighten-only limits, learning with owner-approved relaxation, those with a retry policy (learning off and on), and an oracle ceiling that knows the hidden rules and is not a real behaviour. | Must | Arm and ceiling tests. |
+| SIM-11 | Nine arms run on the same city and seeds: learning off, learning with tighten-only limits, learning with owner-approved relaxation, retry (learning off and on), three orderings of learned limits (product margin and back-off, no margin, no margin and no back-off), and an oracle ceiling that knows the hidden rules and is not a real behaviour. | Must | Arm and ceiling tests. |
 | SIM-12 | A drift scenario (`--drift N`) makes half the families tolerate twice the distance from round N, to test whether learned limits recover. | Must | Drift test; docs/SIMULATION.md. |
 | SIM-13 | Report stretch cards shown, approved and confirmed, and owner questions per deal including cards; stretch cards never appear in arms that do not use them and never exceed a quarter of wants. | Must | Stretch tests. |
 | SIM-14 | A declined or failed deal frees both items, and the offer goes back on the matcher's list for the next family, as the catalog does; a regression test fails if retrying lowers confirmed deals when nothing has been learned. | Must | Retry regression test. |
-| SIM-15 | Retry arms (with and without learning) offer the next-best match after a decline, up to three deals per want; the report states owner cards answered per confirmed deal for every arm and the share of the gap to the oracle that retry closes. | Must | Retry and headroom tests. |
+| SIM-15 | Retry arms (with and without learning) offer the next-best match after a decline, up to three deals per want; the report states owner cards per confirmed deal for every arm and the share of the gap to the oracle that retry closes. | Must | Retry and headroom tests. |
+| SIM-16 | Ordering arms try candidates inside learned limits first and candidates beyond a limit last, each behind a stretch card the owner must approve; at most three deals per want; they report how much of the coverage that learning plus retry loses against retry alone they win back. | Must | Ordering test, stable and drift. |
+| SIM-17 | Attention is every card an owner answers (confirm or decline, scheduling question, stretch card) per confirmed deal, so asking more is never free in the comparison. | Must | Attention test; docs/SIMULATION.md. |
 
 ## Out of scope
 

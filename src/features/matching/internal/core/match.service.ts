@@ -70,7 +70,7 @@ export function createMatchService(deps: {
     },
 
     /** Best few counterparts for an item, with a reason each (MAT-01, MAT-02). */
-    candidatesFor(item: IndexedItem, opts?: { limits?: OwnerLimits }): MatchResult {
+    candidatesFor(item: IndexedItem, opts?: { limits?: OwnerLimits; topN?: number }): MatchResult {
       // `opts.limits` replaces the item owner's own limits for this call only (used to look beyond a learned limit with the owner's approval).
       const mine = opts?.limits ?? deps.limitsOf?.(item.familyId) ?? {};
       if (mine.blockedCategories?.includes(item.category)) {
@@ -111,7 +111,7 @@ export function createMatchService(deps: {
       }
 
       matches.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
-      const top = matches.slice(0, topN);
+      const top = matches.slice(0, opts?.topN ?? topN);
       return top.length ? { matches: top } : empty(item, found.length ? "Nobody listed fits your limits." : "");
     },
 

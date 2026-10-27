@@ -10,7 +10,7 @@ import { createLearning, LearningError } from "./infrastructure";
 
 const now = () => new Date("2026-10-27T12:00:00Z");
 
-async function setup(opts: { memory?: MemoryProvider } = {}) {
+async function setup(opts: { memory?: MemoryProvider; stretchCooldown?: number } = {}) {
   const app = await loadApp("kids-gear");
   const bus = createDealEventBus();
   const memory = opts.memory ?? createLocalProvider();
@@ -18,7 +18,7 @@ async function setup(opts: { memory?: MemoryProvider } = {}) {
   const book = createMandateBook({ app, gatekeeper, store: createMandateStore(), now });
   const errors: { where: string; message: string }[] = [];
   const learning = createLearning({
-    app, memory, bus, now, onError: (e) => errors.push(e),
+    app, memory, bus, now, onError: (e) => errors.push(e), stretchCooldown: opts.stretchCooldown,
     dealInfo: async (dealId) => (dealId === "missing" ? null : { offerFamilyId: "fo", wantFamilyId: "fw", category: "clothing" }),
     rules: { eligibleTopics: () => eligibleStandingTopics(app), activeTopics: (f) => book.list(f).map((m) => m.topic), add: (i) => book.add(i) },
   });
@@ -215,6 +215,13 @@ describe("stretch offers: relaxing a learned limit only with the owner's approva
     expect(s.learning.stretchOffersFor("fo")).toEqual([]);
     expect(s.learning.offerStretch("fw", input)!.id).toBe(o.id);
     expect(() => s.learning.offerStretch("fw", { ...input, reasons: [] })).toThrow(LearningError);
+  });
+
+  it("can ask every time when the back-off is switched off (experiments only)", async () => {
+    const s = await setup({ stretchCooldown: 0 });
+    const o = s.learning.offerStretch("fw", input)!;
+    s.learning.answerStretch("fw", o.id, "no");
+    expect(s.learning.offerStretch("fw", { ...input, offerItemId: "next" })).not.toBeNull();
   });
 
   it("limits how many offers wait at once, so owners are not nagged", async () => {

@@ -82,6 +82,8 @@ export function createLearning(deps: {
   rules: RuleBook;
   onError?: (e: { where: string; message: string }) => void;
   threshold?: number;
+  /** After a no to a stretch card, skip this many later opportunities for the same reason. Default 5; 0 asks every time (experiments only). */
+  stretchCooldown?: number;
   now?: () => Date;
   newId?: () => string;
 }) {
@@ -278,7 +280,7 @@ export function createLearning(deps: {
       if (o.familyId !== familyId) throw new LearningError("not_owner", "this offer belongs to someone else");
       if (o.status !== "pending") throw new LearningError("already_decided", `this offer was already ${o.status}`);
       o.status = answer === "yes" ? "accepted" : "declined";
-      for (const r of o.reasons) stretchCooldown.set(`${familyId}:${r}`, answer === "no" ? STRETCH_COOLDOWN : 0);
+      for (const r of o.reasons) stretchCooldown.set(`${familyId}:${r}`, answer === "no" ? (deps.stretchCooldown ?? STRETCH_COOLDOWN) : 0);
       return { ...o };
     },
 

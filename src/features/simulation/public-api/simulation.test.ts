@@ -141,10 +141,10 @@ describe("benchmark", () => {
     expect(h.retryAloneClosesGapPct!).toBeGreaterThan(70);
     expect(h.offRetry).toBeLessThanOrEqual(h.oracle + 0.5);
     // Learning is what saves owners' attention: far fewer cards answered per confirmed deal, with or without retry.
-    expect(h.decisionsPerConfirmed.on).toBeLessThan(h.decisionsPerConfirmed.off * 0.6);
-    expect(h.decisionsPerConfirmed.onRetry).toBeLessThan(h.decisionsPerConfirmed.offRetry * 0.6);
+    expect(h.cardsPerConfirmed.on).toBeLessThan(h.cardsPerConfirmed.off * 0.6);
+    expect(h.cardsPerConfirmed.onRetry).toBeLessThan(h.cardsPerConfirmed.offRetry * 0.6);
     // Retrying shows owners more cards per confirmed deal than not retrying.
-    expect(h.decisionsPerConfirmed.offRetry).toBeGreaterThan(h.decisionsPerConfirmed.off);
+    expect(h.cardsPerConfirmed.offRetry).toBeGreaterThan(h.cardsPerConfirmed.off);
     for (const rep of run.reports) {
       for (const arm of ["learning_on", "learning_tighten_only", "learning_off", "oracle_ceiling"] as const) for (const m of rep.arms[arm]) expect(m.retries).toBe(0);
       for (const arm of ["learning_on_retry", "learning_off_retry"] as const) {
@@ -154,6 +154,43 @@ describe("benchmark", () => {
           expect(m.started).toBeLessThanOrEqual(3 * (m.wants - Math.round((m.noMatchRate ?? 0) * m.wants)));
           expect(m.retryConfirmed).toBeLessThanOrEqual(m.confirmed);
         }
+      }
+    }
+  });
+
+  it("tests ordering instead of excluding: extra coverage from asking the owner first is real but expensive (stable and drift)", async () => {
+    for (const drift of [undefined, { fromRound: 5, factor: 2 }]) {
+      const run = await runBenchmarkSeeds({ rounds: drift ? 10 : 8, trainEpisodes: 2, evalEpisodes: 3, seeds: [20261027, 20261028, 20261029, 20261030, 20261031], drift });
+      const h = run.headroom;
+      // With the product's margin the ordering finds nothing extra to offer, so it equals learning plus retry.
+      expect(Math.abs(h.ordered - h.onRetry)).toBeLessThan(0.3);
+      // Removing the margin and then the back-off wins back more coverage, in that order, and never beyond retry alone.
+      expect(h.orderedWide).toBeGreaterThanOrEqual(h.ordered - 0.1);
+      expect(h.orderedOpen).toBeGreaterThan(h.orderedWide);
+      expect(h.orderedOpen).toBeLessThan(h.offRetry);
+      expect(h.orderedOpenRecoversPct!).toBeGreaterThan(20);
+      expect(h.orderedOpenRecoversPct!).toBeLessThan(80);
+      // The price: more cards per confirmed deal than learning plus retry, but far fewer than retry alone.
+      expect(h.cardsPerConfirmed.orderedOpen).toBeGreaterThan(h.cardsPerConfirmed.onRetry);
+      expect(h.cardsPerConfirmed.orderedOpen).toBeLessThan(h.cardsPerConfirmed.offRetry * 0.5);
+      for (const rep of run.reports) for (const arm of ["learning_ordered", "learning_ordered_wide", "learning_ordered_open"] as const) {
+        for (const m of rep.arms[arm]) {
+          expect(m.unauthorizedCommitments).toBe(0);
+          expect(m.stretchConfirmed).toBeLessThanOrEqual(m.stretchAccepted);
+          expect(m.stretchAccepted).toBeLessThanOrEqual(m.stretchOffers);
+          expect(m.started).toBeLessThanOrEqual(3 * (m.wants - Math.round((m.noMatchRate ?? 0) * m.wants)));
+        }
+      }
+    }
+  });
+
+  it("counts every card an owner answers (confirm, scheduling, stretch) as attention, so asking more is never free", async () => {
+    const r = await runBenchmark({ ...small, seed: 3 });
+    for (const arm of ["learning_on", "learning_ordered_open", "learning_off_retry"] as const) {
+      for (const m of r.arms[arm]) {
+        const expected = ((m.decisions + Math.round((m.interruptionsPerDeal ?? 0) * m.started)) / m.wants) * 100;
+        expect(m.ownerCardsPer100Wants!).toBeGreaterThanOrEqual(m.ownerDecisionsPer100Wants! - 0.1);
+        expect(Math.abs(m.ownerCardsPer100Wants! - expected)).toBeLessThan(2.5);
       }
     }
   });
@@ -199,7 +236,7 @@ describe("benchmark", () => {
       expect(lines[0]!.startsWith("simulated,")).toBe(true);
       expect(lines.slice(1).every((l) => l.startsWith("true,"))).toBe(true);
     }
-    expect(csv.perRound.trim().split("\n")).toHaveLength(1 + 6 * small.rounds);
+    expect(csv.perRound.trim().split("\n")).toHaveLength(1 + 9 * small.rounds);
     expect(csv.comparison.trim().split("\n")).toHaveLength(1 + small.rounds);
   });
 });

@@ -549,8 +549,10 @@ interface MemoryProvider {
    declines; it never goes past the owner's own base limits and the owner can delete the lesson. Measured in `docs/SIMULATION.md`:
    cards are rare, and when preferences loosen they add about one confirmed deal per 100 wants over tightening alone. The larger
    effect is elsewhere: offering the next-best match after a decline closes about 90% of the gap to an oracle ceiling, at a cost in
-   owner attention that learning cuts by about 60%; learned limits that exclude candidates cost coverage next to retry, so ordering
-   candidates instead of excluding them is the next experiment. The two-step lookup and the retry are done only in the simulation
+   owner attention that learning cuts by about 70%; learned limits that exclude candidates cost coverage next to retry. Ordering
+   candidates instead (beyond-limit ones last, behind a stretch card) was tested: it wins back at most about 40% of that coverage and
+   only with many cards owners rarely approve, so the margin and back-off stay and an owner-chosen attention-versus-coverage setting is
+   the next step. The two-step lookup and the retry are done only in the simulation
    harness today.
 7. The simulation slice measures all of this (section 10).
 
@@ -564,8 +566,9 @@ Full description, how to run it and the measured results are in `docs/SIMULATION
 - Each episode runs the real slices (catalog, matching, negotiation, gatekeeper, owner cards, learning) with deterministic ids and no
   live model. Per round the arm is measured on **held-out** episodes (never written back as lessons), then trained on separate ones;
   the learning-off arm is the baseline; several seeds give mean and range.
-- Six arms: learning off, tighten-only learning, learning with owner-approved relaxation, retry (the next-best match after a decline)
-  with and without learning, and an oracle ceiling that knows the hidden rules. A drift scenario makes half the families tolerate twice the distance from a chosen round.
+- Nine arms: learning off, tighten-only learning, learning with owner-approved relaxation, retry (the next-best match after a decline)
+  with and without learning, three orderings of learned limits (product guards, no margin, no margin and no back-off), and an oracle
+  ceiling that knows the hidden rules. A drift scenario makes half the families tolerate twice the distance from a chosen round.
 - Output: JSON and CSV (every row `simulated=true`), failures kept. Model-routing comparison and cost per deal need a Meta key and are
   not run; the harness takes the same city and seeds for any routing.
 

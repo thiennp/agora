@@ -70,16 +70,23 @@ export const STRETCH_DISTANCE_MARGIN = 1.3;
  * about. Empty means the owner's own base limits exclude it, it is not excluded at all, or it is too far beyond the learned limit for
  * a question to be fair, so it is not a stretch (LRN-09, LRN-10).
  */
-export function blockedByLearned(base: Limits, learned: Limits, conditions: readonly string[], f: StretchFacts): StretchReason[] {
+export function blockedByLearned(
+  base: Limits,
+  learned: Limits,
+  conditions: readonly string[],
+  f: StretchFacts,
+  /** Widen the margins (any distance beyond the learned limit, any condition step) for experiments; the product uses the defaults. */
+  opts: { distanceMargin?: number; anyConditionStep?: boolean } = {},
+): StretchReason[] {
   const out: StretchReason[] = [];
-  if (learned.maxDistanceKm !== undefined && f.distanceKm !== null && f.distanceKm > learned.maxDistanceKm && f.distanceKm <= learned.maxDistanceKm * STRETCH_DISTANCE_MARGIN && (base.maxDistanceKm === undefined || f.distanceKm <= base.maxDistanceKm)) {
+  if (learned.maxDistanceKm !== undefined && f.distanceKm !== null && f.distanceKm > learned.maxDistanceKm && f.distanceKm <= learned.maxDistanceKm * (opts.distanceMargin ?? STRETCH_DISTANCE_MARGIN) && (base.maxDistanceKm === undefined || f.distanceKm <= base.maxDistanceKm)) {
     out.push("too_far");
   }
   if (learned.minCondition !== undefined && f.offerCondition) {
     const learnedFloor = conditions.indexOf(learned.minCondition);
     const baseFloor = base.minCondition ? conditions.indexOf(base.minCondition) : conditions.length - 1;
     const got = conditions.indexOf(f.offerCondition);
-    if (got === learnedFloor + 1 && got <= baseFloor) out.push("condition");
+    if ((opts.anyConditionStep ? got > learnedFloor : got === learnedFloor + 1) && got <= baseFloor) out.push("condition");
   }
   if (learned.strictSizeCategories?.includes(f.category) && !base.strictSizeCategories?.includes(f.category) && f.offerSize && f.wantSize && f.offerSize !== f.wantSize) {
     out.push("wrong_size");

@@ -32,8 +32,8 @@ const cell = (v: number | null) => (v === null ? "" : v);
 writeFileSync(
   `${out}/summary.csv`,
   [
-    "simulated,round,approval_on_mean,approval_on_min,approval_on_max,approval_tighten_only_mean,approval_off_mean,approval_off_min,approval_off_max,approval_on_retry_mean,confirmed_per_100_on,confirmed_per_100_tighten_only,confirmed_per_100_off,confirmed_per_100_on_retry,confirmed_per_100_off_retry,confirmed_per_100_oracle_ceiling,owner_decisions_per_100_on,owner_decisions_per_100_on_retry,retry_confirmed_on_retry,stretch_offers_on,stretch_accepted_on,stretch_confirmed_on,interruptions_per_deal_on,interruptions_per_deal_tighten_only",
-    ...run.rows.map((r) => ["true", r.round, cell(r.approvalOnMean), cell(r.approvalOnMin), cell(r.approvalOnMax), cell(r.approvalTightenOnlyMean), cell(r.approvalOffMean), cell(r.approvalOffMin), cell(r.approvalOffMax), cell(r.approvalOnRetryMean), cell(r.confirmedPer100OnMean), cell(r.confirmedPer100TightenOnlyMean), cell(r.confirmedPer100OffMean), cell(r.confirmedPer100OnRetryMean), cell(r.confirmedPer100OffRetryMean), cell(r.confirmedPer100OracleMean), cell(r.ownerDecisionsPer100OnMean), cell(r.ownerDecisionsPer100OnRetryMean), cell(r.retryConfirmedOnRetryMean), cell(r.stretchOffersOnMean), cell(r.stretchAcceptedOnMean), cell(r.stretchConfirmedOnMean), cell(r.interruptionsOnMean), cell(r.interruptionsTightenOnlyMean)].join(",")),
+    "simulated,round,approval_on_mean,approval_on_min,approval_on_max,approval_tighten_only_mean,approval_off_mean,approval_off_min,approval_off_max,approval_on_retry_mean,confirmed_per_100_on,confirmed_per_100_tighten_only,confirmed_per_100_off,confirmed_per_100_on_retry,confirmed_per_100_off_retry,confirmed_per_100_oracle_ceiling,owner_cards_per_100_on,owner_cards_per_100_on_retry,owner_cards_per_100_ordered,owner_cards_per_100_ordered_wide,confirmed_per_100_ordered,confirmed_per_100_ordered_wide,stretch_offers_ordered,stretch_offers_ordered_wide,retry_confirmed_on_retry,stretch_offers_on,stretch_accepted_on,stretch_confirmed_on,interruptions_per_deal_on,interruptions_per_deal_tighten_only",
+    ...run.rows.map((r) => ["true", r.round, cell(r.approvalOnMean), cell(r.approvalOnMin), cell(r.approvalOnMax), cell(r.approvalTightenOnlyMean), cell(r.approvalOffMean), cell(r.approvalOffMin), cell(r.approvalOffMax), cell(r.approvalOnRetryMean), cell(r.confirmedPer100OnMean), cell(r.confirmedPer100TightenOnlyMean), cell(r.confirmedPer100OffMean), cell(r.confirmedPer100OnRetryMean), cell(r.confirmedPer100OffRetryMean), cell(r.confirmedPer100OracleMean), cell(r.ownerCardsPer100OnMean), cell(r.ownerCardsPer100OnRetryMean), cell(r.ownerCardsPer100OrderedMean), cell(r.ownerCardsPer100OrderedWideMean), cell(r.confirmedPer100OrderedMean), cell(r.confirmedPer100OrderedWideMean), cell(r.stretchOffersOrderedMean), cell(r.stretchOffersOrderedWideMean), cell(r.retryConfirmedOnRetryMean), cell(r.stretchOffersOnMean), cell(r.stretchAcceptedOnMean), cell(r.stretchConfirmedOnMean), cell(r.interruptionsOnMean), cell(r.interruptionsTightenOnlyMean)].join(",")),
   ].join("\n") + "\n",
 );
 writeFileSync(`${out}/headroom.json`, JSON.stringify(run.headroom, null, 2));
@@ -41,14 +41,15 @@ writeFileSync(`${out}/headroom.json`, JSON.stringify(run.headroom, null, 2));
 console.log(run.label);
 console.log(`app ${app}, ${seeds.length} seeds, held-out episodes only (mean over seeds)\n`);
 console.log("confirmed deals per 100 wants (higher is better)");
-console.log("round | OFF    tighten  ON     OFF+retry ON+retry | ORACLE ceiling");
+console.log("round | OFF    tighten  ON     OFF+retry ON+retry ORDERED wide   open   | ORACLE ceiling");
 for (const r of run.rows) {
-  console.log(`${String(r.round).padStart(5)} | ${r.confirmedPer100OffMean}  ${r.confirmedPer100TightenOnlyMean}  ${r.confirmedPer100OnMean}  ${r.confirmedPer100OffRetryMean}  ${r.confirmedPer100OnRetryMean} | ${r.confirmedPer100OracleMean}`);
+  console.log(`${String(r.round).padStart(5)} | ${r.confirmedPer100OffMean}  ${r.confirmedPer100TightenOnlyMean}  ${r.confirmedPer100OnMean}  ${r.confirmedPer100OffRetryMean}  ${r.confirmedPer100OnRetryMean}  ${r.confirmedPer100OrderedMean}  ${r.confirmedPer100OrderedWideMean}  ${r.confirmedPer100OrderedOpenMean} | ${r.confirmedPer100OracleMean}`);
 }
 const h = run.headroom;
-console.log(`\nover rounds ${h.rounds.join(",")}: confirmed per 100 wants: off ${h.off}, tighten-only ${h.tightenOnly}, on ${h.on}, off+retry ${h.offRetry}, on+retry ${h.onRetry}, oracle ${h.oracle}`);
-console.log(`owner cards answered per confirmed deal: off ${h.decisionsPerConfirmed.off}, tighten-only ${h.decisionsPerConfirmed.tightenOnly}, on ${h.decisionsPerConfirmed.on}, off+retry ${h.decisionsPerConfirmed.offRetry}, on+retry ${h.decisionsPerConfirmed.onRetry}`);
+console.log(`\nover rounds ${h.rounds.join(",")}: confirmed per 100 wants: off ${h.off}, tighten-only ${h.tightenOnly}, on ${h.on}, off+retry ${h.offRetry}, on+retry ${h.onRetry}, ordered ${h.ordered}, ordered-wide ${h.orderedWide}, ordered-open ${h.orderedOpen}, oracle ${h.oracle}`);
+console.log(`owner cards (confirm, scheduling, stretch) per confirmed deal: off ${h.cardsPerConfirmed.off}, tighten-only ${h.cardsPerConfirmed.tightenOnly}, on ${h.cardsPerConfirmed.on}, off+retry ${h.cardsPerConfirmed.offRetry}, on+retry ${h.cardsPerConfirmed.onRetry}, ordered ${h.cardsPerConfirmed.ordered}, ordered-wide ${h.cardsPerConfirmed.orderedWide}, ordered-open ${h.cardsPerConfirmed.orderedOpen}`);
 console.log(`retry alone closes ${h.retryAloneClosesGapPct}% of the gap between no learning and the oracle; retry on top of learning closes ${h.retryClosesGapPct}% of the gap between learning-on and the oracle`);
+console.log(`ordering wins back ${h.orderedRecoversPct}% (with margin) and ${h.orderedWideRecoversPct}% (no margin) and ${h.orderedOpenRecoversPct}% (no margin, no back-off) of the coverage that learning+retry loses against retry alone`);
 console.log("\nfailures (seed " + seeds[0] + ", all kept in the CSV, sampled in the report):", first.failureCounts);
 for (const n of first.notes) console.log("note:", n);
 console.log(`\nwritten to ${out}/`);
