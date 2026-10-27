@@ -1,0 +1,33 @@
+{
+  "name": "hand-me-down",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Parents' Muse agents trade outgrown kids' gear on their owners' behalf, in each owner's language.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test --config e2e/playwright.config.ts",
+    "evals": "tsx evals/run-evals.ts"
+  },
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^2.1.0"
+  }
+}
