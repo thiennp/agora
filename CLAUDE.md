@@ -59,10 +59,10 @@ that builds an app)  6. `docs/adr/`
 
 Built: app config schema and loader, Meta client (routing, cost meter, budgets), family profile and consent,
 catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper (classifier, policy, red-team evals),
-negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), migrations 0001–0004,
+negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), owner cards (questions,
+confirmations, standing rules, hard limits), migrations 0001–0004 and 0006,
 two example apps.
-Not built: owner-cards flow (negotiation exposes `ownerDecision` and `answerOwner` for it), per-owner translation of
-notes, relay, logistics, trust, learning, memory, intake, voice,
+Not built: owner-card UI and notifications, per-owner translation of notes and cards, relay, logistics, trust, learning, memory, intake, voice,
 dashboard, UI, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here

@@ -246,7 +246,8 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 - `shipments`: id, negotiation_id, carrier, mode (`test`|`live`), label_ref, tracking_ref, appointment (jsonb), fee_split (jsonb), status
 - `trust_reports`: id, negotiation_id, reporter_family_id, reported_agent_id, reason_code, evidence_bundle (jsonb: transcript hash, timestamps, screening flags), status, exported_at
 - `agent_status`: agent_id, trust_score, banned (bool), notes
-- `mandates`: id, family_id, topic, level (`auto`|`ask`), scope (jsonb: limits such as max_distance, allowed windows), expires_at, source (`owner`|`learned_with_consent`)
+- `mandates`: id, family_id, topic, level (`auto`), scope (jsonb), expires_at, source (`owner`|`learned_with_consent`); never an always-ask or forbidden topic, one per family and topic
+- `owner_limits`: family_id, max_distance_km, blocked_categories, availability (jsonb), min_condition, allowed_terms
 - `owner_questions`: id, negotiation_id, family_id, topic, question, suggested_answers (jsonb), counterparty_context (redacted), status (`open`|`answered`|`expired`), answer, answered_at
 - `lessons`: id, family_id, kind, text, evidence_ids, confidence, source (`aw`|`local`)
 - `model_calls`: id, role, model, tokens_in, tokens_out, cost_usd, latency_ms, created_at
@@ -357,6 +358,21 @@ Tests: unit tests for every table row of both apps; red-team sets in `evals/` (i
 scripts) run with standing rules and adversarial model proposals; the target is 0 unauthorized commitments. Known
 limit: patterns cover en, de, es, vi; text in other languages has no benign match and therefore asks. The planned
 fix is to classify the English translation as well (GAT-CLS-06).
+
+### Owner cards (`src/features/owner-cards`)
+
+Cards are the owner's control surface and are made from hub events, not by calling negotiation. `OwnerQuestionOpened`
+creates a one-tap question (fixed template over structured facts, never counterparty text; yes/no; deadline equal to
+the deal's expiry; "remember this" only for topics that may become standing rules). `DealAgreedByAgents` creates a
+confirm card for each owner; confirming or declining (with a reason code) calls negotiation's `ownerDecision`, and the
+deal is confirmed only when both owners confirmed. `DealDeclined`, `DealExpired` and `DealConfirmed` close open cards.
+Answers call `answerOwner`. Every action checks the card belongs to the acting owner and cannot be repeated.
+
+Standing rules live in the mandate book: only the app's low-risk standing-rule topics, 30 days by default (90 at most),
+one per topic, mirrored into the gatekeeper so they apply and are revoked immediately. Hard limits (distance, blocked
+categories, availability, minimum condition, allowed terms) are validated against the app and feed matching and
+negotiation. The number of questions per deal is the "interruptions per deal" metric. Stores are synchronous in-memory
+for now, so cards appear in the same tick as the event; a database version moves card creation to a worker.
 
 ## 7b. Relay channel, logistics and trust
 
