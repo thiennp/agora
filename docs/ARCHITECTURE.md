@@ -700,7 +700,7 @@ external pen test. The README should say so plainly.
 
 ## 13. Open questions to settle early
 
-1. Meta Model API shape (chat-completions compatible?) and vision input format — read docs Oct 26–27.
+1. Meta Model API shape: read Oct 27. It is `POST https://api.meta.ai/v1/responses` with `{model, input}`, Bearer key, models `muse-spark-1.3`/`muse-spark-1.1` (the adapter in `src/lib/meta/adapters/meta-api.ts`, unit-tested with a fake fetch). Still open until a key is used: `instructions` and JSON-output parameters, and the vision (SAM 3.1, image input) and voice request formats, which the quickstart does not show.
 2. Exact model IDs per role; use `meta-models/muse-spark-open-1026` on Baseten, not the name in the docs.
 3. SAM 3.1 access path: through Meta Model API or self-hosted.
 4. Language set (three) after the G0 test.
