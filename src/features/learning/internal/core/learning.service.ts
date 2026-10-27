@@ -6,6 +6,7 @@ import { confidenceFor, deriveAdjustments, levelOf, lessonFromDecision, lessonFr
 import type { Limits, StretchReason } from "../../features/lessons/public-api/types";
 import { DEFAULT_THRESHOLD, proposalsFor } from "../../features/standing-rules/public-api/infrastructure";
 import type { Answer } from "../../features/standing-rules/public-api/types";
+import { tracked } from "@/lib/state";
 
 /** Facts about a deal that learning needs; negotiation and catalog provide them. */
 export interface DealInfo {
@@ -89,12 +90,12 @@ export function createLearning(deps: {
 }) {
   const now = deps.now ?? (() => new Date());
   const newId = deps.newId ?? (() => crypto.randomUUID());
-  const answers = new Map<string, Answer[]>();
-  const proposals = new Map<string, RuleProposal>();
-  const dismissed = new Map<string, Set<string>>();
-  const stretchOffers = new Map<string, StretchOffer>();
-  const stretchDeals = new Map<string, { familyId: string; category: string; reasons: StretchReason[] }>();
-  const stretchCooldown = new Map<string, number>();
+  const answers = tracked("learning.answers", new Map<string, Answer[]>());
+  const proposals = tracked("learning.proposals", new Map<string, RuleProposal>());
+  const dismissed = tracked("learning.dismissed", new Map<string, Set<string>>());
+  const stretchOffers = tracked("learning.stretchOffers", new Map<string, StretchOffer>());
+  const stretchDeals = tracked("learning.stretchDeals", new Map<string, { familyId: string; category: string; reasons: StretchReason[] }>());
+  const stretchCooldown = tracked("learning.stretchCooldown", new Map<string, number>());
   // Events are handled one after another, in order: lessons are read-modify-write and must not overwrite each other.
   let tail: Promise<void> = Promise.resolve();
 

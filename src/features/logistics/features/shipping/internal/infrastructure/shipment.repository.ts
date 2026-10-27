@@ -1,5 +1,6 @@
 import type { Appointment, ShipmentStatus } from "../../../carriers/public-api/types";
 import type { FeeSplit } from "../core/fee-split";
+import { tracked } from "@/lib/state";
 
 export interface Shipment {
   id: string;
@@ -21,7 +22,7 @@ export interface Shipment {
 }
 
 export function createShipmentStore() {
-  const rows = new Map<string, Shipment>();
+  const rows = tracked("logistics.shipments", new Map<string, Shipment>());
   return { rows };
 }
 export type ShipmentStore = ReturnType<typeof createShipmentStore>;

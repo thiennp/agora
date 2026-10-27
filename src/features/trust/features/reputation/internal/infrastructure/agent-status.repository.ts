@@ -1,9 +1,10 @@
 import { changeFor, clamp, shouldBan, THRESHOLDS, type AgentStatus, type ReputationEvent } from "../core/trust-score";
+import { tracked } from "@/lib/state";
 
 /** Agent status per family. In-memory; the `agent_status` table (migration 0008) mirrors it. */
 export function createReputation(deps: { now?: () => Date } = {}) {
   const now = deps.now ?? (() => new Date());
-  const rows = new Map<string, AgentStatus>();
+  const rows = tracked("trust.agentStatus", new Map<string, AgentStatus>());
   const get = (familyId: string): AgentStatus => rows.get(familyId) ?? { familyId, score: THRESHOLDS.start, history: [], banned: false };
 
   return {

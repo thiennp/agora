@@ -1,3 +1,4 @@
+import { tracked } from "@/lib/state";
 export interface FamilyRecord {
   id: string;
   appId: string;
@@ -20,7 +21,7 @@ export interface ProfileRepository {
 
 /** Default store for mock mode and tests. A Postgres implementation replaces it once lib/db exists. */
 export function createInMemoryProfileRepository(): ProfileRepository {
-  const rows = new Map<string, FamilyRecord>();
+  const rows = tracked("family.profiles", new Map<string, FamilyRecord>());
   return {
     async insert(r) {
       rows.set(r.id, structuredClone(r));

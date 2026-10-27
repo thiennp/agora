@@ -43,9 +43,9 @@ safety extras, languages. Tier 1 is never cut.
 
 **Tier gate (BR-37).** Tier 2 code does not start until tier 1 can be shown end to end: the simulation and benchmark
 produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
-(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room) and judge dashboard (learning curves from the CSV) exist, but persistent
-storage and photo intake do not, so the next work is tier 1, not the `community` config section.
-**Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; persistent storage and photo intake are the two open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`.
+(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room) and judge dashboard (learning curves from the CSV) exist, and demo state is saved to Postgres or a file (restart-tested), but relational repositories
+and photo intake do not exist, so the next work is tier 1, not the `community` config section.
+**Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; demo state now survives restarts (one saved document, Postgres or file); relational repositories and photo intake are the open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`.
 
 ## 3. Scope
 

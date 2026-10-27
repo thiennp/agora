@@ -1,11 +1,12 @@
 import type { Context, Lesson, Outcome } from "../../../../internal/core/context.schema";
 import type { MemoryProvider } from "../../../../internal/core/memory-provider.port";
+import { tracked } from "@/lib/state";
 
 const MAX_OUTCOMES = 200;
 
 /** Default provider for demos, CI and judges: no external dependency (MEM-LOC-02). Each family has its own store (MEM-03). */
 export function createLocalProvider(): MemoryProvider {
-  const families = new Map<string, { lessons: Map<string, Lesson>; outcomes: Outcome[] }>();
+  const families = tracked("memory.families", new Map<string, { lessons: Map<string, Lesson>; outcomes: Outcome[] }>());
   const of = (familyId: string) => families.get(familyId) ?? families.set(familyId, { lessons: new Map(), outcomes: [] }).get(familyId)!;
   return {
     name: "local",

@@ -60,7 +60,9 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       const platform = await getPlatform();
       const input = parsed.data as z.infer<S>;
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
-      return json(200, await run({ input, platform, params, as }));
+      const result = await run({ input, platform, params, as });
+      if (req.method !== "GET") await platform.persist();
+      return json(200, result);
     } catch (e) {
       if (e instanceof HttpError) return json(e.status, { error: { code: e.code, message: e.message } }, e.status === 429 ? { "retry-after": "5" } : undefined);
       const code = (e as { code?: unknown }).code;

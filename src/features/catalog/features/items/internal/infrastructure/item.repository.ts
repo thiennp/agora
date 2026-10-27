@@ -1,4 +1,5 @@
 import type { ItemStatus } from "../core/item.schema";
+import { tracked } from "@/lib/state";
 
 export interface SafetyFlag {
   ruleId: string;
@@ -35,7 +36,7 @@ export interface ItemRepository {
 }
 
 export function createInMemoryItemRepository(): ItemRepository {
-  const rows = new Map<string, ItemRecord>();
+  const rows = tracked("catalog.items", new Map<string, ItemRecord>());
   const copy = <T,>(v: T): T => structuredClone(v);
   return {
     async insert(i) {

@@ -1,3 +1,4 @@
+import { tracked } from "@/lib/state";
 export interface IndexedItem {
   id: string;
   appId: string;
@@ -14,8 +15,8 @@ const bucketKey = (appId: string, kind: string, category: string, district: stri
 
 /** Buckets by app, kind, category and district so a lookup touches only nearby buckets, never the whole table (MAT-CAN-01). */
 export function createCandidateIndex() {
-  const buckets = new Map<string, Map<string, IndexedItem>>();
-  const where = new Map<string, string>();
+  const buckets = tracked("matching.buckets", new Map<string, Map<string, IndexedItem>>());
+  const where = tracked("matching.where", new Map<string, string>());
 
   return {
     add(item: IndexedItem) {

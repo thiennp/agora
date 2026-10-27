@@ -7,6 +7,7 @@ import type { Deal } from "../../../deal-state/public-api/types";
 import { isFaithful } from "../core/faithful-relay";
 import type { RelayMessage, RelayView } from "../core/relay-message.schema";
 import { createRelayStore, type RelayStore } from "./relay.repository";
+import { tracked } from "@/lib/state";
 
 export class RelayError extends Error {
   constructor(readonly code: "not_found" | "not_a_party" | "closed" | "invalid" | "rate_limited" | "restricted", message: string) {
@@ -53,7 +54,7 @@ export function createRelay(deps: {
   const now = deps.now ?? (() => new Date());
   const newId = deps.newId ?? (() => crypto.randomUUID());
   const store = deps.store ?? createRelayStore();
-  const raised = new Set<string>();
+  const raised = tracked("relay.raised", new Set<string>());
 
   async function party(dealId: string, familyId: string) {
     const deal = await deps.deals.get(dealId);

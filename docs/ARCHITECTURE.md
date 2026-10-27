@@ -358,8 +358,8 @@ instruction (flag on the deal); our own notes are written by the Meta client (ro
 as harmless, and replaced by a per-language template on any failure. Starting a deal holds both items so an item
 cannot be promised twice; declined and expired deals release them; confirmed deals reserve them for that deal.
 
-Not built yet: the deal-room UI, the expiry timer, and a Postgres repository (the in-memory repository matches migration
-0004). Per-owner translation of notes and the relay channel are built (see Language and Relay below).
+Not built yet: the expiry timer, and a relational Postgres repository (the in-memory repository matches migration
+0004; the demo is saved as one document instead, see Demo persistence). Per-owner translation of notes and the relay channel are built (see Language and Relay below).
 
 ## 6. Agents and model routing
 
@@ -579,9 +579,24 @@ Not built: the city map, cost per deal (needs live model calls), privacy-test re
 
 The owner and deal pages use the same entry layer: `src/app/_composition` is the composition root (wires slices, seeds the demo, builds read views); route handlers only validate (zod), rate limit (120/min/IP), call it and answer with `{error:{code,message}}` on failure.
 
+## 11b. Demo persistence
+
+Stores create their in-memory containers with `tracked(name, value)` (`src/lib/state.ts`). Inside the composition root's
+scope every tracked Map, Set, array and object is part of one snapshot. After each successful non-GET request the entry
+layer writes the snapshot (`src/app/_composition/persistence.ts`) to Postgres (`DATABASE_URL`, table `app_state`,
+migration 0011) or to a file (`AGORA_STATE_FILE`), else nowhere; on start the platform restores it in place and skips
+seeding. `POST /api/demo/reset` deletes it. A test restarts the platform mid-journey and checks every deal view is
+identical and the journey finishes.
+
+What this is not: the relational tables in migrations 0001–0010 (the target schema, with retention and erasure per
+row) are still unused, there is one writer (no multi-process or multi-instance), the whole document is rewritten on each
+change (fine for a demo, not for scale), and retention jobs do not exist. The snapshot holds what the stores hold, including
+relayed deal-room text and encrypted handoff fields, so it is demo data to be deleted with the reset.
+
 ## 12. Deployment
 
 - Web + API on Railway (Node, Postgres). Config via env; no secrets in the repo.
+- Demo state survives restarts when `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE` is set (section 11b).
 - Mock mode: `npm run dev:mock` seeds the sandbox city and uses LocalProvider; works with only a Meta API key.
 - Hosted public demo kept running through judging (Nov 5–8) with a spend cap.
 

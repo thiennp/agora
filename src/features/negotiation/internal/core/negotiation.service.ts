@@ -9,6 +9,7 @@ import { decideTurn, openingOffer, writeNote } from "../../features/negotiator/p
 import type { NegotiationMandate, NoteKind } from "../../features/negotiator/public-api/types";
 import { buildOfferSchema, noteIsHarmless, termsKey } from "../../features/offers/public-api/infrastructure";
 import type { Offer } from "../../features/offers/public-api/types";
+import { tracked } from "@/lib/state";
 
 /** What negotiation needs from the catalog; the catalog's item service satisfies it. */
 export interface ItemOps {
@@ -66,7 +67,7 @@ export function createNegotiationService(deps: {
   const now = deps.now ?? (() => new Date());
   const newId = deps.newId ?? (() => crypto.randomUUID());
   const offerSchema = buildOfferSchema(deps.app);
-  const messages = new Map<string, Message[]>();
+  const messages = tracked("negotiation.messages", new Map<string, Message[]>());
 
   const load = async (id: string): Promise<Deal> => {
     const d = await repo.get(id);

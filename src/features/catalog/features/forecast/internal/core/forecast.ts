@@ -1,4 +1,5 @@
 import { inStage, type AppConfig } from "@/lib/app-config";
+import { tracked } from "@/lib/state";
 
 export interface Suggestion {
   /** Stable id so a dismissal sticks: kind, category and stage. */
@@ -48,7 +49,7 @@ export function forecast(
 /** Forecast with per-family dismissals remembered. Suggestions never list anything by themselves (CAT-02). */
 export function createForecastService(deps: { app: App; now?: () => Date; dismissals?: Map<string, Set<string>> }) {
   const now = deps.now ?? (() => new Date());
-  const dismissals = deps.dismissals ?? new Map<string, Set<string>>();
+  const dismissals = deps.dismissals ?? tracked("catalog.dismissals", new Map<string, Set<string>>());
   return {
     suggest(familyId: string, profile: Record<string, string | number>): Suggestion[] {
       return forecast(deps.app, profile, now(), dismissals.get(familyId));

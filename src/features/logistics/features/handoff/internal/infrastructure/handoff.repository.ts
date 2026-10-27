@@ -1,4 +1,5 @@
 import type { HandoffMode, Window } from "../core/handoff-mode";
+import { tracked } from "@/lib/state";
 
 export interface Plan {
   dealId: string;
@@ -22,7 +23,7 @@ export interface Plan {
 }
 
 export function createPlanStore() {
-  const rows = new Map<string, Plan>();
+  const rows = tracked("logistics.handoffs", new Map<string, Plan>());
   return { rows };
 }
 export type PlanStore = ReturnType<typeof createPlanStore>;
