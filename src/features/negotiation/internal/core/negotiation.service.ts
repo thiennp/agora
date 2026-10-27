@@ -34,7 +34,7 @@ export interface ViewedMessage extends Message {
 
 export class NegotiationError extends Error {
   constructor(
-    readonly code: "not_found" | "not_your_turn" | "invalid_offer" | "needs_owner_terms" | "item_unavailable" | "wrong_state" | "not_a_party",
+    readonly code: "not_found" | "not_your_turn" | "invalid_offer" | "needs_owner_terms" | "item_unavailable" | "wrong_state" | "not_a_party" | "not_allowed",
     message: string,
   ) {
     super(message);
@@ -51,6 +51,8 @@ export function createNegotiationService(deps: {
   mandateOf: (familyId: string) => NegotiationMandate;
   repo?: DealRepository;
   client?: MetaClient;
+  /** Trust gate: may this family start a deal (not banned or restricted)? Defaults to yes. */
+  canStartDeal?: (familyId: string) => boolean;
   /** Translates notes for each owner and for the gatekeeper's English check; without it notes are shown as written. */
   language?: LanguageService;
   now?: () => Date;
@@ -106,6 +108,9 @@ export function createNegotiationService(deps: {
   const service = {
     /** The wanting owner's agent opens a deal on a match. Both items must be listed; they are held for this deal (NEG-06). */
     async start(match: { offerItemId: string; wantItemId: string; offerFamilyId: string; wantFamilyId: string }): Promise<Deal> {
+      if (deps.canStartDeal && !deps.canStartDeal(match.wantFamilyId)) {
+        throw new NegotiationError("not_allowed", "this account is restricted and cannot start new deals right now");
+      }
       const proposerMandate = deps.mandateOf(match.wantFamilyId);
       const opening = openingOffer(deps.app, proposerMandate, match.offerItemId);
       if (!opening) throw new NegotiationError("needs_owner_terms", "this app needs the owner to say what they offer in return first");
@@ -247,6 +252,13 @@ export function createNegotiationService(deps: {
         await releaseItems(d);
         deps.bus.publish({ type: "DealDeclined", dealId: d.id, reason: "owner declined" });
       }
+      return d;
+    },
+
+    /** A report was filed: the deal stops, still-held items are freed (reserved ones stay for the operator). Used by relay's report flow. */
+    async markReported(dealId: string): Promise<Deal> {
+      const d = await apply(await load(dealId), { type: "report" });
+      await releaseItems(d);
       return d;
     },
 

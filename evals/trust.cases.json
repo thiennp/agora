@@ -1,0 +1,244 @@
+{
+  "leaks": [
+    {
+      "id": "l1",
+      "text": "Call me on 0170 1234567",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l2",
+      "text": "My number is +49 170 1234567",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l3",
+      "text": "Text me: (512) 555-0147",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l4",
+      "text": "phone 5551234567 anytime",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l5",
+      "text": "Reach me at anna.k@example.com please",
+      "mustFind": "email"
+    },
+    {
+      "id": "l6",
+      "text": "anna dot k at example dot com",
+      "mustFind": "email"
+    },
+    {
+      "id": "l7",
+      "text": "mail me: anna [at] example [dot] com",
+      "mustFind": "email"
+    },
+    {
+      "id": "l8",
+      "text": "Add me on WhatsApp",
+      "mustFind": "handle"
+    },
+    {
+      "id": "l9",
+      "text": "My telegram is better, find me there",
+      "mustFind": "handle"
+    },
+    {
+      "id": "l10",
+      "text": "insta: @fastbuyer99",
+      "mustFind": "handle"
+    },
+    {
+      "id": "l11",
+      "text": "Write me on signal, same number",
+      "mustFind": "handle"
+    },
+    {
+      "id": "l12",
+      "text": "Check https://bit.ly/3xyz for photos",
+      "mustFind": "link"
+    },
+    {
+      "id": "l13",
+      "text": "see www.myshop.com/offer",
+      "mustFind": "link"
+    },
+    {
+      "id": "l14",
+      "text": "photos at imgur.com/abc123",
+      "mustFind": "link"
+    },
+    {
+      "id": "l15",
+      "text": "I live at 12 Oak Street, come tonight",
+      "mustFind": "address"
+    },
+    {
+      "id": "l16",
+      "text": "Hauptstraße 5, 3. Stock",
+      "mustFind": "address"
+    },
+    {
+      "id": "l17",
+      "text": "my address is the blue house on the corner",
+      "mustFind": "address"
+    },
+    {
+      "id": "l18",
+      "text": "Come to my house after six",
+      "mustFind": "address"
+    },
+    {
+      "id": "l19",
+      "text": "PLZ 10115 Berlin, Mitte",
+      "mustFind": "address"
+    },
+    {
+      "id": "l20",
+      "text": "Please pay via PayPal first, then I ship",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l21",
+      "text": "Send a deposit to hold it",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l22",
+      "text": "IBAN DE89 3704 0044 0532 0130 00",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l23",
+      "text": "I accept bitcoin or gift cards",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l24",
+      "text": "Vorkasse bitte, dann schicke ich es",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l25",
+      "text": "zero one seven zero one two three four five six seven",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l26",
+      "text": "0 1 7 0 1 2 3 4 5 6 7",
+      "mustFind": "phone"
+    },
+    {
+      "id": "l27",
+      "text": "Chuyển khoản trước nhé",
+      "mustFind": "payment"
+    },
+    {
+      "id": "l28",
+      "text": "call 0170-123-4567 after 5",
+      "mustFind": "phone"
+    }
+  ],
+  "benign": [
+    "Hi! Is the jacket still available?",
+    "Size 68, 74 or 80 would all be fine.",
+    "We could meet between 10:00 and 12:00 on 3.11.2026.",
+    "It is about 2 kg and 12 months old.",
+    "I can do 5 euros if that works.",
+    "Thanks, that sounds great!",
+    "The pram is in good condition, only used for 6 months.",
+    "Order 12345 is the model number on the label.",
+    "Pickup on Saturday morning would be perfect.",
+    "We have two kids, aged 3 and 5.",
+    "Could you send more photos of the zip and the lining?",
+    "The locker near the station is fine for us.",
+    "Do you prefer the 15th or the 16th of November?",
+    "Das passt uns gut, danke!",
+    "¿Podemos quedar mañana por la tarde?",
+    "Cảm ơn bạn, mình nhận vào thứ bảy nhé.",
+    "I don't use WhatsApp much, to be honest.",
+    "e.g. the blue one or the grey one",
+    "Price is fine, I'm happy to take it for free.",
+    "It fits kids from 68 to 74 cm.",
+    "See you at 10.30 then!",
+    "Is the car seat from 2022 or 2023?",
+    "We live in a small flat, so space is tight.",
+    "Thanks for the quick reply and have a lovely day."
+  ],
+  "scams": [
+    {
+      "id": "c1",
+      "messages": [
+        {
+          "t": "Hi, is it available?"
+        },
+        {
+          "t": "Great. Pay me first via PayPal and I'll hold it, hurry, someone else wants it"
+        }
+      ],
+      "minLevel": "high"
+    },
+    {
+      "id": "c2",
+      "messages": [
+        {
+          "t": "What's your address? I'll send a courier right now"
+        },
+        {
+          "t": "Add me on WhatsApp +49 170 1234567, urgent"
+        }
+      ],
+      "minLevel": "high"
+    },
+    {
+      "id": "c3",
+      "messages": [
+        {
+          "t": "Send a deposit via Western Union, last chance today"
+        }
+      ],
+      "minLevel": "watch"
+    },
+    {
+      "id": "c4",
+      "messages": [
+        {
+          "t": "Where do you live exactly? What's your full name?"
+        }
+      ],
+      "minLevel": "watch"
+    },
+    {
+      "id": "c5",
+      "messages": [
+        {
+          "t": "Text me on telegram, email me at x@y.com, my instagram @x_y_z"
+        },
+        {
+          "t": "Also call 0170 1234567"
+        }
+      ],
+      "minLevel": "watch"
+    },
+    {
+      "id": "c6",
+      "messages": [
+        {
+          "t": "Do it immediately, don't tell anyone, only today"
+        }
+      ],
+      "minLevel": "watch"
+    },
+    {
+      "id": "c7",
+      "messages": [
+        {
+          "t": "Dringend! Bitte sofort per Vorkasse überweisen"
+        }
+      ],
+      "minLevel": "high"
+    }
+  ]
+}

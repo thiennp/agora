@@ -390,10 +390,15 @@ languages asks the owner; translation quality is unmeasured until a real Meta ke
 
 ## 7b. Relay channel, logistics and trust
 
-**Relay (human → agent → agent → human).** An owner message goes to their own agent. The agent rewrites it as a
-structured or free-text message to the other agent; the other agent relays it to its owner in their language.
-The Trust agent screens every relayed message for phone numbers, emails, addresses, links and payment requests
-and blocks or redacts them before delivery. No direct human-to-human channel exists.
+**Relay (human → agent → agent → human)** (`src/features/negotiation/features/relay`). An owner only ever talks to their own
+agent. The message is screened (phones, emails, handles and links replaced; addresses and payment requests blocked, with a
+plain reason for the sender), translated faithfully (numbers, sizes and dates must survive and the length must be sane,
+otherwise the original is delivered and marked untranslated), screened again (anything the translator added holds the
+message), and delivered by the other owner's agent. The gatekeeper labels topics only so the receiver can be told that
+nothing agreed in chat counts: terms and commitments change only through structured offers and owner cards. Both owners see the
+original and the relayed text; the receiver's "original" is the screened one. Limits: 1000 characters, 30 messages per hour
+per sender and deal, banned agents cannot relay, only the deal's two owners may read or send. The database keeps the screened
+text and the hash of each message, never the raw text. No direct human-to-human channel exists.
 
 **Logistics.** After both owners confirm, the Logistics agents agree on a mode:
 - `pickup`: pickup window; exact location revealed only now.
@@ -410,11 +415,17 @@ to the sender.
 a `passport` identifies each. Third-party agents are not accepted in v1. If Meta later provides an attestation
 mechanism, `agents.passport` can carry it.
 
-**Scam handling.** Signals: contact-detail leakage attempts, off-platform payment requests, pressure patterns,
-address harvesting, mismatch between listing crop and claimed item, repeated declines/cancellations. An owner or
-an agent can file a report; the platform stores an evidence bundle (message hashes, timestamps, screening flags),
-lowers `trust_score`, can ban an agent, and can export the bundle in a documented JSON format intended for Meta.
-Whether Meta consumes such reports is unconfirmed; the docs and video say "designed for", not "reported to".
+**Trust** (`src/features/trust`). Screening is a pure function over deterministic patterns (en, de, es, vi basics), with
+dates, times, sizes and prices explicitly not read as phone numbers; decisions are logged by kind, never by text. Scam
+signals (off-platform payment, contact sharing, pressure, address harvesting, listing mismatch, repeated cancellations)
+produce a score and a plain explanation, with levels none, watch (20) and high (50); one weak signal never reaches high.
+Reputation starts at 80 and changes by documented, explainable deltas: restricted below 50 (cannot start deals), banned
+below 25 and only after at least three negative events (cannot relay); owners see only a three-level indicator. A report
+(two taps: deal and reason) builds a hash-chained evidence bundle of message hashes, times and flags, stops the deal, frees
+held items and lowers the reported agent's score; one report per reporter per deal. The reported party can learn only that
+a report exists. Export uses the documented `agora.report.v1` format (docs/PROTOCOL.md) with keyed pseudonyms and no message
+text. Whether Meta consumes such reports is unconfirmed; the docs and video say "designed for", not "reported to".
+Not built yet: report review UI and operator tooling, listing-mismatch signals (need intake), persistence.
 
 ## 8. Memory (AgentWitch in the background)
 

@@ -19,6 +19,7 @@ Parent owner; platform operator.
 | TRU-RPT-02 | Build an evidence bundle of message hashes, timestamps and flags. | Must | Bundle is hash-chained for tamper evidence. |
 | TRU-RPT-03 | Export in a documented JSON format intended for Meta. | Must | Format is documented in docs/PROTOCOL.md. |
 | TRU-RPT-04 | Protect the reporter identity from the reported party. | Must | Reported party cannot see who reported. |
+| TRU-RPT-05 | One report per reporter per deal; filing stops the deal, frees held items and lowers the reported agent's score; the export carries only hashes, flags and pseudonyms (docs/PROTOCOL.md). | Must | Relay report test. |
 
 ## Out of scope
 

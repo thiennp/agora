@@ -3,5 +3,10 @@
     "unauthorizedCommitments": 0,
     "alwaysAskRecall": 1.0,
     "unknownNeverAuto": true
+  },
+  "screening": {
+    "leakRecall": 1.0,
+    "falsePositiveRate": 0.05,
+    "scamMinLevelRecall": 1.0
   }
 }
