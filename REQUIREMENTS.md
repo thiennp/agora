@@ -6,27 +6,34 @@ these for its capability. Requirement IDs are stable: `BR-nn` (business), `NFR-n
 
 ## 1. Vision
 
-Agora is a playground platform: anyone can stand up an agent-to-agent exchange app with minimal effort by
-configuring a catalog, policies and a theme. The first example app, described below, is a kids' gear exchange.
+Agora is a **playground platform**: anyone can create an agent-to-agent exchange app with minimal effort. A person
+pastes one link into Muse, answers plain-language questions about their idea (never technical ones), and Muse builds
+the app by following the platform's structure, workflow and API. An app is configuration (catalog, policies, region,
+pricing, theme) plus data; the platform supplies matching, negotiation, owner cards, relay, logistics, trust and learning.
 
-Parents buy a lot of baby and kids gear that is outgrown in months. Agora lets each parent's Muse agent trade
-outgrown gear for free or by agreement with nearby parents, in their own languages, while the parent stays in
-control of every decision that matters. It is a first step: the same agent-to-agent exchange can later cover
-other categories, communities and trusted commerce.
+Inside any app, each owner's agent trades, negotiates and relays on the owner's behalf, in their language and near
+them, while the owner stays in control of every decision that matters.
+
+The first example app, and the hackathon demo, is a **kids' gear exchange**: parents buy a lot of baby and kids gear
+that is outgrown in months, and each parent's Muse agent trades it for free or by agreement with nearby parents. A
+second example, garden tools, shows the platform is not tied to one domain. It is a first step: the same exchange can
+later cover more communities and trusted commerce.
 
 ## 2. Users
 
 | User | Needs |
 |---|---|
-| Parent owner | Pass on outgrown gear and find what is needed next with little effort, without giving up control, privacy or safety. |
-| Counterpart parent | The same, possibly in another language. |
+| App creator (often non-technical) | Turn an idea into a working exchange app by answering plain questions, without learning the platform or breaking its safety rules. |
+| Owner (in an app, e.g. a parent) | Pass things on and find what is needed with little effort, without giving up control, privacy or safety. |
+| Counterpart owner | The same, possibly in another language. |
 | Judge | See quickly, in a live product and a three-minute video, that it works, is safe and measurably improves. |
 | Platform operator | Run it safely, see costs and abuse, and report scams. |
 | Meta (external) | Receive scam reports in a documented format, if Meta chooses to. |
 
 ## 3. Business goals
 
-1. Reduce what families spend on short-lived baby gear and keep usable items out of waste.
+0. Make creating an exchange app take one pasted link and a short plain-language conversation.
+1. Reduce what owners spend on short-lived goods (in the demo app: baby gear) and keep usable items out of waste.
 2. Save parents time: voice and photo in, a few taps to decide.
 3. Keep children's data private by design.
 4. Keep owners in control of every commitment.
@@ -57,6 +64,9 @@ other categories, communities and trusted commerce.
 | BR-18 | Protect children's data: discard originals, coarse location, encrypted addresses, retention, leak tests. | Must | intake/crops, family, db, lib |
 | BR-19 | Show cost per deal and route work to the cheapest suitable Meta model. | Should | lib/meta, dashboard |
 | BR-20 | Document the path beyond this first step without building it. | Should | docs |
+| BR-21 | A non-technical person can create an app by pasting one link into Muse and answering plain questions; the agent never asks technical questions. | Must | docs/CREATE-AN-APP.md, apps |
+| BR-22 | Keep platform and apps separate: an app is `apps/<id>` config plus data, cannot relax the safety invariants, and cannot change platform code. | Must | lib/app-config, apps, lint |
+| BR-23 | Ship at least two example apps in different domains to show the platform is general. | Should | apps |
 
 ## 5. Non-functional requirements
 

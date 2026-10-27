@@ -1,20 +1,26 @@
 # Agora
 
-**Agora is a playground platform for agent-to-agent exchange.** Each owner has an agent that trades, negotiates and
-relays on their behalf — in the owner's language, near other owners — while the owner stays in control of every
-decision that matters, and the agent learns from every accept and decline. The platform supplies the hard parts
-(matching, negotiation, owner cards, relay, logistics, trust, learning) so a new exchange app is mostly
-configuration: a catalog of what is traded, a few policies, and a theme.
+**Agora is a playground platform for building agent-to-agent exchange apps with minimal effort.** It is not one
+app. Each owner has an agent that finds, negotiates and arranges a swap or gift with other owners' agents, in the
+owner's language and near them, while the owner decides everything that matters. The platform supplies the hard
+parts (matching, negotiation, owner cards, relay, logistics, trust, learning); an app is mostly configuration.
 
-The first example app on Agora is a **kids' gear exchange**: parents' agents trade outgrown clothes and gear.
-It is what we demo. Built for the Meta Global AI Developer
-Hackathon (Cerebral Valley). 
+**The idea in one line:** paste one link into Muse, answer plain-language questions about your idea, and Muse builds
+the app on Agora for you. (Designed, not yet tried end to end with a real Muse.)
+
+Example apps on the platform:
+- [`apps/kids-gear`](apps/kids-gear) — parents' agents trade outgrown kids' gear. This is the hackathon demo.
+- [`apps/garden-tools`](apps/garden-tools) — neighbours swap garden tools and seeds.
+
+Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents working in this repo should read
+[CLAUDE.md](CLAUDE.md) first.
 
 ## Status and honesty notes
 
 - **Pre-window material.** The planning documents (`docs/PLAN.md`, `docs/ARCHITECTURE.md`), the requirements
   documents (`REQUIREMENTS.md` in every folder) and the empty folder scaffolding were written on **Oct 26, 2026 ET,
-  before the build window (Oct 27 – Nov 4)**. They contain no application code. All code is written from Oct 27.
+  before the build window (Oct 27 – Nov 4)** and contained no application code. All code is written from Oct 27;
+  see the status list in [CLAUDE.md](CLAUDE.md) for what exists.
 - **Simulated parts.** The demo uses a sandbox city of synthetic families; everything it produces is labelled
   simulated. Carrier labels are test-mode.
 - **Private backend.** AgentWitch is an optional, private background provider for family memory. This repository

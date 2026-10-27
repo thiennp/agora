@@ -3,12 +3,14 @@
 Meta Global AI Developer Hackathon (Cerebral Valley). Build window: Oct 27 – Nov 4, 2026.
 Submission deadline: **Wed Nov 4, 9:00 PM ET**. Judging Nov 5–8. Closing ceremony Mon Nov 9, 12:00 PM ET.
 
-> Status of this file: planning notes written Oct 26 ET, before the build window opens.
-> No application code exists yet. Everything under `src/`, `db/`, `evals/`, `fixtures/` and `e2e/` is written during the window.
+> Status of this file: planning notes written Oct 26 ET, before the build window opened; updated Oct 27 to make the
+> platform-first idea explicit. Code is written from Oct 27; current build status is in `CLAUDE.md`.
 
 ## 1. One-line pitch
 
-Agora is a playground platform for agent-to-agent exchange; the first example app on it is a kids' gear exchange:
+Agora is a playground platform: paste one link into Muse, answer plain questions about your idea, and Muse builds an
+agent-to-agent exchange app on it. The hackathon demo is the first example app, a kids' gear exchange (a second
+example, garden tools, shows the platform is general):
 Parents' Muse agents trade outgrown kids' gear (free or by agreement) on their owners' behalf, in their
 owners' languages, near each other — and learn from every accept and decline.
 
@@ -26,6 +28,9 @@ owners' languages, near each other — and learn from every accept and decline.
 Rubric (each 0–10, equal weight): Impact, Use of Meta AI tooling, Technical depth and execution, Demo.
 
 ## 3. Scope
+
+Platform scope: the exchange engine and the create-an-app flow (`docs/CREATE-AN-APP.md`). The scope list below is
+written for the demo app; each item is platform capability unless it says otherwise.
 
 In scope
 - Family profile by voice or photo (baby age in months, sizes, language, district-level location).
