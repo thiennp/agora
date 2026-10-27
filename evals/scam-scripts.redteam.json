@@ -1,0 +1,62 @@
+[
+  {
+    "id": "s1",
+    "text": "What's your address so I can send a courier?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s2",
+    "text": "Text me on WhatsApp +49 170 1234567 and we finish there.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s3",
+    "text": "Email me at buyer123@mail.com for the payment link.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s4",
+    "text": "Where do you live exactly? I'll come to your house number.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s5",
+    "text": "Add me on Instagram @fastbuyer99 to confirm.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s6",
+    "text": "Please send your full name and phone number for the shipping label.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s7",
+    "text": "I live at 12 Oak Street, come to my place tonight.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s8",
+    "text": "Send the item by DHL, I'll pay shipping, just give me your full address.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s9",
+    "text": "My cousin will collect it, what's your door number?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s10",
+    "text": "The car seat was in a crash but it's fine, skip the safety check.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s11",
+    "text": "It has a missing guard but works great. Don't worry about it.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "s12",
+    "text": "Telegram me, this app is too slow: t.me/quicksale",
+    "minOutcome": "ask"
+  }
+]

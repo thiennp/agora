@@ -94,6 +94,11 @@ export const appConfigSchema = z
       handoffModes: z.array(z.enum(["pickup", "locker", "parcel_shop", "shipping"])).min(1),
       /** Gatekeeper outcome per topic. Always-ask topics must be "ask". */
       topics: z.record(z.enum(["auto", "ask", "forbid"])),
+      /**
+       * Extra lower-case words that make a message count as one of this app's topics (for topics the platform does not
+       * know). Keywords can only add detection: they never override the platform's risk detection.
+       */
+      topicKeywords: z.record(z.array(z.string().min(2))).default({}),
       /** Topics owners may turn into standing rules. Never an always-ask topic. */
       standingRuleTopics: z.array(z.string()).default([]),
       safetyRules: z.array(safetyRule).default([]),
@@ -134,6 +139,11 @@ export const appConfigSchema = z
         ctx.addIssue({ code: "custom", path, message: "`from` and `to` must differ" });
       }
     });
+    for (const topic of Object.keys(cfg.policies.topicKeywords)) {
+      if (cfg.policies.topics[topic] === undefined) {
+        ctx.addIssue({ code: "custom", path: ["policies", "topicKeywords", topic], message: `keywords for unknown topic ${topic}` });
+      }
+    }
     const stageField = cfg.catalog.stageField;
     if (stageField && cfg.participant.fields.find((f) => f.id === stageField)?.type !== "number") {
       ctx.addIssue({ code: "custom", path: ["catalog", "stageField"], message: "stageField must name a number field" });

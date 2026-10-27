@@ -18,6 +18,7 @@ Matching.
 | MAT-SCO-01 | Score on category, size fit, condition, distance and timing. | Must | Same inputs give the same score. |
 | MAT-SCO-02 | Down-weight patterns the owner previously declined. | Should | A declined pattern lowers later scores. |
 | MAT-SCO-03 | Expose the factors behind a score for explanation. | Must | Every score has a breakdown. |
+| MAT-SCO-04 | Rule out, before scoring, pairs with different category, the same owner, sizes more than one step apart, or an offer worse than the want's minimum condition. | Must | `incompatibility` tests. |
 
 ## Out of scope
 

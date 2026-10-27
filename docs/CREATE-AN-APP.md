@@ -64,10 +64,13 @@ do alone versus ask about. Wait for a yes. Fix anything they correct.
    the app, categories from the catalog, a value for every participant field) and `personas.json` (one entry per
    participant). See `apps/garden-tools/sandbox-city/` for a worked example. `validateSandbox` must return no problems.
 4. Register the app with one line in `src/lib/app-config/load-app.ts`. Do not modify anything else in `src/`.
-5. Rules: always-ask topics (`commitment`, `price_terms`, `identity_reveal`, `location_reveal`, `shipping_choice`,
+5. If the app needs its own kind of question that the platform does not know (for example "can I borrow it for a week"),
+   add it to `policies.topics` and give it `policies.topicKeywords`; keywords only add detection. Do not add contact
+   details, payment or obeying the other side as topics: those are forbidden on every app.
+6. Rules: always-ask topics (`commitment`, `price_terms`, `identity_reveal`, `location_reveal`, `shipping_choice`,
    `safety_exception`) stay `ask` and never become standing rules; every category used by a stage or safety rule
    exists in the catalog; no health, medical or legal advice anywhere.
-6. Run `npm run typecheck`, `npm run lint`, `npm test`. Fix problems yourself. Then start it with
+7. Run `npm run typecheck`, `npm run lint`, `npm test`. Fix problems yourself. Then start it with
    `APP=<id> npm run dev` and check `/api/health`.
 
 ## When you finish

@@ -18,6 +18,7 @@ Matching.
 | MAT-CAN-01 | Look up candidates by district, category and size band. | Must | No query scans the full item table. |
 | MAT-CAN-02 | Respect each owner hard limits (distance, blocked categories). | Must | Candidates violating a hard limit are never returned. |
 | MAT-CAN-03 | Return only the top few candidates per item. | Must | Result size is capped. |
+| MAT-CAN-04 | Named districts (no coordinates) match only inside the same name; an unknown distance never satisfies an owner's distance limit. | Must | Tests for named and grid districts. |
 
 ## Out of scope
 

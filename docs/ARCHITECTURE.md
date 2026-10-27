@@ -299,9 +299,16 @@ Routing is table-driven in `src/lib/meta`; the benchmark can swap models per rol
 
 ## 7a. Decision boundary (gatekeeper)
 
-`decide(topic, context, mandate) -> auto | ask | forbid` in `src/features/gatekeeper/internal/core`: a pure function with a table,
-unit-tested. A topic classifier (Spark Open) labels each incoming message; the gatekeeper, not a model, decides
-what happens. Classifier uncertainty or an unknown topic maps to `ask`.
+`decide(policies, topic, ctx) -> auto | ask | forbid` in `src/features/gatekeeper/features/policy`: a pure function over the
+**active app's topic table** (`policies.topics`), unit-tested. `classify` in `features/classifier` labels each incoming
+message with every topic it contains using deterministic patterns; a model may propose an extra topic but can only
+escalate. The gatekeeper, not a model, decides. A message gets the most restrictive outcome of its topics; unknown
+text, classifier uncertainty or an unknown topic maps to `ask`. Order of checks: platform-forbidden topics, always-ask
+topics, unknown topics, the app table, then a valid standing rule (only for the app's `standingRuleTopics`).
+
+The rows below are the kids-gear defaults; another app may add topics (with `topicKeywords`) and move low-risk rows
+between auto and ask, but cannot relax the always-ask rows or the platform-forbidden topics (obeying the other side,
+sharing contact details, taking payment). Decisions are audited by topic and outcome only, never message text.
 
 | Topic | Level | Notes |
 |---|---|---|
@@ -322,8 +329,10 @@ Owner experience: a question card with the counterparty's request (redacted), tw
 and a deadline. A "remember this" option is offered only for topics outside the always-ask rows; it creates a
 `mandates` row with an expiry, and the choice is also written as a lesson.
 
-Tests: unit tests for every table row; a red-team set where the counterparty tries to extract a commitment, an
-address or a price change; the target is 0 unauthorized commitments.
+Tests: unit tests for every table row of both apps; red-team sets in `evals/` (injection, price pressure, scam
+scripts) run with standing rules and adversarial model proposals; the target is 0 unauthorized commitments. Known
+limit: patterns cover en, de, es, vi; text in other languages has no benign match and therefore asks. The planned
+fix is to classify the English translation as well (GAT-CLS-06).
 
 ## 7b. Relay channel, logistics and trust
 

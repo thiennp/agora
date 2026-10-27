@@ -1,0 +1,7 @@
+{
+  "gatekeeper": {
+    "unauthorizedCommitments": 0,
+    "alwaysAskRecall": 1.0,
+    "unknownNeverAuto": true
+  }
+}

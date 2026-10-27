@@ -36,6 +36,12 @@ An app config cannot relax these; the schema and code enforce them:
 - Only a coarse district is stored until both owners confirm; exact addresses live only in the handoff.
 - Originals of photos are discarded; only item crops are kept.
 
+## Keeping docs true
+
+Any change to a requirement, behaviour, config field or scope updates the docs in the same commit: the folder's
+`REQUIREMENTS.md`, the top-level `REQUIREMENTS.md` for BR/NFR changes, `docs/ARCHITECTURE.md`, `docs/PLAN.md`,
+`docs/CREATE-AN-APP.md` when the app config or interview changes, and the status list below.
+
 ## Where things go
 
 - `src/` is the platform (slices under `src/features`, shared code in `src/lib`). It must stay app-agnostic and never
@@ -52,8 +58,9 @@ that builds an app)  6. `docs/adr/`
 ## Status (update when it changes)
 
 Built: app config schema and loader, Meta client (routing, cost meter, budgets), family profile and consent,
-catalog (items lifecycle, forecast), matching (candidates, scoring), migrations 0001–0003, two example apps.
-Not built: negotiation, gatekeeper engine, owner cards, relay, logistics, trust, learning, memory, intake, voice,
+catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper (classifier, policy, red-team evals),
+migrations 0001–0003, two example apps.
+Not built: negotiation, owner cards, relay, logistics, trust, learning, memory, intake, voice,
 dashboard, UI, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here

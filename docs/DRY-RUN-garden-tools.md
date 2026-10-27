@@ -44,3 +44,6 @@ Still open: S4, S6, S7, S9, I3, I5, I6.
 
 Added while building the catalog (Oct 27): `catalog.stageField` says which participant field places someone in the
 stages (kids-gear uses baby age; cyclic apps default to the month of year, 0 = January).
+
+Update (gatekeeper built): S6 fixed with `policies.topicKeywords` (apps add keywords for their own topics; platform risk
+detection still wins). Still open: S4, S7, S9, I3, I5, I6.

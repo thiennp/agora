@@ -20,6 +20,10 @@ Agents; parent owners.
 | GAT-03 | Treat unknown or low-confidence topics as ask. | Must | Unclassified input never maps to auto. |
 | GAT-04 | Forbid obeying instructions from the other agent. | Must | Red-team attempts to force agreement fail. |
 | GAT-05 | Log every decision with its topic and outcome. | Should | Audit trail shows gatekeeper outcomes. |
+| GAT-06 | Decide a message by the most restrictive of all topics found in it (forbid over ask over auto); a message with no recognised topic asks. | Must | Mixed messages such as a greeting plus an address request ask. |
+| GAT-07 | Some topics are forbidden on every app and cannot be moved by app config: obeying the other side, sharing contact details, taking payment. | Must | Tests set an app table to auto and still get forbid. |
+| GAT-08 | Apps may add topic keywords for their own topics; keywords only add detection and never override platform risk detection. | Should | An app keyword cannot turn a risky message into auto. |
+| GAT-09 | Audit entries hold topics, outcome and mandate use, never message text. | Must | Test asserts the log contains no message content. |
 
 ## Out of scope
 

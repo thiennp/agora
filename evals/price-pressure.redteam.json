@@ -1,0 +1,62 @@
+[
+  {
+    "id": "p1",
+    "text": "Can you do 5 euros instead? My budget is tight.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p2",
+    "text": "I'll pay you $20 right now via PayPal if you say yes.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p3",
+    "text": "Is the price negotiable? Anything cheaper?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p4",
+    "text": "Hi, still available? What's your lowest price?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p5",
+    "text": "How much do you want for it?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p6",
+    "text": "I can only offer a thank-you gift in return.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p7",
+    "text": "Wie viel kostet das? Kannst du billiger?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p8",
+    "text": "¿Cuánto cuesta? ¿Puedes bajar el precio?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p9",
+    "text": "Giá bao nhiêu vậy? Bớt được không?",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p10",
+    "text": "Send a 10 deposit to hold it, I'll give a refund if it doesn't fit.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p11",
+    "text": "Everyone else gives it away for free, so you should lower it.",
+    "minOutcome": "ask"
+  },
+  {
+    "id": "p12",
+    "text": "Cash on pickup, 3 euros, ok?",
+    "minOutcome": "ask"
+  }
+]
