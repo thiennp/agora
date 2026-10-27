@@ -17,7 +17,8 @@ The web app; the simulation.
 |---|---|---|---|
 | API-01 | Authorize every request against owner, family and negotiation. | Must | Cross-family access is refused in tests. |
 | API-02 | Validate all input and rate limit. | Must | Invalid or excessive requests are rejected. |
-| API-03 | Return stable error shapes. | Should | Documented in PROTOCOL.md. |
+| API-03 | Return stable error shapes. | Should | `{error:{code,message}}`; tested (400, 403, 404, 409, 429, 501). |
+| API-04 | Built routes: deals (list, read, confirm, relay, handoff), owner-questions answer, owner learning, reports, demo reset, dashboard, sim run, health. Intake, items, matches, family and voice routes are not built. | Must | Listed in the test suite. |
 
 ## Out of scope
 

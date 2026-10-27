@@ -43,7 +43,7 @@ safety extras, languages. Tier 1 is never cut.
 
 **Tier gate (BR-37).** Tier 2 code does not start until tier 1 can be shown end to end: the simulation and benchmark
 produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
-(or its cut is written down). Today the simulation and benchmark exist (a command and CSV output, no chart yet), but the demo UI and dashboard, persistent
+(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room) and judge dashboard (learning curves from the CSV) exist, but persistent
 storage and photo intake do not, so the next work is tier 1, not the `community` config section. Build status is tracked in `CLAUDE.md`.
 
 ## 3. Scope

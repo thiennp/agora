@@ -166,3 +166,7 @@ ordering for that owner (retry without exclusion), and measure how owners who pi
 - **The retry, ordering and stretch lookups outside the simulation.** They are done in the simulation harness. No product workflow does
   any of them yet, and there is no owner-card screen for stretch cards.
 - **Swap-only apps** (garden-tools): the simulation currently needs deals that can be free.
+
+## Seeing it
+
+The judge dashboard at `/dashboard` draws these curves from `reports/simulation/<scenario>/summary.csv` and `per_round.csv` (run `npm run simulate`, or open the page and it generates them).

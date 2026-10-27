@@ -1,5 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { runBenchmarkSeeds, toCsv } from "@/features/simulation/public-api/infrastructure";
+import { runBenchmarkSeeds, writeSimulationFiles } from "@/features/simulation/public-api/infrastructure";
 
 /**
  * `npm run simulate [-- --rounds 8 --seeds 5 --app kids-gear --out reports/simulation --drift 5]`
@@ -21,22 +20,8 @@ const seeds = Array.from({ length: nSeeds }, (_, i) => 20261027 + i);
 
 async function main() {
 const run = await runBenchmarkSeeds({ appId: app, rounds, seeds, trainEpisodes: 2, evalEpisodes: 3, drift: driftFrom > 0 ? { fromRound: driftFrom, factor: 2 } : undefined });
-mkdirSync(out, { recursive: true });
 const first = run.reports[0]!;
-const csv = toCsv(first);
-writeFileSync(`${out}/per_round_seed${seeds[0]}.csv`, csv.perRound);
-writeFileSync(`${out}/comparison_seed${seeds[0]}.csv`, csv.comparison);
-writeFileSync(`${out}/failures_seed${seeds[0]}.csv`, csv.failures);
-writeFileSync(`${out}/summary.json`, JSON.stringify({ simulated: true, label: run.label, seeds, rows: run.rows, notes: first.notes, failureCounts: first.failureCounts }, null, 2));
-const cell = (v: number | null) => (v === null ? "" : v);
-writeFileSync(
-  `${out}/summary.csv`,
-  [
-    "simulated,round,approval_on_mean,approval_on_min,approval_on_max,approval_tighten_only_mean,approval_off_mean,approval_off_min,approval_off_max,approval_on_retry_mean,confirmed_per_100_on,confirmed_per_100_tighten_only,confirmed_per_100_off,confirmed_per_100_on_retry,confirmed_per_100_off_retry,confirmed_per_100_oracle_ceiling,owner_cards_per_100_on,owner_cards_per_100_on_retry,owner_cards_per_100_ordered,owner_cards_per_100_ordered_wide,confirmed_per_100_ordered,confirmed_per_100_ordered_wide,stretch_offers_ordered,stretch_offers_ordered_wide,retry_confirmed_on_retry,stretch_offers_on,stretch_accepted_on,stretch_confirmed_on,interruptions_per_deal_on,interruptions_per_deal_tighten_only",
-    ...run.rows.map((r) => ["true", r.round, cell(r.approvalOnMean), cell(r.approvalOnMin), cell(r.approvalOnMax), cell(r.approvalTightenOnlyMean), cell(r.approvalOffMean), cell(r.approvalOffMin), cell(r.approvalOffMax), cell(r.approvalOnRetryMean), cell(r.confirmedPer100OnMean), cell(r.confirmedPer100TightenOnlyMean), cell(r.confirmedPer100OffMean), cell(r.confirmedPer100OnRetryMean), cell(r.confirmedPer100OffRetryMean), cell(r.confirmedPer100OracleMean), cell(r.ownerCardsPer100OnMean), cell(r.ownerCardsPer100OnRetryMean), cell(r.ownerCardsPer100OrderedMean), cell(r.ownerCardsPer100OrderedWideMean), cell(r.confirmedPer100OrderedMean), cell(r.confirmedPer100OrderedWideMean), cell(r.stretchOffersOrderedMean), cell(r.stretchOffersOrderedWideMean), cell(r.retryConfirmedOnRetryMean), cell(r.stretchOffersOnMean), cell(r.stretchAcceptedOnMean), cell(r.stretchConfirmedOnMean), cell(r.interruptionsOnMean), cell(r.interruptionsTightenOnlyMean)].join(",")),
-  ].join("\n") + "\n",
-);
-writeFileSync(`${out}/headroom.json`, JSON.stringify(run.headroom, null, 2));
+writeSimulationFiles(run, out);
 
 console.log(run.label);
 console.log(`app ${app}, ${seeds.length} seeds, held-out episodes only (mean over seeds)\n`);
