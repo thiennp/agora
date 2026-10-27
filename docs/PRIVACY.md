@@ -12,5 +12,8 @@ What the platform stores, and what it does not.
 - **Handover:** the exact meeting place and any delivery address are stored only in encrypted form, written by the owner who gives the
   item (place) or receives it (address), and shown to the other owner only after both confirmed and agreed the way to hand over.
   A recipient's address reaches only the carrier adapter and the label the sender receives; no other screen, event or log carries it.
+- **Lessons and memory:** lessons are built only from a reason code and a category (never from free text), so they hold no names,
+  places or contact details. Owners can see and delete them, and erasing a family removes its lessons and outcomes. Mirroring to
+  AgentWitch happens only with the family's consent, because AgentWitch cannot delete what was sent.
 - **Health data:** none is collected, and app configs asking for health, sleep or feeding fields are refused.
 - **Erasure:** an owner can erase their family and everything that depends on it; relay messages, cards, rules and trust status go with it.

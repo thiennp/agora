@@ -2,6 +2,8 @@
 export type DealEvent =
   | { type: "DealAgreedByAgents"; dealId: string; offerFamilyId: string; wantFamilyId: string }
   | { type: "OwnerQuestionOpened"; dealId: string; familyId: string; topic: string }
+  | { type: "OwnerAnswered"; dealId: string; familyId: string; topic: string; answer: "yes" | "no" }
+  | { type: "OwnerDecision"; dealId: string; familyId: string; decision: "confirm" | "decline"; reasonCode?: string }
   | { type: "DealConfirmed"; dealId: string; offerItemId: string; wantItemId: string }
   | { type: "DealDeclined"; dealId: string; reason: string }
   | { type: "DealExpired"; dealId: string }

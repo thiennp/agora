@@ -92,3 +92,15 @@ describe("matching", () => {
     expect(r.matches.map((x) => x.offerItemId)).toEqual(["same-name"]);
   });
 });
+
+describe("candidate lookup at higher latitudes", () => {
+  it("finds a candidate inside the radius in east-west direction, where grid cells are narrower (MAT-CAN-01)", async () => {
+    const m = await setup();
+    // 0.20 degrees east at 52.5 N is about 13.6 km (4 cells): inside the default 15 km radius, but a lookup sized by the
+    // cell height (5.6 km) would stop 3 cells out and miss it.
+    m.onListed(it_({ id: "east", districtCode: "g:52.50:13.60" }));
+    m.onListed(it_({ id: "too-far", districtCode: "g:52.50:13.80" }));
+    const r = m.candidatesFor(it_({ kind: "want", familyId: "w", districtCode: "g:52.50:13.40" }));
+    expect(r.matches.map((x) => x.offerItemId)).toEqual(["east"]);
+  });
+});

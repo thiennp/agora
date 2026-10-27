@@ -23,6 +23,7 @@ Parent owner.
 | OWN-06 | Every card action checks that the card belongs to the acting owner and cannot be repeated. | Must | Wrong-owner and repeat attempts are refused. |
 | OWN-07 | Question wording comes from fixed templates over structured facts, never from counterparty text. | Must | A card contains no counterparty free text. |
 | OWN-08 | Not built yet: card UI components, notifications, the handoff card (OWN-CNF-03) and withdrawing after confirmation (OWN-CNF-04); card text uses fixed wording in en, de, es and vi and is translated (or kept in English if translation fails) for other languages. | Info | Tracked in CLAUDE.md status. |
+| OWN-09 | Owner cards publish OwnerAnswered (topic and yes or no) and OwnerDecision (confirm or decline with reason code) on the hub; learning consumes them. | Must | Event tests. |
 
 ## Out of scope
 

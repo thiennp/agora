@@ -157,6 +157,7 @@ export function createOwnerCards(deps: {
       }
       questions.rows.set(id, { ...q, status: "answered", answer, answeredAt: now().toISOString() });
       log({ action: "question_answered", familyId, dealId: q.dealId, detail: `${q.topic}:${answer}` });
+      deps.bus.publish({ type: "OwnerAnswered", dealId: q.dealId, familyId, topic: q.topic, answer });
       if (opts?.remember) {
         deps.mandates.add({ familyId, topic: q.topic, days: opts.remember.days });
         log({ action: "rule_created", familyId, dealId: q.dealId, detail: q.topic });
@@ -183,6 +184,7 @@ export function createOwnerCards(deps: {
         reasonCode: reason?.code, reasonText: reason?.text?.slice(0, 280),
       });
       log({ action: "confirmation_decided", familyId, dealId: c.dealId, detail: `${decision}${reason ? `:${reason.code}` : ""}` });
+      deps.bus.publish({ type: "OwnerDecision", dealId: c.dealId, familyId, decision, reasonCode: reason?.code });
       return deal;
     },
 

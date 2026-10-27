@@ -249,7 +249,9 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 - `mandates`: id, family_id, topic, level (`auto`), scope (jsonb), expires_at, source (`owner`|`learned_with_consent`); never an always-ask or forbidden topic, one per family and topic
 - `owner_limits`: family_id, max_distance_km, blocked_categories, availability (jsonb), min_condition, allowed_terms
 - `owner_questions`: id, negotiation_id, family_id, topic, question, suggested_answers (jsonb), counterparty_context (redacted), status (`open`|`answered`|`expired`), answer, answered_at
-- `lessons`: id, family_id, kind, text, evidence_ids, confidence, source (`aw`|`local`)
+- `lessons`: id, family_id, kind (`decline`|`accept`), lesson_key, text, evidence_ids, seen_count, confidence, source (`agentwitch`|`local`)
+- `deal_outcomes`: family_id, negotiation_id, result, reason_code, category
+- `rule_proposals`: family_id, topic, evidence_count, status (suggestions only)
 - `model_calls`: id, role, model, tokens_in, tokens_out, cost_usd, latency_ms, created_at
 
 Exact addresses are held only in `handoffs.revealed_location`, written after both confirmations.
@@ -443,22 +445,40 @@ Not built yet: report review UI and operator tooling, listing-mismatch signals (
 
 ```ts
 interface MemoryProvider {
-  getFamilyContext(familyId: string): Promise<Context>      // check_context
-  recordLesson(familyId: string, lesson: Lesson): Promise<void> // knowledge_capture
+  getFamilyContext(familyId: string): Promise<Context>      // lessons and recent outcomes
+  recordLesson(familyId: string, lesson: Lesson): Promise<void>  // insert or replace by id
+  deleteLesson(familyId: string, lessonId: string): Promise<boolean>
   recordDealOutcome(familyId: string, outcome: Outcome): Promise<void>
+  eraseFamily(familyId: string): Promise<void>
 }
 ```
 
-- `AgentWitchProvider`: one AW project per family under a platform service owner; lessons through the knowledge tools; deal state mirrored as project tasks for audit. Requires the private `create_project` change.
-- `LocalProvider`: same interface backed by Postgres; default for judges and CI.
-- Fallback: AW errors never block a deal; they are logged and retried.
+- `LocalProvider`: in memory today (Postgres tables in migration 0009); the default for judges and CI; every family has its own store.
+- `AgentWitchProvider`: reads are always served from a local store (fast, complete, isolated). Lessons are mirrored to the
+  family's AgentWitch project through `POST /knowledge/update`, and deal outcomes as tasks (call shape assumed, unverified).
+  Mirroring happens only when the family consented and a project exists, because AgentWitch has no delete. A mirror failure
+  never blocks anything: it is reported and retried up to 5 times by `flush()`; 409 (not paired) and 404 (no access) are never
+  retried. Per-family project creation needs the private `create_project` change and is not built.
+- Both pass one contract suite (empty start, replace by id, delete, family isolation, copies, erasure).
 
-## 9. Learning loop
+## 9. Learning loop (`src/features/learning`)
 
-1. Owner declines or confirms with a reason code (`too_far`, `wrong_size`, `condition`, `price`, `timing`, `other`).
-2. Lessons agent turns reasons into lessons with evidence and confidence.
-3. Next negotiation: the negotiator reads lessons and adjusts limits (distance, condition floor, timing); matcher down-weights patterns that were declined.
-4. Benchmark measures approval rate per round across the sandbox city.
+1. The owner confirms or declines with a reason code (`too_far`, `wrong_size`, `condition`, `price`, `timing`, `other`);
+   owner cards publish `OwnerDecision` and `OwnerAnswered`; outcomes come from `DealConfirmed`, `DealDeclined`, `DealExpired`,
+   `HandoffFinished`. Learning handles events one at a time, in order.
+2. A lesson is written from structured facts only (reason code and category, never free text), so it can hold no names or
+   places. Repeats merge on a key such as `decline:price:clothing`, raise confidence (0.5, 0.75, 0.875, capped at 0.95) and
+   list the deals behind them; the same deal never counts twice.
+3. From the second sighting a lesson acts, and only by tightening the owner's own limits: too far shrinks the distance (to 70%,
+   10 km cap if none, floor 1 km), condition raises the floor one step, wrong size makes sizes exact for that category.
+   Price, timing and other are recorded but change nothing. Adjustments have no field for topics, terms or commitments, so a
+   lesson can never relax an always-ask topic; a property test checks that no limit ever gets looser.
+4. Matching and negotiation use `limitsFor` and `tightenMandate`. The owner can see "what I learned about you" and delete any
+   lesson; behaviour reverts at once because adjustments are derived from stored lessons each time.
+5. Three identical yes answers in a row to one low-risk topic produce a standing-rule proposal in plain words; a no resets the
+   count, dismissal is remembered, always-ask topics are never proposed, and nothing activates until the owner accepts (with
+   an expiry).
+6. The benchmark that shows approval rising across rounds belongs to the simulation slice and is not built yet.
 
 ## 10. Sandbox city and benchmark (`src/features/simulation`)
 

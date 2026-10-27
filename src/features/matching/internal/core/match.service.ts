@@ -24,6 +24,8 @@ export interface MatchResult {
 export interface OwnerLimits {
   maxDistanceKm?: number;
   blockedCategories?: string[];
+  /** Categories where only the exact size matches (learned from "wrong size" declines). */
+  strictSizeCategories?: string[];
 }
 
 type App = Pick<AppConfig, "id" | "catalog">;
@@ -86,6 +88,8 @@ export function createMatchService(deps: {
         if (incompatibility(deps.app, offer, want)) continue;
         const theirs = deps.limitsOf?.(other.familyId) ?? {};
         if (theirs.blockedCategories?.includes(item.category)) continue;
+        const strict = mine.strictSizeCategories?.includes(item.category) || theirs.strictSizeCategories?.includes(item.category);
+        if (strict && item.size && other.size && item.size !== other.size) continue;
 
         const km = districtDistanceKm(item.districtCode, other.districtCode);
         // Hard distance limits (MAT-CAN-02): the stricter owner wins; unknown distance cannot prove it is within a limit.

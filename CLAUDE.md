@@ -62,9 +62,10 @@ catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper 
 negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), owner cards (questions,
 confirmations, standing rules, hard limits), language (detection, translation, per-owner views), relay (screened, translated,
 faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), logistics (handoff modes, encrypted
-places and addresses, simulated carrier, labels, appointments, tracking, outcomes), migrations 0001–0008,
+places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
+tighten-only adjustments, standing-rule proposals) and memory (local provider, AgentWitch mirror), migrations 0001–0009,
 two example apps.
-Not built: owner-card UI and notifications, report review tooling, handoff-card screens, a real test-mode carrier, the real-model language quality test (G0), learning, memory, intake, voice,
+Not built: owner-card UI and notifications, report review tooling, handoff-card screens, a real test-mode carrier, the real-model language quality test (G0), the learning benchmark, Postgres-backed memory, intake, voice,
 dashboard, UI, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here
