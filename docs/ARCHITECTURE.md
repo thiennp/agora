@@ -335,8 +335,8 @@ instruction (flag on the deal); our own notes are written by the Meta client (ro
 as harmless, and replaced by a per-language template on any failure. Starting a deal holds both items so an item
 cannot be promised twice; declined and expired deals release them; confirmed deals reserve them for that deal.
 
-Not built yet: per-owner translation of notes (needs the language slice), the relay channel and deal-room UI, the
-expiry timer, and a Postgres repository (the in-memory repository matches migration 0004).
+Not built yet: the deal-room UI, the expiry timer, and a Postgres repository (the in-memory repository matches migration
+0004). Per-owner translation of notes and the relay channel are built (see Language and Relay below).
 
 ## 6. Agents and model routing
 

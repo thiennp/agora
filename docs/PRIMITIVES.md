@@ -13,7 +13,7 @@ Status words: **built** (code, tested, in-memory stores), **partly built**, **de
 
 | Primitive | What it is | Status |
 |---|---|---|
-| **Agent to agent (1:1)** | Two members' agents talk on their owners' behalf and send anything they cannot decide back to the owner as a one-tap card. Includes a round limit, structured offers and the gatekeeper. | built (negotiation, owner cards, gatekeeper) |
+| **Agent to agent (1:1)** | Two members' agents talk on their owners' behalf and send anything they cannot decide back to the owner as a one-tap card. Includes a round limit, structured offers and the gatekeeper. | built (negotiation, owner cards, gatekeeper, and the relay that carries the two owners' messages through their agents, screened and translated) |
 | **Community (many to many)** | Members post to and read from a community **only through their agents**. Relevance is scored on both sides (see below): unrelated or uninteresting posts are not posted and not delivered. | designed |
 
 **All community communication goes through agents.** A member never chats directly with another member or posts
@@ -42,7 +42,7 @@ per-community post limits and duplicate suppression. Thresholds and limits live 
 
 | Primitive | What it is | Status |
 |---|---|---|
-| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | designed |
+| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | built (lessons from decisions, tighten-only adjustments, standing-rule proposals, local memory and an AgentWitch mirror; the benchmark that shows the learning curve is not built) |
 | **Evolving** | The system and members' agents may *propose* changes (a new standing rule, a tuned threshold, a new circle). Nothing changes without approval by the owner (personal settings) or by vote (community settings). Every change is versioned and reversible. | later |
 | **Voting** | Members decide community matters together: rules, settings, events. Votes run through agents and owner cards. | later |
 
@@ -84,11 +84,11 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | **Owner approval**: the agent always asks before commitments, money terms, identity or location reveals, shipping, safety exceptions; unknown topics ask; standing rules only for low-risk topics and they expire | built |
 | **Records**: app-defined things people create (an item, event, task, request, poll) with a lifecycle | partly built (items only) |
 | **Time**: availability, calendars, deadlines, reminders | designed |
-| **Workflows**: propose, agree, confirm processes and "when X do Y" rules; negotiation is one workflow | partly built (deal state machine) |
+| **Workflows**: propose, agree, confirm processes and "when X do Y" rules; negotiation is one workflow | partly built (deal state machine, handoff and logistics with a simulated carrier) |
 | **Matching and ranking**: find the best person or thing | built for items |
 | **Notifications**: push, email, voice so the owner gets the question | designed |
 | **Language**: detection and translation of cards, notes and posts | built (first version) |
-| **Trust and moderation**: scam signals, reports with evidence, bans, abuse limits, export for Meta | designed |
+| **Trust and moderation**: scam signals, reports with evidence, bans, abuse limits, export for Meta | built for 1:1 conversations (screening, scam signals, reputation, hash-chained reports, `agora.report.v1` export); not yet applied to community posts; review tooling not built |
 | **Meta client**: model routing, cost meter, per-member and global budgets, schema-validated output | built |
 | **Voice and photo intake**: originals discarded | designed |
 | **Dashboard**: live feed, learning curve, cost, privacy, safety | designed |
@@ -108,7 +108,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 
 | App | Built from |
 |---|---|
-| Kids' gear exchange (`kids-gear`, hackathon demo) | 1:1 agents, geo, records (items), matching, learning, owner approval, logs |
+| Kids' gear exchange (`kids-gear`, hackathon demo) | 1:1 agents with relay, geo, records (items), matching, workflows (handoff), trust, learning, owner approval, logs |
 | Garden tools swap (`garden-tools`) | same, with swap-only pricing |
 | Marathon association (example) | community communication, time, circles (pace groups), voting (route), notifications, logs |
 | Office app (example) | community communication, circles (teams), time (desk and room booking), records (requests), workflows |
@@ -120,8 +120,13 @@ not separate platform code.
 
 ## What exists in code today
 
-Built: Meta client, app config loader, member profile and consent, items and forecast, matching, gatekeeper,
-negotiation (1:1 agents), owner cards, language (first version). Not built: community communication and relevance
-scoring, circles and criteria, voting, evolving, time, notifications, trust, relay, logging store, UI, database. The app
-config schema currently describes only the exchange use case; it will gain a `community` section and per-primitive
-sections as each primitive lands.
+Built (in-memory stores, tested): Meta client, app config loader, member profile and consent, items and forecast, matching,
+gatekeeper, negotiation (1:1 agents), owner cards (questions, confirmations, standing rules, hard limits), language
+(detection and translation), the relay between a deal's two owners through their agents, trust (screening, scam signals,
+reputation, reports and export), logistics (handoff modes, encrypted places and addresses, simulated carrier), learning
+(lessons, tighten-only adjustments, standing-rule proposals) and memory (local, AgentWitch mirror).
+
+Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
+windows, notifications, a logging store with retention, simulation and benchmark, dashboard, UI, database access, voice and
+photo intake. The app config schema currently describes only the exchange use case; it will gain a `community` section and
+per-primitive sections as each primitive lands, and existing apps must keep working.
