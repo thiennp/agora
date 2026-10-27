@@ -18,6 +18,7 @@ export default defineApp({
   },
   catalog: {
     stageUnit: "months",
+    stageField: "baby-age-months",
     categories: [
       { id: "clothing", label: "Clothing", hints: ["bodysuit", "sleepsuit", "jacket"] },
       { id: "stroller", label: "Strollers and carriers", hints: ["pram", "buggy", "sling"] },

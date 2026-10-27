@@ -1,8 +1,12 @@
 import type { CallRecord, ModelId } from "./types";
 
-/** USD per 1M tokens. Placeholder estimates until real pricing is confirmed; always shown as estimates. */
+/**
+ * USD per 1M tokens, always shown as estimates.
+ * muse-spark: public-preview rate reported in press coverage (Oct 2026), not yet checked against Meta's pricing page.
+ * muse-spark-open: UNVERIFIED placeholder; no public price found. Replace before quoting any cost figure.
+ */
 export const PRICE_PER_MTOK: Record<ModelId, { input: number; output: number }> = {
-  "muse-spark": { input: 1.0, output: 3.0 },
+  "muse-spark": { input: 1.25, output: 4.25 },
   "muse-spark-open": { input: 0.15, output: 0.6 },
 };
 

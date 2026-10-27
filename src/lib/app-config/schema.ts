@@ -75,6 +75,11 @@ export const appConfigSchema = z
       stageUnit: z.string(),
       /** Length of a repeating cycle (12 for month-of-year). Leave out for linear stages such as age in months. */
       stageCycle: z.number().positive().optional(),
+      /**
+       * Participant field (type number) that says where the participant is in the stages, e.g. baby age in months.
+       * Without it, a cyclic catalog uses the current month of the year (0 = January).
+       */
+      stageField: slug.optional(),
       categories: z.array(category).min(1),
       sizeSystems: z.record(z.array(z.string())).default({}),
       conditions: z.array(z.string()).min(1),
@@ -129,6 +134,10 @@ export const appConfigSchema = z
         ctx.addIssue({ code: "custom", path, message: "`from` and `to` must differ" });
       }
     });
+    const stageField = cfg.catalog.stageField;
+    if (stageField && cfg.participant.fields.find((f) => f.id === stageField)?.type !== "number") {
+      ctx.addIssue({ code: "custom", path: ["catalog", "stageField"], message: "stageField must name a number field" });
+    }
     const categoryIds = new Set(cfg.catalog.categories.map((c) => c.id));
     const refs = [
       ...cfg.catalog.stages.flatMap((s) => [...s.needs, ...s.outgrows]),

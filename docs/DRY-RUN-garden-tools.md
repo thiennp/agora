@@ -41,3 +41,6 @@ Fixed: S1 (`region`), S2 (`stageCycle` with wrap-around stages), S3 (`policies.f
 (`policies.pricing.mode`), S8 (sandbox format + `validateSandbox`, both apps have valid sandbox cities), I1 (new "When the
 idea does not fit" rule), I2 (sandbox format in the instructions), I4 (slug / no clash). Both apps updated.
 Still open: S4, S6, S7, S9, I3, I5, I6.
+
+Added while building the catalog (Oct 27): `catalog.stageField` says which participant field places someone in the
+stages (kids-gear uses baby age; cyclic apps default to the month of year, 0 = January).
