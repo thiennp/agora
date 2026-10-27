@@ -1,0 +1,27 @@
+import type { Appointment, ShipmentStatus } from "../../../carriers/public-api/types";
+import type { FeeSplit } from "../core/fee-split";
+
+export interface Shipment {
+  id: string;
+  dealId: string;
+  senderFamilyId: string;
+  recipientFamilyId: string;
+  /** Recipient's delivery address, encrypted at rest. Decrypted only to call the carrier adapter. */
+  addressEnc?: string;
+  carrier: string;
+  mode: "simulated" | "test";
+  labelRef?: string;
+  trackingRef?: string;
+  /** Shown only to the sender. */
+  labelText?: string;
+  appointment?: Appointment;
+  feeSplit?: FeeSplit;
+  status?: ShipmentStatus;
+  createdAt: string;
+}
+
+export function createShipmentStore() {
+  const rows = new Map<string, Shipment>();
+  return { rows };
+}
+export type ShipmentStore = ReturnType<typeof createShipmentStore>;

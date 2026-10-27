@@ -29,6 +29,7 @@ Parent owners; their agents.
 | NEG-12 | Publish deal events (agreed, owner question, confirmed, declined, expired) on the DealEvents hub. | Must | Event tests. |
 | NEG-14 | Each owner reads the conversation in their language (`transcriptFor`): original notes plus a translation, with failures marked; incoming notes are also classified in English before they are accepted. | Must | Cross-language tests. |
 | NEG-15 | A family that trust restricts or bans cannot start deals (`canStartDeal`); a report stops the deal and frees held items (`markReported`). | Must | Trust-gate and report tests. |
+| NEG-16 | Logistics moves a confirmed deal to handoff (`startHandoff`) and records its end (`finishHandoff`): completed items are marked done, a failed handoff puts them back on the list. | Must | Logistics outcome tests. |
 | NEG-13 | Not built yet: the deal-room UI, and a timer that calls expiry. Owner cards now drive `answerOwner` and `ownerDecision`. | Info | Tracked in CLAUDE.md status. |
 
 ## Out of scope

@@ -5,7 +5,9 @@ export type DealEvent =
   | { type: "DealConfirmed"; dealId: string; offerItemId: string; wantItemId: string }
   | { type: "DealDeclined"; dealId: string; reason: string }
   | { type: "DealExpired"; dealId: string }
+  | { type: "HandoffProposed"; dealId: string; mode: string }
   | { type: "ShipmentUpdated"; dealId: string; status: string }
+  | { type: "HandoffFinished"; dealId: string; ok: boolean }
   | { type: "ReportFiled"; dealId: string; reason: string };
 
 export type DealEventType = DealEvent["type"];

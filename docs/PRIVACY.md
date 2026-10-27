@@ -9,5 +9,8 @@ What the platform stores, and what it does not.
 - **Screening and gatekeeper logs:** topics, kinds of findings and outcomes only, never message text.
 - **Reports:** an evidence bundle of hashes, timestamps and flags. No message text, names or family ids leave the platform in an
   export; people appear as keyed pseudonyms (see PROTOCOL.md). The reported party can learn only that a report exists.
+- **Handover:** the exact meeting place and any delivery address are stored only in encrypted form, written by the owner who gives the
+  item (place) or receives it (address), and shown to the other owner only after both confirmed and agreed the way to hand over.
+  A recipient's address reaches only the carrier adapter and the label the sender receives; no other screen, event or log carries it.
 - **Health data:** none is collected, and app configs asking for health, sleep or feeding fields are refused.
 - **Erasure:** an owner can erase their family and everything that depends on it; relay messages, cards, rules and trust status go with it.

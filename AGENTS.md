@@ -61,9 +61,10 @@ Built: app config schema and loader, Meta client (routing, cost meter, budgets),
 catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper (classifier, policy, red-team evals),
 negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), owner cards (questions,
 confirmations, standing rules, hard limits), language (detection, translation, per-owner views), relay (screened, translated,
-faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), migrations 0001–0006 and 0008,
+faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), logistics (handoff modes, encrypted
+places and addresses, simulated carrier, labels, appointments, tracking, outcomes), migrations 0001–0008,
 two example apps.
-Not built: owner-card UI and notifications, report review tooling, the real-model language quality test (G0), logistics, learning, memory, intake, voice,
+Not built: owner-card UI and notifications, report review tooling, handoff-card screens, a real test-mode carrier, the real-model language quality test (G0), learning, memory, intake, voice,
 dashboard, UI, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here

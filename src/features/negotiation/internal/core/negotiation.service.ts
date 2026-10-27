@@ -15,6 +15,10 @@ export interface ItemOps {
   markInDeal(itemId: string): Promise<unknown>;
   releaseFromDeal(itemId: string): Promise<unknown>;
   reserve(itemId: string, dealId: string): Promise<unknown>;
+  /** Handoff finished: the item changed hands. */
+  complete?(itemId: string): Promise<unknown>;
+  /** Handoff failed: the item goes back on the list. */
+  release?(itemId: string): Promise<unknown>;
 }
 
 export interface Message {
@@ -251,6 +255,24 @@ export function createNegotiationService(deps: {
       } else if (d.state === "declined") {
         await releaseItems(d);
         deps.bus.publish({ type: "DealDeclined", dealId: d.id, reason: "owner declined" });
+      }
+      return d;
+    },
+
+    /** Both owners confirmed and agreed how to hand over: the deal moves to handoff (used by logistics). */
+    async startHandoff(dealId: string): Promise<Deal> {
+      return apply(await load(dealId), { type: "start_handoff" });
+    },
+
+    /** Record how the handoff ended. Items change hands (completed) or go back on the list (not completed). */
+    async finishHandoff(dealId: string, ok: boolean): Promise<Deal> {
+      const d = await apply(await load(dealId), { type: "handoff_done", ok });
+      for (const id of [d.offerItemId, d.wantItemId]) {
+        try {
+          await (ok ? deps.items.complete?.(id) : deps.items.release?.(id));
+        } catch {
+          /* already settled */
+        }
       }
       return d;
     },

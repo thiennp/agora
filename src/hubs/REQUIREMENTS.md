@@ -17,7 +17,7 @@ Developers.
 |---|---|---|---|
 | HUB-01 | Hubs import no slice. | Must | Lint enforced. |
 | HUB-02 | Producers use commands and consumers use queries or listeners. | Must | No direct cross-slice calls for side effects. |
-| HUB-03 | DealEvents carries: DealAgreedByAgents, OwnerQuestionOpened, DealConfirmed, DealDeclined, DealExpired, ShipmentUpdated, ReportFiled. A listener that throws never blocks the producer. | Must | Bus tests. |
+| HUB-03 | DealEvents carries: DealAgreedByAgents, OwnerQuestionOpened, DealConfirmed, DealDeclined, DealExpired, HandoffProposed, ShipmentUpdated, HandoffFinished, ReportFiled. A listener that throws never blocks the producer. | Must | Bus tests. |
 
 ## Out of scope
 

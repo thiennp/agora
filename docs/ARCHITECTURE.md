@@ -242,8 +242,8 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 - `messages`: id, negotiation_id, from_agent_id, round, structured (jsonb), text_original, lang_original, text_translated, lang_translated
 - `confirmations`: negotiation_id, family_id, decision (`confirm`|`decline`), reason_code, reason_text, decided_at
 - `relay_messages`: id, negotiation_id, from_family_id, to_family_id, text_original, text_relayed, lang_from, lang_to, screened (bool), blocked_reason
-- `handoffs`: negotiation_id, mode (`pickup`|`locker`|`ship`), pickup_window, revealed_location (encrypted), checklist (jsonb), outcome
-- `shipments`: id, negotiation_id, carrier, mode (`test`|`live`), label_ref, tracking_ref, appointment (jsonb), fee_split (jsonb), status
+- `handoffs`: negotiation_id, mode (`pickup`|`locker`|`parcel_shop`|`shipping`), plan_state, approvals, pickup_window, revealed_location (encrypted), drop_point, checklist (jsonb), outcome, outcome_reason
+- `shipments`: id, negotiation_id, sender and recipient family, recipient_place_enc (encrypted), carrier, mode (`simulated`|`test`), label_ref, tracking_ref, appointment (jsonb), fee_split (jsonb, percents only), status
 - `trust_reports`: id, negotiation_id, reporter_family_id, reported_agent_id, reason_code, evidence_bundle (jsonb: transcript hash, timestamps, screening flags), status, exported_at
 - `agent_status`: agent_id, trust_score, banned (bool), notes
 - `mandates`: id, family_id, topic, level (`auto`), scope (jsonb), expires_at, source (`owner`|`learned_with_consent`); never an always-ask or forbidden topic, one per family and topic
@@ -400,16 +400,28 @@ original and the relayed text; the receiver's "original" is the screened one. Li
 per sender and deal, banned agents cannot relay, only the deal's two owners may read or send. The database keeps the screened
 text and the hash of each message, never the raw text. No direct human-to-human channel exists.
 
-**Logistics.** After both owners confirm, the Logistics agents agree on a mode:
-- `pickup`: pickup window; exact location revealed only now.
-- `locker`: parcel locker or shop drop-off; neither home address is shown to the other parent.
-- `ship`: the sender's side requests a label and appointment from the carrier adapter.
+**Logistics** (`src/features/logistics`). A handover plan is created from the `DealConfirmed` event, never before, so
+before both owners confirm the handoff card is empty. The proposal (`proposeMode`, pure) prefers a locker, then a shop,
+then pickup, then shipping; in-person modes need both owners within their distance limits (an unknown distance never
+satisfies one) and a shared free window; shipping needs only to be allowed by the app and both owners. Either owner can
+propose another allowed mode (clears approvals, at most 3 changes). When both owners approve, the deal moves to `handoff`.
+- `pickup`: only the owner giving the item writes the exact meeting place; it is encrypted at rest and shown to the other
+  owner only after both approved the way to hand over.
+- `locker` / `parcel_shop`: a public drop point near the host; neither home place is shown.
+- `shipping`: the recipient gives a delivery address (encrypted, only after both approved shipping); only the sender creates
+  the label and books the appointment; the label text, which contains the address, goes to the sender only. Guard:
+  deal in handoff, mode shipping, both owners approved including the sender, sender acting, address present, no label yet.
+  The agreed fee split is recorded as two whole percents adding to 100; no amount, currency or payment field exists and a
+  test scans the code for payment identifiers.
 
-Carrier adapter (`src/features/logistics`): `createLabel`, `bookAppointment`, `track`. Implementations: `simulated`
-(default, watermarked PDF, no cost) and one `test-mode` carrier API if time allows. Labels are never created
-without both confirmations. Shipping fee split is recorded as agreed terms; the platform does not move money.
-The recipient address is stored encrypted, passed to the carrier adapter only, and shown on the label PDF only
-to the sender.
+Carrier port (`src/features/logistics/features/carriers`): `createLabel`, `bookAppointment`, `track`, always zero cost.
+`simulated` (default everywhere; deterministic, watermarked, tracking driven by the clock) passes the shared contract suite;
+a real test-mode carrier is not built. Exact places and addresses use AES-256-GCM with an application secret of at least 16
+characters (`FIELD_ENCRYPTION_SECRET`, required in live mode together with `REPORT_EXPORT_SECRET`) and a fresh IV per value. Tracking changes publish `ShipmentUpdated`; delivery or an
+owner marking the outcome (completed, or not completed with a reason: no_show, item_mismatch, changed_mind, other) calls
+`finishHandoff`, completes or releases both items and publishes `HandoffFinished`. Every handoff card shows a short safety
+checklist (logistics only, plus the app's safety lines for the item). Not built yet: owner-card screens for the handoff
+card, notifications, a real drop-point lookup.
 
 **Muse-only by construction.** Agents are created and run by the platform with its Meta Model API credentials;
 a `passport` identifies each. Third-party agents are not accepted in v1. If Meta later provides an attestation
