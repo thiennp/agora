@@ -5,6 +5,10 @@ const schema = z.object({
   DATABASE_URL: z.string().optional(),
   META_API_KEY: z.string().optional(),
   AGENTWITCH_URL: z.string().url().optional(),
+  META_API_URL: z.string().url().optional(),
+  OPEN_MODEL_HOST: z.enum(["baseten", "modal"]).optional(),
+  OPEN_MODEL_URL: z.string().url().optional(),
+  OPEN_MODEL_KEY: z.string().optional(),
   APP: z.string().default("kids-gear"),
 });
 
