@@ -6,6 +6,7 @@ import type { AppConfig } from "./schema";
  */
 const registry: Record<string, () => Promise<{ default: AppConfig }>> = {
   "kids-gear": () => import("../../../apps/kids-gear/app.config"),
+  "garden-tools": () => import("../../../apps/garden-tools/app.config"),
 };
 
 export const DEFAULT_APP = "kids-gear";

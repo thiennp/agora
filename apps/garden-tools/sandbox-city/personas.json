@@ -1,0 +1,102 @@
+[
+  {
+    "id": "g01",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g02",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g03",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g04",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g05",
+    "style": "brief",
+    "hiddenAcceptRule": "declines power-tools without photos of guards"
+  },
+  {
+    "id": "g06",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g07",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g08",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g09",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g10",
+    "style": "chatty",
+    "hiddenAcceptRule": "declines power-tools without photos of guards"
+  },
+  {
+    "id": "g11",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g12",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g13",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g14",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g15",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "declines power-tools without photos of guards"
+  },
+  {
+    "id": "g16",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g17",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g18",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g19",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "g20",
+    "style": "generous",
+    "hiddenAcceptRule": "declines power-tools without photos of guards"
+  }
+]

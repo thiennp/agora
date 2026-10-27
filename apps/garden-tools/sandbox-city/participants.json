@@ -1,0 +1,342 @@
+[
+  {
+    "id": "g01",
+    "name": "Ana",
+    "language": "es",
+    "district": "Hyde Park",
+    "profile": {
+      "garden-size": "small",
+      "grows": "tomatoes"
+    },
+    "offers": [
+      "hand-tools"
+    ],
+    "wants": [
+      "seeds"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g02",
+    "name": "Ben",
+    "language": "en",
+    "district": "East Austin",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "herbs"
+    },
+    "offers": [
+      "power-tools"
+    ],
+    "wants": [
+      "plants"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g03",
+    "name": "Carla",
+    "language": "es",
+    "district": "Zilker",
+    "profile": {
+      "garden-size": "large",
+      "grows": "natives"
+    },
+    "offers": [
+      "seeds"
+    ],
+    "wants": [
+      "containers"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g04",
+    "name": "Dan",
+    "language": "en",
+    "district": "Mueller",
+    "profile": {
+      "garden-size": "small",
+      "grows": "vegetables"
+    },
+    "offers": [
+      "plants"
+    ],
+    "wants": [
+      "hand-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g05",
+    "name": "Eva",
+    "language": "es",
+    "district": "South Congress",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "tomatoes"
+    },
+    "offers": [
+      "containers"
+    ],
+    "wants": [
+      "power-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g06",
+    "name": "Finn",
+    "language": "en",
+    "district": "Hyde Park",
+    "profile": {
+      "garden-size": "large",
+      "grows": "herbs"
+    },
+    "offers": [
+      "hand-tools"
+    ],
+    "wants": [
+      "seeds"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g07",
+    "name": "Gus",
+    "language": "en",
+    "district": "East Austin",
+    "profile": {
+      "garden-size": "small",
+      "grows": "natives"
+    },
+    "offers": [
+      "power-tools"
+    ],
+    "wants": [
+      "plants"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g08",
+    "name": "Hana",
+    "language": "en",
+    "district": "Zilker",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "vegetables"
+    },
+    "offers": [
+      "seeds"
+    ],
+    "wants": [
+      "containers"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g09",
+    "name": "Ines",
+    "language": "es",
+    "district": "Mueller",
+    "profile": {
+      "garden-size": "large",
+      "grows": "tomatoes"
+    },
+    "offers": [
+      "plants"
+    ],
+    "wants": [
+      "hand-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g10",
+    "name": "Jo",
+    "language": "en",
+    "district": "South Congress",
+    "profile": {
+      "garden-size": "small",
+      "grows": "herbs"
+    },
+    "offers": [
+      "containers"
+    ],
+    "wants": [
+      "power-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g11",
+    "name": "Kai",
+    "language": "en",
+    "district": "Hyde Park",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "natives"
+    },
+    "offers": [
+      "hand-tools"
+    ],
+    "wants": [
+      "seeds"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g12",
+    "name": "Lena",
+    "language": "en",
+    "district": "East Austin",
+    "profile": {
+      "garden-size": "large",
+      "grows": "vegetables"
+    },
+    "offers": [
+      "power-tools"
+    ],
+    "wants": [
+      "plants"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g13",
+    "name": "Marco",
+    "language": "es",
+    "district": "Zilker",
+    "profile": {
+      "garden-size": "small",
+      "grows": "tomatoes"
+    },
+    "offers": [
+      "seeds"
+    ],
+    "wants": [
+      "containers"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g14",
+    "name": "Nia",
+    "language": "en",
+    "district": "Mueller",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "herbs"
+    },
+    "offers": [
+      "plants"
+    ],
+    "wants": [
+      "hand-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g15",
+    "name": "Omar",
+    "language": "en",
+    "district": "South Congress",
+    "profile": {
+      "garden-size": "large",
+      "grows": "natives"
+    },
+    "offers": [
+      "containers"
+    ],
+    "wants": [
+      "power-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g16",
+    "name": "Pia",
+    "language": "es",
+    "district": "Hyde Park",
+    "profile": {
+      "garden-size": "small",
+      "grows": "vegetables"
+    },
+    "offers": [
+      "hand-tools"
+    ],
+    "wants": [
+      "seeds"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g17",
+    "name": "Quinn",
+    "language": "en",
+    "district": "East Austin",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "tomatoes"
+    },
+    "offers": [
+      "power-tools"
+    ],
+    "wants": [
+      "plants"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g18",
+    "name": "Rosa",
+    "language": "es",
+    "district": "Zilker",
+    "profile": {
+      "garden-size": "large",
+      "grows": "herbs"
+    },
+    "offers": [
+      "seeds"
+    ],
+    "wants": [
+      "containers"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g19",
+    "name": "Sam",
+    "language": "en",
+    "district": "Mueller",
+    "profile": {
+      "garden-size": "small",
+      "grows": "natives"
+    },
+    "offers": [
+      "plants"
+    ],
+    "wants": [
+      "hand-tools"
+    ],
+    "synthetic": true
+  },
+  {
+    "id": "g20",
+    "name": "Tess",
+    "language": "en",
+    "district": "South Congress",
+    "profile": {
+      "garden-size": "medium",
+      "grows": "vegetables"
+    },
+    "offers": [
+      "containers"
+    ],
+    "wants": [
+      "power-tools"
+    ],
+    "synthetic": true
+  }
+]

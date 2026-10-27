@@ -32,3 +32,9 @@ describe("app config", () => {
     await expect(loadApp("nope")).rejects.toThrow(/Unknown app/);
   });
 });
+
+describe("registered apps", () => {
+  it.each(["kids-gear", "garden-tools"])("%s loads", async (id) => {
+    expect((await loadApp(id)).id).toBe(id);
+  });
+});
