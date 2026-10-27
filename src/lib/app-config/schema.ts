@@ -25,13 +25,25 @@ const category = z.object({
 const stage = z.object({
   id: slug,
   label: z.string(),
-  /** Participant age or level range, in the app's own unit (see catalog.stageUnit). */
+  /**
+   * Range in the app's own unit (see catalog.stageUnit). When `catalog.stageCycle` is set and `from > to`,
+   * the range wraps past the end of the cycle (months 11 to 2 means Nov, Dec, Jan, Feb).
+   */
   from: z.number().nonnegative(),
-  to: z.number().positive(),
+  to: z.number().nonnegative(),
   /** Category ids typically needed at this stage. */
   needs: z.array(slug).default([]),
   /** Category ids typically outgrown at the end of this stage. */
   outgrows: z.array(slug).default([]),
+});
+
+const forbiddenItem = z.object({
+  id: slug,
+  label: z.string(),
+  /** Lower-case words or phrases; a listing containing one is blocked before it is listed or accepted. */
+  keywords: z.array(z.string().min(2)).min(1),
+  /** Plain-language reason shown to the owner. */
+  reason: z.string(),
 });
 
 const safetyRule = z.object({
@@ -47,6 +59,12 @@ export const appConfigSchema = z
     id: slug,
     name: z.string(),
     tagline: z.string(),
+    region: z.object({
+      /** Where the app starts, in plain words ("Austin, TX"). Shown to owners and used to seed the sandbox city. */
+      name: z.string(),
+      /** ISO 3166-1 alpha-2, optional. */
+      country: z.string().length(2).optional(),
+    }),
     participant: z.object({
       /** What the platform calls an owner in this app's UI ("parent", "gardener", "student"). */
       noun: z.string(),
@@ -55,12 +73,18 @@ export const appConfigSchema = z
     }),
     catalog: z.object({
       stageUnit: z.string(),
+      /** Length of a repeating cycle (12 for month-of-year). Leave out for linear stages such as age in months. */
+      stageCycle: z.number().positive().optional(),
       categories: z.array(category).min(1),
       sizeSystems: z.record(z.array(z.string())).default({}),
       conditions: z.array(z.string()).min(1),
       stages: z.array(stage).default([]),
     }),
     policies: z.object({
+      /** What owners may ask in return. The platform never holds money in any mode. */
+      pricing: z.object({ mode: z.enum(["free_only", "swap_only", "free_or_agreement"]).default("free_or_agreement") }).default({}),
+      /** Items that may never be listed or accepted in this app. */
+      forbiddenItems: z.array(forbiddenItem).default([]),
       maxNegotiationRounds: z.number().int().min(1).max(10),
       handoffModes: z.array(z.enum(["pickup", "locker", "parcel_shop", "shipping"])).min(1),
       /** Gatekeeper outcome per topic. Always-ask topics must be "ask". */
@@ -94,6 +118,17 @@ export const appConfigSchema = z
         ctx.addIssue({ code: "custom", path: ["policies", "standingRuleTopics"], message: `invalid standing-rule topic ${topic}` });
       }
     }
+    const cycle = cfg.catalog.stageCycle;
+    cfg.catalog.stages.forEach((st, i) => {
+      const path = ["catalog", "stages", i];
+      if (cycle === undefined) {
+        if (st.to <= st.from) ctx.addIssue({ code: "custom", path, message: "`to` must be greater than `from` (or set stageCycle to wrap)" });
+      } else if (st.from >= cycle || st.to > cycle) {
+        ctx.addIssue({ code: "custom", path, message: `stage values must be within the cycle (0..${cycle})` });
+      } else if (st.from === st.to) {
+        ctx.addIssue({ code: "custom", path, message: "`from` and `to` must differ" });
+      }
+    });
     const categoryIds = new Set(cfg.catalog.categories.map((c) => c.id));
     const refs = [
       ...cfg.catalog.stages.flatMap((s) => [...s.needs, ...s.outgrows]),

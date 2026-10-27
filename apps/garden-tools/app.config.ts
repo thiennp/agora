@@ -5,6 +5,7 @@ export default defineApp({
   id: "garden-tools",
   name: "Seed & Spade",
   tagline: "Your neighbour's spare spade, your spare seeds: agents sort the swap.",
+  region: { name: "Austin, TX", country: "US" },
   participant: {
     noun: "gardener",
     fields: [
@@ -14,6 +15,7 @@ export default defineApp({
   },
   catalog: {
     stageUnit: "month-of-year",
+    stageCycle: 12,
     categories: [
       { id: "hand-tools", label: "Hand tools", hints: ["spade", "trowel", "rake", "pruners"] },
       { id: "power-tools", label: "Power tools", hints: ["tiller", "hedge trimmer", "mower"] },
@@ -23,12 +25,17 @@ export default defineApp({
     ],
     conditions: ["new", "good", "worn"],
     stages: [
-      { id: "cool-season", label: "Cool season", from: 10, to: 12, needs: ["seeds", "plants"], outgrows: [] },
+      { id: "cool-season", label: "Cool season", from: 10, to: 2, needs: ["seeds", "plants"], outgrows: [] },
       { id: "spring", label: "Spring", from: 2, to: 5, needs: ["seeds", "hand-tools", "containers"], outgrows: ["seeds"] },
-      { id: "summer", label: "Summer", from: 5, to: 9, needs: ["hand-tools"], outgrows: ["plants"] },
+      { id: "summer", label: "Summer", from: 5, to: 10, needs: ["hand-tools"], outgrows: ["plants"] },
     ],
   },
   policies: {
+    pricing: { mode: "swap_only" },
+    forbiddenItems: [
+      { id: "pesticides", label: "Pesticides and chemicals", keywords: ["pesticide", "herbicide", "weed killer", "insecticide"], reason: "Chemicals are not swapped on Seed & Spade." },
+      { id: "invasive-plants", label: "Invasive plants", keywords: ["giant reed", "chinaberry", "nandina", "elephant ear"], reason: "Invasive in Central Texas; please do not spread them." },
+    ],
     maxNegotiationRounds: 3,
     handoffModes: ["pickup"],
     topics: {

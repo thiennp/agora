@@ -1,0 +1,102 @@
+[
+  {
+    "id": "f01",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f02",
+    "style": "chatty",
+    "hiddenAcceptRule": "declines car seats with unknown crash history"
+  },
+  {
+    "id": "f03",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f04",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f05",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f06",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f07",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "declines car seats with unknown crash history"
+  },
+  {
+    "id": "f08",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f09",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f10",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f11",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f12",
+    "style": "generous",
+    "hiddenAcceptRule": "declines car seats with unknown crash history"
+  },
+  {
+    "id": "f13",
+    "style": "brief",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f14",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f15",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f16",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f17",
+    "style": "brief",
+    "hiddenAcceptRule": "declines car seats with unknown crash history"
+  },
+  {
+    "id": "f18",
+    "style": "chatty",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f19",
+    "style": "price-sensitive",
+    "hiddenAcceptRule": "accepts fair swaps"
+  },
+  {
+    "id": "f20",
+    "style": "generous",
+    "hiddenAcceptRule": "accepts fair swaps"
+  }
+]

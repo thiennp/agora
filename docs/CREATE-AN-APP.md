@@ -18,17 +18,34 @@ platform yourself. They never see or answer anything technical.
 
 1. **The idea:** "What would you like people to swap, share or trade? Tell me like you'd tell a friend."
 2. **The people:** "Who are they? What do they have in common?" (becomes the participant noun and profile fields)
-3. **What changes over time:** "Does what people need change over time or by situation?" (becomes catalog stages)
+3. **What changes over time:** "Does what people need change over time or by situation?" (becomes catalog stages;
+   for seasons or other repeating cycles set `stageCycle` and let a range wrap, e.g. months 10 to 2 is Oct to Feb)
 4. **Where and who:** "Do people need to be near each other? What area first? Which languages do they speak?"
+   (becomes the region and languages)
 5. **Handing things over:** "How would things usually change hands: meet up, a locker, by post?"
+5b. **Giving or swapping:** "Is it free, a swap, or can people agree on something in return?"
+   (becomes the pricing mode: free only, swap only, or free-or-agreement)
 6. **Care points:** "Is there anything about these things where people should be careful or ask first?"
-   (becomes safety rules; keep advisory and never health, medical or legal advice)
+   (becomes safety rules; keep advisory and never health, medical or legal advice) Also ask "Is there anything that
+   should never be shared here?" (becomes forbidden items: a label, keywords and a plain reason)
 7. **Feel:** "What should it be called, and how should it feel: friendly, serious, playful?" (name, theme)
 
 What the person does **not** get to decide, and you should never ask about: the agent always asks its owner before
 agreeing to anything, giving money terms, revealing who they are or where they live, choosing shipping, or making a
 safety exception. Tell them this once, in one friendly sentence, as a promise ("your agent will always check with
 you before it agrees to anything"), not as a question.
+
+## When the idea does not fit
+
+The platform cannot express everything. If the person wants something the config cannot say:
+
+1. Pick the closest option that stays inside the rules, and tell the person in plain words what you chose and
+   why ("I can't make the agent sell things, so swaps and free gifts are what it will do").
+2. Never work around the platform: do not edit `src/` (apart from the registry line), and never relax an
+   always-ask topic, relay, privacy or safety rule, even if the person asks. Explain kindly that these protect everyone.
+3. Write the unmet wish into `apps/<id>/REQUIREMENTS.md` under "Out of scope (wanted, not supported yet)" so the
+   platform team can see it.
+4. If the missing piece is essential to the idea, say so and ask whether to go ahead with the closest version.
 
 ## Before you build
 
@@ -39,9 +56,13 @@ do alone versus ask about. Wait for a yes. Fix anything they correct.
 
 1. Read `README.md`, `docs/ARCHITECTURE.md` section 2b and `src/lib/app-config/schema.ts` (the contract).
 2. Read `apps/kids-gear/app.config.ts` as the worked example.
-3. Create `apps/<id>/` with `app.config.ts` (use `defineApp` from `@agora/app-config`, import nothing else from
-   `src/`), a `sandbox-city/` of about 20 clearly synthetic participants, and a `REQUIREMENTS.md` in the same format
-   as `apps/kids-gear/REQUIREMENTS.md`.
+3. Create `apps/<id>/` (the id is a lower-case slug that does not clash with an existing folder in `apps/`) with
+   `app.config.ts` (use `defineApp` from `@agora/app-config`, import nothing else from `src/`), the sandbox city,
+   and a `REQUIREMENTS.md` in the same format as `apps/kids-gear/REQUIREMENTS.md`.
+   The sandbox city is the folder named by `simulation.cityDir`, holding two JSON files in the format defined in
+   `src/lib/app-config/sandbox.ts`: `participants.json` (20 or more entries, all `"synthetic": true`, languages from
+   the app, categories from the catalog, a value for every participant field) and `personas.json` (one entry per
+   participant). See `apps/garden-tools/sandbox-city/` for a worked example. `validateSandbox` must return no problems.
 4. Register the app with one line in `src/lib/app-config/load-app.ts`. Do not modify anything else in `src/`.
 5. Rules: always-ask topics (`commitment`, `price_terms`, `identity_reveal`, `location_reveal`, `shipping_choice`,
    `safety_exception`) stay `ask` and never become standing rules; every category used by a stage or safety rule

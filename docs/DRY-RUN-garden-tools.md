@@ -34,3 +34,10 @@ not given by a real user. Result: `apps/garden-tools/`, one registry line, check
 2. Schema: validate `choice` options and `cityDir`; define the sandbox file format with a zod schema (S4, S8).
 3. Instructions: add a "when the schema cannot express it" rule and the sandbox format (I1, I2).
 4. Later: per-app persona, per-category handoff, classifier topics (S7, S9, S6).
+
+## Status (Oct 27, 2026)
+
+Fixed: S1 (`region`), S2 (`stageCycle` with wrap-around stages), S3 (`policies.forbiddenItems`), S5
+(`policies.pricing.mode`), S8 (sandbox format + `validateSandbox`, both apps have valid sandbox cities), I1 (new "When the
+idea does not fit" rule), I2 (sandbox format in the instructions), I4 (slug / no clash). Both apps updated.
+Still open: S4, S6, S7, S9, I3, I5, I6.

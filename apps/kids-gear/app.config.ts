@@ -8,6 +8,7 @@ export default defineApp({
   id: "kids-gear",
   name: "Hand-Me-Down",
   tagline: "Outgrown kids' gear finds its next family, agent to agent.",
+  region: { name: "Berlin, Germany", country: "DE" },
   participant: {
     noun: "parent",
     fields: [
@@ -35,6 +36,11 @@ export default defineApp({
     ],
   },
   policies: {
+    pricing: { mode: "free_or_agreement" },
+    forbiddenItems: [
+      { id: "recalled-items", label: "Recalled products", keywords: ["recalled", "recall notice"], reason: "Recalled items must not be passed on." },
+      { id: "drop-side-cots", label: "Drop-side cots", keywords: ["drop-side cot", "drop side crib"], reason: "Drop-side cots are no longer considered safe to pass on." },
+    ],
     maxNegotiationRounds: 3,
     handoffModes: ["pickup", "locker", "parcel_shop", "shipping"],
     topics: {
