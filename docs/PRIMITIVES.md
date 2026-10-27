@@ -48,7 +48,7 @@ one cached similarity per post compared with member interests, never one model c
 
 | Primitive | What it is | Status |
 |---|---|---|
-| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | built (lessons from decisions, tighten-only adjustments, standing-rule proposals, local memory and an AgentWitch mirror; the benchmark that shows the learning curve is not built) |
+| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | built (lessons from decisions, tighten-only adjustments, standing-rule proposals, local memory and an AgentWitch mirror; the simulation benchmark that measures the learning curve is built, see `docs/SIMULATION.md`) |
 | **Evolving** | The system and members' agents may *propose* changes (a new standing rule, a tuned threshold, a new circle). Nothing changes without approval by the owner (personal settings) or by vote (community settings). Every change is versioned and reversible. | later |
 | **Voting** | Members decide community matters together: rules, settings, events. Votes run through agents and owner cards. | later |
 
@@ -119,6 +119,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | Matching and ranking | `matching` (items) | relevance scoring should share one ranking core with it: factors, weights and an explanation per score |
 | Workflows | `negotiation/deal-state`, `logistics` | |
 | Language, Trust, Meta client | `language`, `trust`, `lib/meta` | |
+| Simulation and benchmark | `simulation` | sandbox city, simulated owners with hidden rules, held-out benchmark, CSV |
 | Time, Notifications, Voice and photo, Dashboard | none yet | |
 
 ## Guarantees that no app, vote or evolution can change
@@ -155,7 +156,8 @@ gatekeeper, negotiation (1:1 agents), owner cards (questions, confirmations, sta
 reputation, reports and export), logistics (handoff modes, encrypted places and addresses, simulated carrier), learning
 (lessons, tighten-only adjustments, standing-rule proposals) and memory (local, AgentWitch mirror).
 
+Also built: the simulation slice (sandbox city, simulated owners, held-out benchmark, CSV export).
+
 Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
-windows, notifications, a logging store with retention, simulation and benchmark, dashboard, UI, database access, voice and
-photo intake. The app config schema currently describes only the exchange use case; it will gain a `community` section and
+windows, notifications, a logging store with retention, dashboard, UI, database access, voice and photo intake. The app config schema currently describes only the exchange use case; it will gain a `community` section and
 per-primitive sections as each primitive lands, and existing apps must keep working.

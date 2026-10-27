@@ -10,8 +10,10 @@ export function createCatalogService(deps: {
   app: Pick<AppConfig, "id" | "catalog" | "participant" | "policies">;
   canShare: (familyId: string) => boolean;
   repo?: ItemRepository;
+  /** Id generator; tests and the simulation pass a deterministic one. */
+  newId?: () => string;
 }) {
-  const items = createItemService({ app: deps.app, repo: deps.repo ?? createInMemoryItemRepository(), canShare: deps.canShare });
+  const items = createItemService({ app: deps.app, repo: deps.repo ?? createInMemoryItemRepository(), canShare: deps.canShare, newId: deps.newId });
   const forecast = createForecastService({ app: deps.app });
   return {
     items,

@@ -75,13 +75,14 @@ negotiation (deal state machine, offers, negotiator policy and note writer, Deal
 confirmations, standing rules, hard limits), language (detection, translation, per-owner views), relay (screened, translated,
 faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), logistics (handoff modes, encrypted
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
-tighten-only adjustments, standing-rule proposals) and memory (local provider, AgentWitch mirror), migrations 0001–0009,
+tighten-only adjustments, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
+simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0009,
 two example apps.
-Not built: owner-card UI and notifications, report review tooling, handoff-card screens, a real test-mode carrier, the real-model language quality test (G0), the learning benchmark, Postgres-backed memory, intake, voice,
+Not built: owner-card UI and notifications, report review tooling, handoff-card screens, a real test-mode carrier, the real-model language quality test (G0), an owner-approved way to relax learned limits, Postgres-backed memory, intake, voice,
 dashboard, UI, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here
 
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`. `APP=<id>` picks the app (default `kids-gear`).
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run simulate` (the benchmark). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

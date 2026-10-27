@@ -20,6 +20,11 @@ Judges; developers.
 | SIM-03 | Report only on held-out scenarios. | Must | Train and held-out sets are separate. |
 | SIM-04 | Keep failures in the report. | Must | Failure list is part of the output. |
 | SIM-05 | Label everything produced here as simulated. | Must | Labels propagate to the dashboard. |
+| SIM-06 | Each episode runs the real slices (catalog, matching, negotiation, gatekeeper, owner cards, learning) with deterministic ids and no live model. | Must | Reproducibility test. |
+| SIM-07 | Held-out episodes read learned limits but never write lessons; the learning-off arm never learns; round 1 is measured before anything is learned so both arms start equal. | Must | Held-out and baseline tests. |
+| SIM-08 | Several seeds are reported as mean and range per round. | Should | Seed summary test; `npm run simulate`. |
+| SIM-09 | Coverage-adjusted success (confirmed deals per 100 wants) is reported next to approval rate, because learning raises approval partly by proposing less. | Must | Metric and report note. |
+| SIM-10 | Not measured: cost per deal and model choices (no live model), privacy leaks (covered by screening evals); swap-only apps are not supported yet. Documented in docs/SIMULATION.md. | Info | Report notes. |
 
 ## Out of scope
 

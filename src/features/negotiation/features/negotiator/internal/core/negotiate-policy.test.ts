@@ -39,6 +39,15 @@ describe("negotiator policy", () => {
     expect(decideTurn(app, { ...base, mandate: m, last: offer({ pickupWindow: { from: "2026-11-02T11:00:00Z", to: "2026-11-02T12:00:00Z" } }), gate: ask })).toEqual({ kind: "accept" });
   });
 
+  it("counters with the shared part of two partly overlapping windows, or its own window when none overlaps", async () => {
+    const app = await loadApp("kids-gear");
+    const m = mandate({ availability: [{ from: "2026-11-02T10:00:00Z", to: "2026-11-02T14:00:00Z" }] });
+    const partly = decideTurn(app, { ...base, mandate: m, last: offer({ pickupWindow: { from: "2026-11-02T12:00:00Z", to: "2026-11-02T16:00:00Z" } }), gate: auto });
+    expect(partly).toMatchObject({ kind: "counter", offer: { pickupWindow: { from: "2026-11-02T12:00:00.000Z", to: "2026-11-02T14:00:00.000Z" } } });
+    const none = decideTurn(app, { ...base, mandate: m, last: offer({ pickupWindow: { from: "2026-11-05T12:00:00Z", to: "2026-11-05T16:00:00Z" } }), gate: auto });
+    expect(none).toMatchObject({ kind: "counter", offer: { pickupWindow: { from: "2026-11-02T10:00:00Z", to: "2026-11-02T14:00:00Z" } } });
+  });
+
   it("declines instead of countering when the round limit is reached", async () => {
     const app = await loadApp("kids-gear");
     const m = mandate({ availability: [{ from: "2026-11-02T10:00:00Z", to: "2026-11-02T14:00:00Z" }] });

@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "e2e": "playwright test --config e2e/playwright.config.ts",
-    "evals": "tsx evals/run-evals.ts"
+    "evals": "tsx evals/run-evals.ts",
+    "simulate": "tsx evals/run-simulation.ts"
   },
   "dependencies": {
     "next": "^15.0.0",

@@ -27,6 +27,13 @@ type App = Pick<AppConfig, "catalog" | "policies">;
 const within = (w: { from: string; to: string }, a: { from: string; to: string }) =>
   new Date(w.from) >= new Date(a.from) && new Date(w.to) <= new Date(a.to);
 
+/** The part of two windows both owners are free, or null when there is none. */
+function shared(a: { from: string; to: string }, b: { from: string; to: string }): { from: string; to: string } | null {
+  const from = new Date(Math.max(+new Date(a.from), +new Date(b.from)));
+  const to = new Date(Math.min(+new Date(a.to), +new Date(b.to)));
+  return from < to ? { from: from.toISOString(), to: to.toISOString() } : null;
+}
+
 /**
  * The agent's decision for one turn, as a pure function (NEG-NGT-01, 02, 04). The gatekeeper has the last word on
  * every topic: `gate` returns its outcome, and anything but auto becomes a question for the owner. Facts that are not
@@ -63,7 +70,9 @@ export function decideTurn(
   if (mandate.availability.length > 0) {
     const ok = last.pickupWindow && mandate.availability.some((a) => within(last.pickupWindow!, a));
     if (!ok) {
-      const ours = mandate.availability[0]!;
+      // Prefer the part of our free time that overlaps what was offered, so one counter can settle it; otherwise our first window.
+      const overlap = last.pickupWindow ? mandate.availability.map((a) => shared(last.pickupWindow!, a)).find((w) => w !== undefined && w !== null) : null;
+      const ours = overlap ?? mandate.availability[0]!;
       const counter: Offer = { ...last, pickupWindow: { from: ours.from, to: ours.to }, note: "" };
       if (input.round >= input.maxRounds) return { kind: "decline", reason: "no agreed time within the round limit" };
       const approvalKey = `window:${JSON.stringify(counter.pickupWindow)}`;

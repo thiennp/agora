@@ -21,6 +21,7 @@ Parent owner's agent.
 | NEG-NGT-04 | Stop and ask the owner when the gatekeeper says so. | Must | The agent pauses on any ask topic. |
 | NEG-NGT-05 | The decision for each turn is a pure function; a model only writes a short validated note and falls back to a template on invalid output, a harmful note or a spent budget. | Must | Meta client tests with bad replies. |
 | NEG-NGT-06 | Owner mandate: allowed terms, minimum condition, availability windows, language, and optional opening terms chosen by the owner. | Must | Policy tests. |
+| NEG-NGT-07 | When the offered pickup window is not inside the owner's free time, counter with the part that overlaps it; with no overlap, with the owner's first window. | Must | Policy tests; found by the simulation. |
 
 ## Out of scope
 

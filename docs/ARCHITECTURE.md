@@ -542,11 +542,16 @@ interface MemoryProvider {
 
 ## 10. Sandbox city and benchmark (`src/features/simulation`)
 
-- ~20 synthetic families with personas: language, district, baby age, preferences, hidden accept rules.
-- Hidden accept rules decide the simulated owner's confirm/decline, so learning is measurable against ground truth.
-- Scenarios are split train / held-out; reported numbers use held-out only.
-- Runs: learning on/off; Spark Open vs Spark API for the negotiator; with/without lessons.
-- Output: CSV + dashboard charts. Failures are kept in the report.
+Full description, how to run it and the measured results are in `docs/SIMULATION.md`. In short:
+
+- 20 synthetic families in three languages, from the app's sandbox files, placed on a synthetic map; some have free pickup hours.
+- Simulated owners decide with **hidden rules** (maximum distance, minimum condition, exact size) generated from persona style and a
+  seed, so learning is measured against ground truth. Nothing outside the slice references them.
+- Each episode runs the real slices (catalog, matching, negotiation, gatekeeper, owner cards, learning) with deterministic ids and no
+  live model. Per round the arm is measured on **held-out** episodes (never written back as lessons), then trained on separate ones;
+  the learning-off arm is the baseline; several seeds give mean and range.
+- Output: JSON and CSV (every row `simulated=true`), failures kept. Model-routing comparison and cost per deal need a Meta key and are
+  not run; the harness takes the same city and seeds for any routing.
 
 ## 11. Dashboard (judge-facing)
 
