@@ -27,9 +27,14 @@ Hackathon (Cerebral Valley).
 2. [docs/PLAN.md](docs/PLAN.md) — scope, gates, schedule, risks.
 3. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Fractal Slice Architecture, data model, privacy, scale, testing.
 
+## Create an app
+
+See [docs/CREATE-AN-APP.md](docs/CREATE-AN-APP.md): paste one prompt into Muse and it builds an app on the platform.
+
 ## Layout
 
 ```
+apps/<id>         an app: app.config.ts (catalog, policies, theme) + data; example: apps/kids-gear
 src/app          entry layer (Next.js routes, thin)
 src/features     16 slices, each with nested sub-features
 src/hubs         cross-slice events (DealEvents)

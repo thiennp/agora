@@ -55,6 +55,26 @@ flowchart LR
   SIM --> API
 ```
 
+## 2b. Platform and apps
+
+Agora is the platform; an **app** is configuration plus data that the platform runs. The kids' gear exchange is the
+first app (`apps/kids-gear/`).
+
+| Layer | Folder | Owns | May import |
+|---|---|---|---|
+| Platform core | `src/` | slices, hubs, deal state machine, gatekeeper engine, relay, trust, learning, API, UI shell | never `apps/` (except the registry in `src/lib/app-config/load-app.ts`) |
+| App | `apps/<id>/` | `app.config.ts` (catalog, policies, theme), sandbox city, golden sets, app REQUIREMENTS | only `@agora/app-config` |
+
+An app config declares: participant noun and profile fields, catalog (categories, size systems, conditions, stages
+for the forecast), policies (negotiation rounds, handoff modes, gatekeeper topic table, standing-rule topics,
+safety rules, languages, location granularity), theme, and the sandbox city folder. It is validated by
+`src/lib/app-config/schema.ts`.
+
+Invariants the platform enforces regardless of app: the always-ask topics (commitment, price/terms, identity and
+location reveal, shipping choice, safety exception) cannot be relaxed or turned into standing rules; unknown topics
+default to ask; the relay channel, trust screening and privacy rules are not configurable. `APP=<id>` selects the
+active app; apps are registered in `load-app.ts`. Creating a new app is covered in `docs/CREATE-AN-APP.md`.
+
 ## 3. Project structure (Fractal Slice Architecture)
 
 Same conventions as AgentWitch (ADR 0007): one Next.js app; each capability is a slice under `src/features/<slug>/`
@@ -63,6 +83,8 @@ files stay thin.
 
 ```
 agora/
+├── apps/
+│   └── kids-gear/                        # example app: app.config.ts, sandbox-city/, REQUIREMENTS.md
 ├── src/
 │   ├── app/                              # entry layer: Next.js routes only
 │   │   ├── (owner)/                      # onboarding, items, matches, deals/[id], cards

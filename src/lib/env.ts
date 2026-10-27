@@ -5,6 +5,7 @@ const schema = z.object({
   DATABASE_URL: z.string().optional(),
   META_API_KEY: z.string().optional(),
   AGENTWITCH_URL: z.string().url().optional(),
+  APP: z.string().default("kids-gear"),
 });
 
 export type Env = z.infer<typeof schema>;
