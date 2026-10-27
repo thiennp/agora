@@ -7,5 +7,5 @@ export default defineConfig({
       { find: "@agora/app-config", replacement: fileURLToPath(new URL("./src/lib/app-config/index.ts", import.meta.url)) },
       { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
     ] },
-  test: { include: ["src/**/*.test.ts", "apps/**/*.test.ts", "evals/**/*.test.ts"] },
+  test: { include: ["src/**/*.test.ts", "apps/**/*.test.ts", "evals/**/*.test.ts", "db/**/*.test.ts"] },
 });
