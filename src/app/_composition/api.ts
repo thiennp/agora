@@ -66,7 +66,7 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       const code = (e as { code?: unknown }).code;
       if (typeof code === "string" && code in STATUS) return json(STATUS[code]!, { error: { code, message: (e as Error).message } });
       if (typeof code === "string" && e instanceof Error && e.constructor.name !== "Error") return json(400, { error: { code, message: e.message } });
-      console.error("route error", e);
+      console.error("route error", e instanceof Error ? e.name : typeof e);
       return json(500, { error: { code: "internal", message: "Something went wrong." } });
     }
   };

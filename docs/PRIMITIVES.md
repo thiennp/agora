@@ -102,7 +102,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | **Moderation and roles**: members and admins; a member can report a post, an admin can hide a post or remove a member; screening applies to posts as to 1:1 messages | designed (minimal, tier 2) |
 | **Meta client**: model routing, cost meter, per-member and global budgets, schema-validated output | built |
 | **Voice and photo intake**: originals discarded | designed |
-| **Dashboard**: live feed, learning curve, cost, privacy, safety | designed |
+| **Dashboard**: live feed, learning curve, cost, privacy, safety | built in part (learning curves, live counters, failures; no map, cost or privacy-test panel) |
 
 ## Primitive to slice map
 
@@ -120,7 +120,8 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | Workflows | `negotiation/deal-state`, `logistics` | |
 | Language, Trust, Meta client | `language`, `trust`, `lib/meta` | |
 | Simulation and benchmark | `simulation` | sandbox city, simulated owners with hidden rules, held-out benchmark, CSV |
-| Time, Notifications, Voice and photo, Dashboard | none yet | |
+| Time, Notifications, Voice and photo | none yet | |
+| Dashboard | `src/app/(judge)/dashboard`, `src/app/_composition` | reads the simulation CSV |
 
 ## Guarantees that no app, vote or evolution can change
 
@@ -159,5 +160,7 @@ reputation, reports and export), logistics (handoff modes, encrypted places and 
 Also built: the simulation slice (sandbox city, simulated owners, held-out benchmark, CSV export).
 
 Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
-windows, notifications, a logging store with retention, dashboard, UI, database access, voice and photo intake. The app config schema currently describes only the exchange use case; it will gain a `community` section and
+windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice and photo intake. A demo web app exists (owner cards, deal room, judge dashboard) in demo mode only.
+
+Scaffold only: the `safety`, `intake` and `voice` slices are empty files; their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
 per-primitive sections as each primitive lands, and existing apps must keep working.

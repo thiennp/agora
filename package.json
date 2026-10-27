@@ -10,8 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test --config e2e/playwright.config.ts",
-    "evals": "tsx evals/run-evals.ts",
+    "evals": "vitest run evals",
+    "db:check": "sh db/check-apply.sh",
     "simulate": "tsx evals/run-simulation.ts"
   },
   "dependencies": {
