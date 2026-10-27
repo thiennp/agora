@@ -21,6 +21,13 @@ Parent owners; their agents.
 | NEG-04 | Never commit an owner without the gatekeeper allowing it. | Must | 0 unauthorized commitments across the red-team set. |
 | NEG-05 | Expire a deal that the owners do not answer within 24 hours. | Should | Expired deals release their items. |
 | NEG-06 | Prevent the same item being promised twice. | Must | Concurrent deals on one item are serialized. |
+| NEG-07 | A round is one offer from either agent; the proposal is round 1 and the round limit comes from the app config (`policies.maxNegotiationRounds`). | Must | Both apps' limits are read from config. |
+| NEG-08 | Agreement between agents is not a commitment: it only opens confirm cards. Only both owners confirming makes a deal confirmed. | Must | No code path reaches confirmed without both owner decisions. |
+| NEG-09 | Notes from the other agent pass the gatekeeper; a note that asks for anything or gives an instruction is dropped, flagged on the deal, and never shown to a model or obeyed. | Must | Injection tests keep the transcript note empty and the deal unconfirmed. |
+| NEG-10 | Terms other than free (price or swap) always go to the owner unless that owner chose those exact terms when starting the deal or already approved them in this deal. | Must | Money and swap terms always open an owner question first. |
+| NEG-11 | Starting a deal holds both items; if either is not listed the deal is refused and nothing stays held. | Must | A second deal on the same item is refused. |
+| NEG-12 | Publish deal events (agreed, owner question, confirmed, declined, expired) on the DealEvents hub. | Must | Event tests. |
+| NEG-13 | Not built yet: translation of notes per owner (NEG-03), the human relay channel, the deal-room UI, and a timer that calls expiry. | Info | Tracked in CLAUDE.md status. |
 
 ## Out of scope
 

@@ -19,6 +19,8 @@ Parent owner's agent.
 | NEG-NGT-02 | Never state facts about an item that are not in the listing. | Must | Red-team questions about unknown facts get "ask the owner". |
 | NEG-NGT-03 | Summarise progress for the owner in plain words. | Should | Each round has a one-line summary. |
 | NEG-NGT-04 | Stop and ask the owner when the gatekeeper says so. | Must | The agent pauses on any ask topic. |
+| NEG-NGT-05 | The decision for each turn is a pure function; a model only writes a short validated note and falls back to a template on invalid output, a harmful note or a spent budget. | Must | Meta client tests with bad replies. |
+| NEG-NGT-06 | Owner mandate: allowed terms, minimum condition, availability windows, language, and optional opening terms chosen by the owner. | Must | Policy tests. |
 
 ## Out of scope
 

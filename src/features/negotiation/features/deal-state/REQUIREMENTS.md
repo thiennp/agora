@@ -19,6 +19,8 @@ Negotiation; owner-cards; logistics.
 | NEG-STA-02 | Reject illegal transitions. | Must | Property tests show no illegal path reaches confirmed. |
 | NEG-STA-03 | Persist every transition with a timestamp. | Must | The full history of a deal can be replayed. |
 | NEG-STA-04 | Never reach confirmed unless both owners confirmed. | Must | Invariant test. |
+| NEG-STA-05 | A round is one offer; the proposal is round 1. Counters beyond the app's limit are refused and the deal ends. | Must | Fourth offer refused when the limit is 3. |
+| NEG-STA-06 | The state machine is a pure function `next(deal, event, time)`; the wanting owner's agent proposes and the offering side answers first, then turns alternate. | Must | Turn tests. |
 
 ## Out of scope
 

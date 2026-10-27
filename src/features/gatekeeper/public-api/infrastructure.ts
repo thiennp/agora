@@ -5,6 +5,7 @@ import { assertValidMandate, decideAll } from "../features/policy/public-api/inf
 import type { Decision, Mandate, Outcome } from "../features/policy/public-api/types";
 
 export { MandateError } from "../features/policy/public-api/infrastructure";
+export { classify } from "../features/classifier/public-api/infrastructure";
 
 export interface GatekeeperVerdict {
   outcome: Outcome;
