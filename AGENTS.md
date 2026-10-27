@@ -86,6 +86,6 @@ accounts and real authentication, the map on the dashboard, shipping address and
 
 ## Working here
 
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run evals`, `npm run bench:matching`, `npm run capacity`, `npm run mcp:docs` (the docs knowledge base as an MCP server; see `docs/DOCS-PLATFORM.md`), `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

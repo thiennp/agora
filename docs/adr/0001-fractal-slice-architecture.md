@@ -14,8 +14,9 @@ rest. A hackathon timeline rules out microservices; a single unstructured app wo
 - A slice imports another slice only through its `public-api`. Cross-slice side effects go through a **hub**
   (`src/hubs/DealEvents`) whose `command` side is for producers and `query` side for consumers; a hub imports no slice.
 - `route.ts` files stay thin: validate, call a facade, answer. `src/lib` and `src/components` never import a slice.
-- Enforcement: ESLint `no-restricted-imports` rules (no `internal/` imports across slices; platform never imports `apps/`)
-  and `structure-validation.config.json`. A violation fails the build.
+- Enforcement: ESLint `no-restricted-imports` rules (no `internal/` imports across slices; platform never imports `apps/`).
+  A violation fails the build. A structure check for folder shape per level (`structure-validation.config.json`) is planned and
+  not built; until then the two-level depth limit is a convention.
 - **Deletion test** for every slice: removing it leaves the rest working with less capability (for example, removing
   `logistics` ends deals at "confirmed").
 

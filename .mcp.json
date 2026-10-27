@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agora-docs": {
+      "command": "npm",
+      "args": ["run", "--silent", "mcp:docs"]
+    }
+  }
+}

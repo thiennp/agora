@@ -65,7 +65,8 @@ Any change to a requirement, behaviour, config field or scope updates the docs i
 
 1. `README.md`  2. `docs/PRIMITIVES.md` (what the platform offers, with status)  3. `REQUIREMENTS.md` (top-down; every
 folder refines it)  4. `docs/PLAN.md`  5. `docs/ARCHITECTURE.md` (section 2b: platform vs apps)  6. `docs/CREATE-AN-APP.md`
-(instructions for the agent that builds an app)  7. `docs/adr/`
+(instructions for the agent that builds an app)  7. `docs/adr/`  8. `docs/SCALE.md` (what changes at 100M and 1B members and for many apps)
+Ask instead of searching: the docs are indexed (`/docs` chat, the `agora-docs` MCP server in `.mcp.json`, `/api/docs/*`); see `docs/DOCS-PLATFORM.md`.
 
 ## Status (update when it changes)
 
@@ -77,15 +78,15 @@ faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
 tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
 simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0010,
-two example apps, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
+two example apps, a **docs Q&A platform** (`src/lib/docs-kb`: heading-aware BM25 index, cited answers that refuse when the docs do not cover the question, a chat page at `/docs`, `/api/docs/*`, an MCP server; retrieval measured by `evals/docs-qa.eval.test.ts`), a capacity model and a matching benchmark behind `docs/SCALE.md`, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
 dashboard that draws the learning curves from the simulation CSV. It runs in **demo mode only** (`AGORA_MODE=demo`, the
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
 carrier. `AGORA_MODE=live` answers 501 until accounts are built.
-Not built: notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), Postgres-backed memory, intake, voice,
+Not built: durable storage, a queue/outbox, authentication, feature flags, a retention job, e2e browser tests and secret scanning (see the status check in `docs/ARCHITECTURE.md` section 12b), embedding-based search for the docs Q&A (lexical only; held-out recall is 73%), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), Postgres-backed memory, intake, voice,
 accounts and real authentication, the map on the dashboard, shipping address and label screens, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
 
 ## Working here
 
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run evals`, `npm run bench:matching` (lookup latency at N items), `npm run capacity` (the tables in `docs/SCALE.md`), `npm run mcp:docs`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.
