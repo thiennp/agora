@@ -253,25 +253,49 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 
 Exact addresses are held only in `handoffs.revealed_location`, written after both confirmations.
 
-## 5. Deal state machine (`src/features/negotiation/internal/core`)
+## 5. Deal state machine (`src/features/negotiation/features/deal-state`)
 
 ```
-proposed -> countered (<= 3 rounds) -> agreed_by_agents -> awaiting_owners
-awaiting_owners -> confirmed (both) | declined (either) | expired (24h)
-confirmed -> handoff(mode: pickup | locker | ship) -> completed | not_completed
-ship: handoff -> label_created -> appointment_booked -> in_transit -> completed | not_completed
-any state -> reported (scam flag) -> resolved
-countered | agreed_by_agents -> awaiting_owner_input -> (back to the previous state with the owner's answer) | expired
+proposed -> countered (<= max rounds) -> agreed_by_agents -> awaiting_owners
+awaiting_owners -> confirmed (both owners) | declined (either) | expired (24h)
+confirmed -> handoff -> completed | not_completed
+any open state -> awaiting_owner_input -> (back to the previous state on yes) | declined (on no) | expired
+any state except declined, expired, reported -> reported (scam flag)
 ```
 
-Rules: pure function `next(state, event)`; illegal transitions throw; round limit enforced; expiry by timer.
+Rules: pure function `next(deal, event, time)`; illegal transitions throw; every transition is recorded with a time
+(`history`); expiry is a call to `expireDue()` from a timer (not yet wired). A **round** is one offer from either agent:
+the proposal is round 1 and the limit comes from the app config (`policies.maxNegotiationRounds`, 3 in both example
+apps), so the fourth offer is refused and the deal ends. The wanting owner's agent proposes; the offering side answers
+first; turns alternate.
 
-Offer message (structured):
+**Agreement is not commitment.** `agreed_by_agents` only opens confirm cards for both owners; the deal is `confirmed`
+only when both owners confirmed (invariant tested over thousands of random event sequences). Money is never held by
+the platform; a `price` term is settled by the owners outside it.
+
+Offer message (structured, language-neutral, built per app from its config):
 
 ```json
-{ "item_id": "...", "terms": "free|price", "price_eur": 0, "condition": "good",
-  "pickup_window": ["2026-11-02T10:00Z", "2026-11-02T14:00Z"], "note": "..." }
+{ "itemId": "...", "terms": "free|swap|price", "price": { "amount": 5, "currency": "EUR" },
+  "swapFor": "a trowel", "condition": "good",
+  "pickupWindow": { "from": "2026-11-02T10:00Z", "to": "2026-11-02T14:00Z" }, "note": "short, harmless" }
 ```
+
+Which terms are allowed follows the app's pricing mode (free_only, swap_only, free_or_agreement). `price` appears only
+with `price` terms and `swapFor` only with `swap` terms.
+
+How a turn works: the agent's decision is a pure function (`decideTurn`) over its owner's mandate (allowed terms,
+minimum condition, availability, language). It declines below the condition floor or for terms the owner will not
+consider; it asks the owner for any terms other than free unless that owner chose or already approved those exact
+terms in this deal; it stays inside the owner's availability (countering with the owner's window, asking first unless
+a standing rule applies); otherwise it accepts provisionally. The gatekeeper has the last word on every topic.
+Notes from the other agent are passed through the gatekeeper and dropped if they ask for anything or give an
+instruction (flag on the deal); our own notes are written by the Meta client (role `negotiator`), validated, checked
+as harmless, and replaced by a per-language template on any failure. Starting a deal holds both items so an item
+cannot be promised twice; declined and expired deals release them; confirmed deals reserve them for that deal.
+
+Not built yet: per-owner translation of notes (needs the language slice), the relay channel and deal-room UI, the
+expiry timer, and a Postgres repository (the in-memory repository matches migration 0004).
 
 ## 6. Agents and model routing
 
