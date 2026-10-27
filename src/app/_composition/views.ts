@@ -65,7 +65,7 @@ export async function dealView(p: Platform, dealId: string, key: PersonaKey) {
     history: d.history
       .filter((h, i, all) => i === 0 || all[i - 1]!.to !== h.to)
       .map((h) => ({ to: h.to, text: TRANSITION[h.to] ?? h.to, at: h.at })),
-    offers, conversation, handoff: await p.logistics.handoffCard(dealId, me.id), dropPoints: simulatedDropPoints(p.personas.a.districtCode).map(({ id, name }) => ({ id, name })), signals,
+    offers, conversation, handoff: await p.logistics.handoffCard(dealId, me.id), modes: p.app.policies.handoffModes, dropPoints: simulatedDropPoints(p.personas.a.districtCode).map(({ id, name }) => ({ id, name })), signals,
   };
 }
 

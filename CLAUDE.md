@@ -82,9 +82,9 @@ dashboard that draws the learning curves from the simulation CSV, a synthetic-ci
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
 carrier. Demo state is saved after every change to Postgres (`DATABASE_URL`) or a file (`AGORA_STATE_FILE`) and restored on start (docs/ARCHITECTURE.md §11b); with neither it is memory only. `AGORA_MODE=live` answers 501 until accounts are built (only `live` is refused; there is no separate demo value).
 Scaffold only (empty files, no behaviour yet): the `safety`, `intake` and `voice` slices, the dashboard slice's sub-features (the dashboard's logic lives in `src/app/_composition`), `src/lib/{audit,budget,db,flags,queue}.ts`, `db/seed.sql`, the golden-file evals, and Playwright e2e (the demo journey is covered by `src/app/api/api.test.ts`). Safety rules are enforced today in `schema.ts` (`safetyRules`), `catalog` and `gatekeeper/classifier`.
-Also built in the demo app: an items page (add an offer or want from the app's own categories, see the matcher's candidates, ask the agent to propose a deal; several deals at once).
+Also built in the demo app: shipping in the deal room (propose another way to hand over, recipient's encrypted address, postage split as terms only, simulated label shown to the sender only, tracking), and an items page (add an offer or want from the app's own categories, see the matcher's candidates, ask the agent to propose a deal; several deals at once).
 Not built: photo intake (needs a Meta key for the vision call; the items form stands in), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), relational Postgres repositories (migrations 0001–0010 are unused; demo state is one saved document), Postgres-backed memory, intake, voice,
-accounts and real authentication, shipping address and label screens, live Meta API calls (endpoint format unconfirmed).
+accounts and real authentication, live Meta API calls (endpoint format unconfirmed).
 
 ## Working here
 
