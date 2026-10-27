@@ -15,16 +15,21 @@ import type { HiddenRules } from "../../../simulated-owner/public-api/types";
 import { emptyResult, merge, summarize, type EpisodeResult, type Failure, type RoundMetrics } from "../core/metrics";
 
 const NOW = new Date("2026-10-27T12:00:00Z");
+/** Most deals one want may start when the retry policy is on: the top three candidates. */
+const MAX_ATTEMPTS = 3;
 const FORWARDED = ["OwnerAnswered", "OwnerDecision", "DealConfirmed", "DealDeclined", "DealExpired", "HandoffFinished"] as const;
 
-export type ArmName = "learning_on" | "learning_tighten_only" | "learning_off" | "oracle_ceiling";
+export type ArmName = "learning_on" | "learning_tighten_only" | "learning_off" | "oracle_ceiling" | "learning_on_retry" | "learning_off_retry";
 /** learning_on learns and asks owners before looking beyond a learned limit; learning_tighten_only is the earlier behaviour; learning_off never learns. */
-export const ARMS: { name: ArmName; learning: boolean; stretch: boolean; oracle?: boolean }[] = [
+export const ARMS: { name: ArmName; learning: boolean; stretch: boolean; oracle?: boolean; retry?: boolean }[] = [
   { name: "learning_on", learning: true, stretch: true },
   { name: "learning_tighten_only", learning: true, stretch: false },
   { name: "learning_off", learning: false, stretch: false },
   // Not a product behaviour: an upper bound that knows every owner's hidden rules and picks, for each want, the best pair both owners accept.
   { name: "oracle_ceiling", learning: false, stretch: false, oracle: true },
+  // Retry: after a decline, offer the next-best match (up to three in all). Tests whether trying more candidates, not learning, closes the gap to the ceiling.
+  { name: "learning_on_retry", learning: true, stretch: true, retry: true },
+  { name: "learning_off_retry", learning: false, stretch: false, retry: true },
 ];
 
 export interface SimulationOptions {
@@ -38,6 +43,8 @@ export interface SimulationOptions {
   arm?: ArmName;
   /** Ceiling arm: choose the best match both owners would accept, using the hidden rules. Not a real behaviour. */
   oracle?: boolean;
+  /** After a decline, offer the next-best candidate (up to three in all). */
+  retry?: boolean;
   /**
    * Preference drift: from `fromRound` on, half of the families (chosen by seed) tolerate `factor` times the distance. Tests whether
    * learned limits can recover when an owner's real preferences loosen.
@@ -54,7 +61,7 @@ export interface SimulationOptions {
  */
 export async function createSimulation(opts: SimulationOptions) {
   const appId = opts.appId ?? "kids-gear";
-  const armName: ArmName = opts.arm ?? (opts.oracle ? "oracle_ceiling" : opts.learning ? (opts.stretch ? "learning_on" : "learning_tighten_only") : "learning_off");
+  const armName: ArmName = opts.arm ?? (opts.oracle ? "oracle_ceiling" : opts.retry ? (opts.learning ? "learning_on_retry" : "learning_off_retry") : opts.learning ? (opts.stretch ? "learning_on" : "learning_tighten_only") : "learning_off");
   const app: AppConfig = await loadApp(appId);
   if (app.policies.pricing.mode === "swap_only") throw new Error("the simulation currently supports apps whose deals can be free; swap-only apps need owner-supplied swaps");
   const city = opts.city ?? (await loadCity(appId, opts.seed, opts.root));
@@ -114,6 +121,9 @@ export async function createSimulation(opts: SimulationOptions) {
 
     const wideMatcher = opts.oracle ? createMatchService({ app, now: () => NOW, topN: 50 }) : null;
     const scenario = generateScenario(app, city, key, opts.seed);
+    type Indexed = Parameters<typeof matcher.onListed>[0];
+    /** What the matcher was told about each offer, so a declined offer can go back on the list exactly as the catalog does. */
+    const indexedOffers = new Map<string, Indexed>();
     const wantItems = new Map<string, { id: string; size?: string }>();
     const offerItems = new Map<string, { id: string; family: string; size?: string; condition?: string }>();
     for (const s of scenario) {
@@ -125,8 +135,10 @@ export async function createSimulation(opts: SimulationOptions) {
       offerItems.set(o.id, { id: o.id, family: f.id, size: s.offer.size, condition: s.offer.condition });
       wantItems.set(f.id, { id: w.id, size: s.want.size });
       const common = { appId: app.id, createdAt: NOW.toISOString(), districtCode: f.districtCode };
-      matcher.onListed({ ...common, id: o.id, familyId: f.id, kind: "offer", category: s.offer.category, size: s.offer.size, condition: s.offer.condition });
-      wideMatcher?.onListed({ ...common, id: o.id, familyId: f.id, kind: "offer", category: s.offer.category, size: s.offer.size, condition: s.offer.condition });
+      const indexed: Indexed = { ...common, id: o.id, familyId: f.id, kind: "offer", category: s.offer.category, size: s.offer.size, condition: s.offer.condition };
+      indexedOffers.set(o.id, indexed);
+      matcher.onListed(indexed);
+      wideMatcher?.onListed(indexed);
     }
 
     for (const fam of city.families) {
@@ -188,61 +200,75 @@ export async function createSimulation(opts: SimulationOptions) {
         result.failures.push({ arm: armName, round, kind: "no_match", reason: result.stretchOffers > 0 && !stretchOfferId && opts.stretch ? "stretch_declined_or_none" : undefined, familyIds: [fam.id], category: s.want.category });
         continue;
       }
-      const off = offerItems.get(pick.offerItemId)!;
-      const giver = byId.get(off.family)!;
-      const cross = giver.language !== fam.language;
-      matcher.onUnlisted(off.id);
-      wideMatcher?.onUnlisted(off.id);
-      const deal = await negotiation.start({ offerItemId: off.id, wantItemId: want.id, offerFamilyId: giver.id, wantFamilyId: fam.id });
-      dealInfo.set(deal.id, { offerFamilyId: giver.id, wantFamilyId: fam.id, category: s.want.category });
-      if (stretchOfferId && learning) learning.linkStretchDeal(fam.id, stretchOfferId, deal.id);
-      result.started += 1;
-      if (cross) result.crossStarted += 1;
-      const fail = (f: Omit<Failure, "arm" | "round" | "familyIds" | "category">) => result.failures.push({ arm: armName, round, familyIds: [fam.id, giver.id], category: s.want.category, ...f });
+      // After a decline the agent can offer the next-best match, up to the top three (retry arms only).
+      const queue = [pick];
+      if (opts.retry && pick === res.matches[0]) queue.push(...res.matches.slice(1, MAX_ATTEMPTS));
+      for (const [attempt, cand] of queue.entries()) {
+        let confirmedNow = false;
+        const off = offerItems.get(cand.offerItemId)!;
+        const giver = byId.get(off.family)!;
+        const cross = giver.language !== fam.language;
+        matcher.onUnlisted(off.id);
+        wideMatcher?.onUnlisted(off.id);
+        const deal = await negotiation.start({ offerItemId: off.id, wantItemId: want.id, offerFamilyId: giver.id, wantFamilyId: fam.id });
+        dealInfo.set(deal.id, { offerFamilyId: giver.id, wantFamilyId: fam.id, category: s.want.category });
+        if (attempt === 0 && stretchOfferId && learning) learning.linkStretchDeal(fam.id, stretchOfferId, deal.id);
+        result.started += 1;
+        if (attempt > 0) result.retries += 1;
+        if (cross) result.crossStarted += 1;
+        const fail = (f: Omit<Failure, "arm" | "round" | "familyIds" | "category">) => result.failures.push({ arm: armName, round, familyIds: [fam.id, giver.id], category: s.want.category, ...f });
 
-      // The simulated owners answer scheduling questions (always yes), as a real owner who agrees would.
-      let d = await negotiation.run(deal.id);
-      for (let i = 0; i < 8 && d.state === "awaiting_owner_input" && d.pending; i++) {
-        await cards.settled();
-        const q = cards.questionsFor(d.pending.familyId).find((x) => x.dealId === deal.id);
-        if (!q) break;
-        result.questions += 1;
-        d = await cards.answerQuestion(q.id, d.pending.familyId, "yes");
-      }
-      if (d.state !== "awaiting_owners") {
-        result.agentsDeclined += 1;
-        fail({ kind: "agents_declined", reason: d.state === "declined" ? lastDeclineReason || "declined" : d.state });
-        continue;
-      }
-      result.agreed += 1;
-      result.roundsSum += d.round;
-
-      const facts = { distanceKm: districtDistanceKm(fam.districtCode, giver.districtCode), offerCondition: off.condition, offerSize: off.size, wantSize: want.size };
-      let bothConfirmed = true;
-      for (const [owner, role] of [[fam, "receiver"], [giver, "giver"]] as const) {
-        if ((await negotiation.get(deal.id))?.state !== "awaiting_owners") break;
-        await cards.settled();
-        const card = cards.confirmationsFor(owner.id).find((c) => c.dealId === deal.id);
-        if (!card) break;
-        const v = judge(app, hiddenAt(owner.id, round), role, facts);
-        result.decisions += 1;
-        if (v.confirm) {
-          result.approvals += 1;
-          await cards.decide(card.id, owner.id, "confirm");
-        } else {
-          bothConfirmed = false;
-          result.declines[v.reason] = (result.declines[v.reason] ?? 0) + 1;
-          fail({ kind: "owner_declined", reason: v.reason, role });
-          await cards.decide(card.id, owner.id, "decline", { code: v.reason === "condition" ? "condition" : v.reason });
-          break;
+        // The simulated owners answer scheduling questions (always yes), as a real owner who agrees would.
+        let d = await negotiation.run(deal.id);
+        for (let i = 0; i < 8 && d.state === "awaiting_owner_input" && d.pending; i++) {
+          await cards.settled();
+          const q = cards.questionsFor(d.pending.familyId).find((x) => x.dealId === deal.id);
+          if (!q) break;
+          result.questions += 1;
+          d = await cards.answerQuestion(q.id, d.pending.familyId, "yes");
         }
-      }
-      const final = await negotiation.get(deal.id);
-      if (final?.state === "confirmed") {
-        result.confirmed += 1;
-        if (stretchOfferId) result.stretchConfirmed += 1;
-        if (cross) result.crossConfirmed += 1;
-        if (!bothConfirmed) result.unauthorized += 1;
+        if (d.state !== "awaiting_owners") {
+          result.agentsDeclined += 1;
+          fail({ kind: "agents_declined", reason: d.state === "declined" ? lastDeclineReason || "declined" : d.state });
+          continue;
+        }
+        result.agreed += 1;
+        result.roundsSum += d.round;
+
+        const facts = { distanceKm: districtDistanceKm(fam.districtCode, giver.districtCode), offerCondition: off.condition, offerSize: off.size, wantSize: want.size };
+        let bothConfirmed = true;
+        for (const [owner, role] of [[fam, "receiver"], [giver, "giver"]] as const) {
+          if ((await negotiation.get(deal.id))?.state !== "awaiting_owners") break;
+          await cards.settled();
+          const card = cards.confirmationsFor(owner.id).find((c) => c.dealId === deal.id);
+          if (!card) break;
+          const v = judge(app, hiddenAt(owner.id, round), role, facts);
+          result.decisions += 1;
+          if (v.confirm) {
+            result.approvals += 1;
+            await cards.decide(card.id, owner.id, "confirm");
+          } else {
+            bothConfirmed = false;
+            result.declines[v.reason] = (result.declines[v.reason] ?? 0) + 1;
+            fail({ kind: "owner_declined", reason: v.reason, role });
+            await cards.decide(card.id, owner.id, "decline", { code: v.reason === "condition" ? "condition" : v.reason });
+            break;
+          }
+        }
+        const final = await negotiation.get(deal.id);
+        if (final?.state === "confirmed") {
+          result.confirmed += 1;
+          if (attempt === 0 && stretchOfferId) result.stretchConfirmed += 1;
+          if (attempt > 0) result.retryConfirmed += 1;
+          confirmedNow = true;
+          if (cross) result.crossConfirmed += 1;
+          if (!bothConfirmed) result.unauthorized += 1;
+        }
+        if (confirmedNow) break;
+        // A declined or failed deal frees both items (the catalog lists them again), so the offer is available to the next family too.
+        const back = indexedOffers.get(off.id)!;
+        matcher.onListed(back);
+        wideMatcher?.onListed(back);
       }
     }
 
@@ -314,6 +340,8 @@ export interface BenchmarkReport {
     confirmedPer100Off: number | null;
     /** Upper bound that knows the hidden rules; shows how much headroom exists. */
     confirmedPer100Oracle: number | null;
+    confirmedPer100OnRetry: number | null;
+    confirmedPer100OffRetry: number | null;
   }[];
   failures: Failure[];
   failureCounts: Record<string, number>;
@@ -339,12 +367,12 @@ export async function runBenchmark(o: BenchmarkOptions = {}): Promise<BenchmarkR
   const rounds = o.rounds ?? 8;
   const trainEpisodes = o.trainEpisodes ?? 2;
   const evalEpisodes = o.evalEpisodes ?? 3;
-  const arms: Record<ArmName, RoundMetrics[]> = { learning_on: [], learning_tighten_only: [], learning_off: [], oracle_ceiling: [] };
+  const arms: Record<ArmName, RoundMetrics[]> = { learning_on: [], learning_tighten_only: [], learning_off: [], oracle_ceiling: [], learning_on_retry: [], learning_off_retry: [] };
   const failures: Failure[] = [];
   let families = 0;
   let languages: string[] = [];
-  for (const { name, learning, stretch, oracle } of ARMS) {
-    const sim = await createSimulation({ appId: o.appId, seed, learning, stretch, oracle, arm: name, root: o.root, drift: o.drift });
+  for (const { name, learning, stretch, oracle, retry } of ARMS) {
+    const sim = await createSimulation({ appId: o.appId, seed, learning, stretch, oracle, retry, arm: name, root: o.root, drift: o.drift });
     families = sim.city.families.length;
     languages = [...new Set(sim.city.families.map((f) => f.language))].sort();
     for (let r = 1; r <= rounds; r++) {
@@ -363,8 +391,10 @@ export async function runBenchmark(o: BenchmarkOptions = {}): Promise<BenchmarkR
     const off = arms.learning_off[i]!;
     const tight = arms.learning_tighten_only[i]!;
     const oracle = arms.oracle_ceiling[i]!;
+    const onRetry = arms.learning_on_retry[i]!;
+    const offRetry = arms.learning_off_retry[i]!;
     const delta = on.ownerApprovalRate !== null && off.ownerApprovalRate !== null ? Math.round((on.ownerApprovalRate - off.ownerApprovalRate) * 1000) / 1000 : null;
-    return { round: on.round, on: on.ownerApprovalRate, tightenOnly: tight.ownerApprovalRate, off: off.ownerApprovalRate, delta, confirmedPer100On: on.confirmedPer100Wants, confirmedPer100TightenOnly: tight.confirmedPer100Wants, confirmedPer100Off: off.confirmedPer100Wants, confirmedPer100Oracle: oracle.confirmedPer100Wants };
+    return { round: on.round, on: on.ownerApprovalRate, tightenOnly: tight.ownerApprovalRate, off: off.ownerApprovalRate, delta, confirmedPer100On: on.confirmedPer100Wants, confirmedPer100TightenOnly: tight.confirmedPer100Wants, confirmedPer100Off: off.confirmedPer100Wants, confirmedPer100Oracle: oracle.confirmedPer100Wants, confirmedPer100OnRetry: onRetry.confirmedPer100Wants, confirmedPer100OffRetry: offRetry.confirmedPer100Wants };
   });
   return {
     simulated: true, label: SIM_LABEL, app: o.appId ?? "kids-gear", seed,
@@ -395,6 +425,15 @@ export interface SeedSummaryRow {
   confirmedPer100TightenOnlyMean: number | null;
   confirmedPer100OffMean: number | null;
   confirmedPer100OracleMean: number | null;
+  confirmedPer100OnRetryMean: number | null;
+  confirmedPer100OffRetryMean: number | null;
+  approvalOnRetryMean: number | null;
+  ownerDecisionsPer100OnMean: number | null;
+  ownerDecisionsPer100OnRetryMean: number | null;
+  ownerDecisionsPer100OffMean: number | null;
+  ownerDecisionsPer100OffRetryMean: number | null;
+  ownerDecisionsPer100TightenOnlyMean: number | null;
+  retryConfirmedOnRetryMean: number | null;
   stretchOffersOnMean: number | null;
   stretchAcceptedOnMean: number | null;
   interruptionsOnMean: number | null;
@@ -410,7 +449,24 @@ const lo = (xs: (number | null)[]) => (xs.some((x) => x !== null) ? Math.min(...
 const hi = (xs: (number | null)[]) => (xs.some((x) => x !== null) ? Math.max(...xs.filter((x): x is number => x !== null)) : null);
 
 /** The same benchmark over several seeds, summarised as mean and range per round: no single lucky seed (SIM-03, SIM-04). */
-export async function runBenchmarkSeeds(o: BenchmarkOptions & { seeds: number[] }): Promise<{ simulated: true; label: string; seeds: number[]; rows: SeedSummaryRow[]; reports: BenchmarkReport[] }> {
+export interface Headroom {
+  /** Mean confirmed deals per 100 wants over the rounds after the first (and, with drift, over the rounds from the drift on). */
+  rounds: number[];
+  off: number;
+  on: number;
+  onRetry: number;
+  offRetry: number;
+  oracle: number;
+  /** Owner confirm or decline cards answered per confirmed deal: what each arm costs owners' attention. */
+  decisionsPerConfirmed: { off: number; tightenOnly: number; on: number; offRetry: number; onRetry: number };
+  tightenOnly: number;
+  /** Share of the gap between learning-on and the oracle ceiling that retrying the next candidate closes, in percent. */
+  retryClosesGapPct: number | null;
+  /** Share of the gap between no learning and the oracle that retrying alone (without learning) closes, in percent. */
+  retryAloneClosesGapPct: number | null;
+}
+
+export async function runBenchmarkSeeds(o: BenchmarkOptions & { seeds: number[] }): Promise<{ simulated: true; label: string; seeds: number[]; rows: SeedSummaryRow[]; headroom: Headroom; reports: BenchmarkReport[] }> {
   const reports: BenchmarkReport[] = [];
   for (const seed of o.seeds) reports.push(await runBenchmark({ ...o, seed }));
   const rounds = reports[0]?.comparison.length ?? 0;
@@ -425,6 +481,15 @@ export async function runBenchmarkSeeds(o: BenchmarkOptions & { seeds: number[] 
       confirmedPer100TightenOnlyMean: mean(reports.map((r) => r.arms.learning_tighten_only[i]!.confirmedPer100Wants)),
       confirmedPer100OffMean: mean(reports.map((r) => r.arms.learning_off[i]!.confirmedPer100Wants)),
       confirmedPer100OracleMean: mean(reports.map((r) => r.arms.oracle_ceiling[i]!.confirmedPer100Wants)),
+      confirmedPer100OnRetryMean: mean(reports.map((r) => r.arms.learning_on_retry[i]!.confirmedPer100Wants)),
+      confirmedPer100OffRetryMean: mean(reports.map((r) => r.arms.learning_off_retry[i]!.confirmedPer100Wants)),
+      approvalOnRetryMean: mean(reports.map((r) => r.arms.learning_on_retry[i]!.ownerApprovalRate)),
+      ownerDecisionsPer100OnMean: mean(reports.map((r) => r.arms.learning_on[i]!.ownerDecisionsPer100Wants)),
+      ownerDecisionsPer100OnRetryMean: mean(reports.map((r) => r.arms.learning_on_retry[i]!.ownerDecisionsPer100Wants)),
+      ownerDecisionsPer100OffMean: mean(reports.map((r) => r.arms.learning_off[i]!.ownerDecisionsPer100Wants)),
+      ownerDecisionsPer100OffRetryMean: mean(reports.map((r) => r.arms.learning_off_retry[i]!.ownerDecisionsPer100Wants)),
+      ownerDecisionsPer100TightenOnlyMean: mean(reports.map((r) => r.arms.learning_tighten_only[i]!.ownerDecisionsPer100Wants)),
+      retryConfirmedOnRetryMean: mean(reports.map((r) => r.arms.learning_on_retry[i]!.retryConfirmed)),
       stretchOffersOnMean: mean(reports.map((r) => r.arms.learning_on[i]!.stretchOffers)),
       stretchAcceptedOnMean: mean(reports.map((r) => r.arms.learning_on[i]!.stretchAccepted)),
       interruptionsOnMean: mean(reports.map((r) => r.arms.learning_on[i]!.interruptionsPerDeal)),
@@ -432,5 +497,12 @@ export async function runBenchmarkSeeds(o: BenchmarkOptions & { seeds: number[] 
       stretchConfirmedOnMean: mean(reports.map((r) => r.arms.learning_on[i]!.stretchConfirmed)),
     });
   }
-  return { simulated: true, label: SIM_LABEL, seeds: o.seeds, rows, reports };
+  const from = o.drift ? o.drift.fromRound + 1 : 2;
+  const sel = rows.filter((r) => r.round >= from);
+  const m = (f: (r: SeedSummaryRow) => number | null) => Math.round((sel.reduce((a, r) => a + (f(r) ?? 0), 0) / Math.max(sel.length, 1)) * 100) / 100;
+  const h = { off: m((r) => r.confirmedPer100OffMean), tightenOnly: m((r) => r.confirmedPer100TightenOnlyMean), on: m((r) => r.confirmedPer100OnMean), onRetry: m((r) => r.confirmedPer100OnRetryMean), offRetry: m((r) => r.confirmedPer100OffRetryMean), oracle: m((r) => r.confirmedPer100OracleMean) };
+  const pct = (gained: number, gap: number) => (gap > 0 ? Math.round((gained / gap) * 1000) / 10 : null);
+  const dpc = (dec: (r: SeedSummaryRow) => number | null, conf: number) => Math.round((m(dec) / Math.max(conf, 0.01)) * 100) / 100;
+  const headroom: Headroom = { rounds: sel.map((r) => r.round), ...h, decisionsPerConfirmed: { off: dpc((r) => r.ownerDecisionsPer100OffMean, h.off), tightenOnly: dpc((r) => r.ownerDecisionsPer100TightenOnlyMean, h.tightenOnly), on: dpc((r) => r.ownerDecisionsPer100OnMean, h.on), offRetry: dpc((r) => r.ownerDecisionsPer100OffRetryMean, h.offRetry), onRetry: dpc((r) => r.ownerDecisionsPer100OnRetryMean, h.onRetry) }, retryClosesGapPct: pct(h.onRetry - h.on, h.oracle - h.on), retryAloneClosesGapPct: pct(h.offRetry - h.off, h.oracle - h.off) };
+  return { simulated: true, label: SIM_LABEL, seeds: o.seeds, rows, headroom, reports };
 }

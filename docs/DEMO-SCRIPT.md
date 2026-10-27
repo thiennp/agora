@@ -8,7 +8,7 @@ labelled on screen.
 | 0:00–0:25 | A parent photographs a pile of outgrown clothes; items separate into listings | intake (not built yet) |
 | 0:25–1:15 | Another parent's agent in a different language matches and negotiates; side-by-side translation | matching, negotiation, language |
 | 1:15–1:45 | Owner cards: price and address request pause the agent; both confirm; locker or shipping label and appointment (test mode, disclosed) | gatekeeper, owner cards, logistics |
-| 1:45–2:20 | Learning curve rising; a declined deal changes the next proposal | simulation and benchmark (built: `npm run simulate`; the chart screen is not built yet) |
+| 1:45–2:20 | Learning curve: approval rising and owner cards per confirmed deal falling (about 3.5 against 8.6 without learning in the simulation); a declined deal changes the next proposal | simulation and benchmark (built: `npm run simulate`; the chart screen is not built yet) |
 | 2:20–2:45 | Privacy and safety: leak test, car-seat rule firing | trust, screening, safety rules |
 | 2:45–3:00 | Platform reveal: paste one link into Muse, show the app config it produced; show a non-exchange app only if tier 2 passed. Sandbox city and cost numbers on screen. | create-an-app flow (not yet tried with Muse) |
 

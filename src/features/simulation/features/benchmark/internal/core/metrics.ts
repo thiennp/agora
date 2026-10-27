@@ -26,6 +26,9 @@ export interface EpisodeResult {
   stretchOffers: number;
   stretchAccepted: number;
   stretchConfirmed: number;
+  /** Attempts beyond the first for a want (after a decline), and how many of those deals both owners confirmed. */
+  retries: number;
+  retryConfirmed: number;
   top3Total: number;
   top3Acceptable: number;
   roundsSum: number;
@@ -37,7 +40,7 @@ export interface EpisodeResult {
 }
 
 export const emptyResult = (): EpisodeResult => ({
-  wants: 0, noMatch: 0, started: 0, agreed: 0, decisions: 0, approvals: 0, confirmed: 0, declines: {}, agentsDeclined: 0, questions: 0, stretchOffers: 0, stretchAccepted: 0, stretchConfirmed: 0,
+  wants: 0, noMatch: 0, started: 0, agreed: 0, decisions: 0, approvals: 0, confirmed: 0, declines: {}, agentsDeclined: 0, questions: 0, stretchOffers: 0, stretchAccepted: 0, stretchConfirmed: 0, retries: 0, retryConfirmed: 0,
   top3Total: 0, top3Acceptable: 0, roundsSum: 0, crossStarted: 0, crossConfirmed: 0, unauthorized: 0, failures: [],
 });
 
@@ -48,7 +51,7 @@ export function merge(a: EpisodeResult, b: EpisodeResult): EpisodeResult {
     wants: a.wants + b.wants, noMatch: a.noMatch + b.noMatch, started: a.started + b.started, agreed: a.agreed + b.agreed,
     decisions: a.decisions + b.decisions, approvals: a.approvals + b.approvals, confirmed: a.confirmed + b.confirmed, declines,
     agentsDeclined: a.agentsDeclined + b.agentsDeclined, questions: a.questions + b.questions, stretchOffers: a.stretchOffers + b.stretchOffers, stretchAccepted: a.stretchAccepted + b.stretchAccepted,
-    stretchConfirmed: a.stretchConfirmed + b.stretchConfirmed, top3Total: a.top3Total + b.top3Total,
+    stretchConfirmed: a.stretchConfirmed + b.stretchConfirmed, retries: a.retries + b.retries, retryConfirmed: a.retryConfirmed + b.retryConfirmed, top3Total: a.top3Total + b.top3Total,
     top3Acceptable: a.top3Acceptable + b.top3Acceptable, roundsSum: a.roundsSum + b.roundsSum, crossStarted: a.crossStarted + b.crossStarted,
     crossConfirmed: a.crossConfirmed + b.crossConfirmed, unauthorized: a.unauthorized + b.unauthorized, failures: [...a.failures, ...b.failures],
   };
@@ -84,6 +87,10 @@ export interface RoundMetrics {
   stretchOffers: number;
   stretchAccepted: number;
   stretchConfirmed: number;
+  retries: number;
+  retryConfirmed: number;
+  /** Owner confirm or decline cards answered per 100 wants: what retrying costs owners. */
+  ownerDecisionsPer100Wants: number | null;
   /** Metric 8: must be 0. */
   unauthorizedCommitments: number;
   declinesByReason: Record<string, number>;
@@ -100,7 +107,8 @@ export function summarize(arm: string, round: number, r: EpisodeResult, extra: {
     confirmedPer100Wants: r.wants === 0 ? null : Math.round((r.confirmed / r.wants) * 1000) / 10,
     precisionAt3: ratio(r.top3Acceptable, r.top3Total), avgRoundsToAgreement: r.agreed === 0 ? null : Math.round((r.roundsSum / r.agreed) * 100) / 100,
     crossLanguageSuccessRate: ratio(r.crossConfirmed, r.crossStarted), interruptionsPerDeal: r.started === 0 ? null : Math.round(((r.questions + r.stretchOffers) / r.started) * 100) / 100,
-    stretchOffers: r.stretchOffers, stretchAccepted: r.stretchAccepted, stretchConfirmed: r.stretchConfirmed,
+    stretchOffers: r.stretchOffers, stretchAccepted: r.stretchAccepted, stretchConfirmed: r.stretchConfirmed, retries: r.retries, retryConfirmed: r.retryConfirmed,
+    ownerDecisionsPer100Wants: r.wants === 0 ? null : Math.round((r.decisions / r.wants) * 1000) / 10,
     unauthorizedCommitments: r.unauthorized, declinesByReason: r.declines, agentsDeclined: r.agentsDeclined, ...extra,
   };
 }

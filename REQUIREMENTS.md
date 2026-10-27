@@ -123,6 +123,7 @@ report-and-hide comes with community posting at tier 2). Voting, evolving settin
 7. Items reused and money saved (estimates, labelled).
 8. 0 unauthorized commitments on the red-team set.
 9. Owner interruptions per deal.
+11. Owner cards answered per confirmed deal (the attention cost of a deal).
 10. Tier 2 only: relevance precision and recall on a labelled set of posts (how many wanted posts were wrongly dropped), the share of posts filtered per member, and owner interruptions per community.
 
 ## 9. Index of requirement documents

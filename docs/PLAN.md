@@ -95,6 +95,7 @@ Out of scope (do not build)
 9. Owner interruptions per deal, falling over rounds as safe standing rules accumulate (without ever auto-handling
    the always-ask topics).
 
+11. Owner cards answered per confirmed deal (the attention cost of a deal), with and without learning and retry.
 10. Tier 2 only: relevance precision and recall on a labelled set of posts (wrongly dropped wanted posts), share of posts
     filtered per member, owner interruptions per community.
 
