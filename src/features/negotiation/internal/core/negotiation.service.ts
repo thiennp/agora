@@ -299,6 +299,10 @@ export function createNegotiationService(deps: {
     },
 
     get: (id: string) => repo.get(id),
+    /** Every deal the family is a party to, newest first. */
+    async listForFamily(familyId: string): Promise<Deal[]> {
+      return (await repo.listForFamily(familyId)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    },
     transcript: (id: string): Message[] => [...(messages.get(id) ?? [])],
 
     /** The conversation as `viewerFamilyId` reads it: original notes plus a translation into their language where needed (NEG-03). */

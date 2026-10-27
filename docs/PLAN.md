@@ -45,6 +45,7 @@ safety extras, languages. Tier 1 is never cut.
 produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
 (or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room) and judge dashboard (learning curves from the CSV) exist, and demo state is saved to Postgres or a file (restart-tested), but relational repositories
 and photo intake do not exist, so the next work is tier 1, not the `community` config section.
+**Photo intake (open decision for the project owner):** it needs a real vision call (SAM 3.1 / a Muse vision model), which cannot be built or verified without a Meta API key. Until then owners add items with a form (`/items`, built, any app's categories, sizes and conditions), and the originals-discarded rule holds because no photo is accepted. If the vision call is not confirmed in time, record the cut here and change the demo script's opening (docs/DEMO-SCRIPT.md, 0:00–0:25), which today shows a photo of a pile.
 **Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; demo state now survives restarts (one saved document, Postgres or file); relational repositories and photo intake are the open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`.
 
 ## 3. Scope

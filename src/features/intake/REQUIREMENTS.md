@@ -21,6 +21,8 @@ Parent owner.
 | INT-04 | Let the owner correct label, size and condition before publishing. | Should | Edits are saved to the draft. |
 | INT-05 | Ask for another photo when the image is poor instead of guessing. | Must | Blurred or dark inputs trigger a retake prompt. |
 
+Status: not built (scaffold only). It needs a real vision call; the demo's items form (`/items`) stands in until a Meta key confirms it.
+
 ## Out of scope
 
 - Storing owner photo libraries; identifying people.
