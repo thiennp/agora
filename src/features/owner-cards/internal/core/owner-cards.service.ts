@@ -1,4 +1,5 @@
 import type { AppConfig } from "@/lib/app-config";
+import type { LanguageService } from "@/features/language/public-api/types";
 import type { DealEventBus } from "@/hubs/DealEvents/command";
 import type { Deal, Message } from "@/features/negotiation/public-api/types";
 import { bothConfirmed, REASON_CODES } from "../../features/confirmations/public-api/infrastructure";
@@ -6,8 +7,8 @@ import type { ConfirmationCard, ConfirmationStore, ReasonCode } from "../../feat
 import { createConfirmationStore } from "../../features/confirmations/public-api/infrastructure";
 import type { MandateBook } from "../../features/mandates/public-api/types";
 import { isEligible } from "../../features/mandates/public-api/infrastructure";
-import { createQuestionStore, questionContent } from "../../features/questions/public-api/infrastructure";
-import type { OwnerQuestion, QuestionStore } from "../../features/questions/public-api/types";
+import { createQuestionStore, hasPack, questionContent } from "../../features/questions/public-api/infrastructure";
+import type { OwnerQuestion, QuestionStore, TermsFact } from "../../features/questions/public-api/types";
 
 /** What owner cards need from negotiation; its service satisfies this. */
 export interface DealOps {
@@ -34,12 +35,12 @@ export interface CardAudit {
 
 type App = Pick<AppConfig, "policies">;
 
-const termsText = (m: Message | undefined): string => {
+const termsFact = (m: Message | undefined): TermsFact => {
   const o = m?.offer;
-  if (!o) return "different terms";
-  if (o.terms === "free") return "free of charge";
-  if (o.terms === "swap") return `a swap for ${o.swapFor}`;
-  return `${o.price?.amount} ${o.price?.currency}, settled between the two of you`;
+  if (!o) return { kind: "unknown" };
+  if (o.terms === "free") return { kind: "free" };
+  if (o.terms === "swap") return { kind: "swap", swapFor: o.swapFor ?? "" };
+  return { kind: "price", amount: o.price?.amount ?? 0, currency: o.price?.currency ?? "" };
 };
 
 export function createOwnerCards(deps: {
@@ -47,6 +48,10 @@ export function createOwnerCards(deps: {
   negotiation: DealOps;
   bus: DealEventBus;
   mandates: MandateBook;
+  /** The owner's language; cards are worded in it. Defaults to English. */
+  languageOf?: (familyId: string) => string;
+  /** Translates card text for languages without a fixed wording pack; on failure the English text is kept. */
+  language?: LanguageService;
   questions?: QuestionStore;
   confirmations?: ConfirmationStore;
   audit?: (entry: CardAudit) => void;
@@ -73,14 +78,22 @@ export function createOwnerCards(deps: {
     const last = deps.negotiation.transcript(dealId).at(-1);
     const action = deal.pending?.action as { then?: { kind: string; offer?: { pickupWindow?: { from: string; to: string } } } } | undefined;
     const counter = action?.then?.kind === "counter";
-    const { text, answers } = questionContent({
-      topic,
-      terms: termsText(last),
-      window: counter ? action?.then?.offer?.pickupWindow : last?.offer.pickupWindow,
-      weAreProposing: counter,
-    });
+    const wanted = deps.languageOf?.(familyId) ?? "en";
+    let { text, answers, language } = questionContent(
+      { topic, terms: termsFact(last), window: counter ? action?.then?.offer?.pickupWindow : last?.offer.pickupWindow, weAreProposing: counter },
+      wanted,
+    );
+    if (!hasPack(wanted) && wanted !== "en" && deps.language) {
+      // No fixed wording: translate the English card; keep the English card if any part fails.
+      const [t, ...labels] = await Promise.all([text, ...answers.map((a) => a.label)].map((s) => deps.language!.translate({ text: s, from: "en", to: wanted, participantId: familyId })));
+      if (t?.ok && labels.every((l) => l.ok)) {
+        text = t.text;
+        answers = answers.map((a, i) => ({ ...a, label: (labels[i] as { ok: true; text: string }).text }));
+        language = wanted;
+      }
+    }
     const q: OwnerQuestion = {
-      id: newId(), dealId, familyId, topic, text, suggestedAnswers: answers,
+      id: newId(), dealId, familyId, topic, language, text, suggestedAnswers: answers,
       canRemember: isEligible(deps.app, topic), status: "open", createdAt: now().toISOString(), expiresAt: deal.expiresAt,
     };
     questions.rows.set(q.id, q);

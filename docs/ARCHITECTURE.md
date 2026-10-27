@@ -356,8 +356,8 @@ and a deadline. A "remember this" option is offered only for topics outside the 
 
 Tests: unit tests for every table row of both apps; red-team sets in `evals/` (injection, price pressure, scam
 scripts) run with standing rules and adversarial model proposals; the target is 0 unauthorized commitments. Known
-limit: patterns cover en, de, es, vi; text in other languages has no benign match and therefore asks. The planned
-fix is to classify the English translation as well (GAT-CLS-06).
+limit: patterns cover en, de, es, vi; text in other languages has no benign match and therefore asks. The English
+translation is also classified (GAT-CLS-06) and can only add risk.
 
 ### Owner cards (`src/features/owner-cards`)
 
@@ -373,6 +373,20 @@ one per topic, mirrored into the gatekeeper so they apply and are revoked immedi
 categories, availability, minimum condition, allowed terms) are validated against the app and feed matching and
 negotiation. The number of questions per deal is the "interruptions per deal" metric. Stores are synchronous in-memory
 for now, so cards appear in the same tick as the event; a database version moves card creation to a worker.
+
+### Language (`src/features/language`)
+
+One service per app, used by the gatekeeper, negotiation and owner cards. Detection is deterministic first (script marks
+and stopwords for en, de, es, fr, vi) and asks a model only when unsure, accepting an answer only if it names one of the
+app's languages. Translation goes through the Meta client (role `translator`): the text is sent as JSON data, the reply
+must be a validated object, a translation that changes a number, size, date or time is rejected, low confidence is
+marked uncertain, results are cached, and a failure returns a reason instead of invented text. Uses:
+- Gatekeeper: incoming notes are classified in the original and in English; the English version can only add risky topics.
+- Negotiation: `transcriptFor` shows each owner the original and a translation in their language (failures marked).
+- Owner cards: fixed wording packs for en, de, es and vi; other languages are translated, with English kept on failure.
+
+Known limits: automatic handling (auto) still needs a deterministic benign match in the original, so text in other
+languages asks the owner; translation quality is unmeasured until a real Meta key allows the G0 round-trip test.
 
 ## 7b. Relay channel, logistics and trust
 

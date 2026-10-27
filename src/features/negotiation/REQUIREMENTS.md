@@ -27,7 +27,8 @@ Parent owners; their agents.
 | NEG-10 | Terms other than free (price or swap) always go to the owner unless that owner chose those exact terms when starting the deal or already approved them in this deal. | Must | Money and swap terms always open an owner question first. |
 | NEG-11 | Starting a deal holds both items; if either is not listed the deal is refused and nothing stays held. | Must | A second deal on the same item is refused. |
 | NEG-12 | Publish deal events (agreed, owner question, confirmed, declined, expired) on the DealEvents hub. | Must | Event tests. |
-| NEG-13 | Not built yet: translation of notes per owner (NEG-03), the human relay channel, the deal-room UI, and a timer that calls expiry. Owner cards now drive `answerOwner` and `ownerDecision`. | Info | Tracked in CLAUDE.md status. |
+| NEG-14 | Each owner reads the conversation in their language (`transcriptFor`): original notes plus a translation, with failures marked; incoming notes are also classified in English before they are accepted. | Must | Cross-language tests. |
+| NEG-13 | Not built yet: the human relay channel, the deal-room UI, and a timer that calls expiry. Owner cards now drive `answerOwner` and `ownerDecision`. | Info | Tracked in CLAUDE.md status. |
 
 ## Out of scope
 

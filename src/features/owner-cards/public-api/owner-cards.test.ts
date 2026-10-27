@@ -155,3 +155,50 @@ describe("owner cards", () => {
     expect(s.book.getLimits("fo").allowedTerms).toEqual(["free"]);
   });
 });
+
+describe("owner cards in the owner's language", () => {
+  async function langSetup(language: string, translate?: (text: string) => string | null) {
+    const s = await setup({ swap: true });
+    const lang = {
+      translate: async ({ text }: { text: string }) => { const t = translate?.(text); return t ? { ok: true as const, text: t, from: "en", to: language, uncertain: false } : { ok: false as const, reason: "unavailable" as const }; },
+    } as never;
+    const bus = createDealEventBus();
+    const negotiation = createNegotiationService({
+      app: s.app, items: s.catalog.items, gatekeeper: s.gatekeeper, bus, now,
+      mandateOf: (f) => s.book.negotiationMandate(f, "en", f === "fw" ? { terms: "swap", swapFor: "a baby book" } : undefined) as NegotiationMandate,
+    });
+    const cards = createOwnerCards({ app: s.app, negotiation, bus, mandates: s.book, now, languageOf: (f) => (f === "fo" ? language : "en"), language: lang });
+    return { ...s, negotiation, cards };
+  }
+
+  it("uses the fixed wording pack for German, Spanish and Vietnamese", async () => {
+    for (const [language, expected] of [["de", "ein Tausch gegen a baby book"], ["es", "un intercambio por a baby book"], ["vi", "đổi lấy a baby book"]] as const) {
+      const s = await langSetup(language);
+      const d = await s.negotiation.start(s.match);
+      await s.negotiation.run(d.id);
+      await s.cards.settled();
+      const [q] = s.cards.questionsFor("fo");
+      expect(q).toMatchObject({ language });
+      expect(q!.text).toContain(expected);
+      expect(q!.suggestedAnswers.map((a) => a.id)).toEqual(["yes", "no"]);
+    }
+  });
+
+  it("translates the card for other languages and keeps English if translation fails", async () => {
+    const s = await langSetup("it", (t) => `[it] ${t}`);
+    const d = await s.negotiation.start(s.match);
+    await s.negotiation.run(d.id);
+    await s.cards.settled();
+    const [q] = s.cards.questionsFor("fo");
+    expect(q).toMatchObject({ language: "it" });
+    expect(q!.text.startsWith("[it] ")).toBe(true);
+    expect(q!.suggestedAnswers[0]!.label.startsWith("[it] ")).toBe(true);
+
+    const f = await langSetup("it");
+    const d2 = await f.negotiation.start(f.match);
+    await f.negotiation.run(d2.id);
+    await f.cards.settled();
+    expect(f.cards.questionsFor("fo")[0]).toMatchObject({ language: "en" });
+    expect(f.cards.questionsFor("fo")[0]!.text).toMatch(/^The terms on the table are/);
+  });
+});

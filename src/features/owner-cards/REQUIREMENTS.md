@@ -22,7 +22,7 @@ Parent owner.
 | OWN-05 | Cards are created from deal events on the DealEvents hub (question opened, agreed by agents) and closed when the deal is declined, expires or is confirmed; owner cards never call negotiation internals. | Must | Event-driven tests. |
 | OWN-06 | Every card action checks that the card belongs to the acting owner and cannot be repeated. | Must | Wrong-owner and repeat attempts are refused. |
 | OWN-07 | Question wording comes from fixed templates over structured facts, never from counterparty text. | Must | A card contains no counterparty free text. |
-| OWN-08 | Not built yet: card UI components, notifications, the handoff card (OWN-CNF-03) and withdrawing after confirmation (OWN-CNF-04); card text is English until the language slice can translate it. | Info | Tracked in CLAUDE.md status. |
+| OWN-08 | Not built yet: card UI components, notifications, the handoff card (OWN-CNF-03) and withdrawing after confirmation (OWN-CNF-04); card text uses fixed wording in en, de, es and vi and is translated (or kept in English if translation fails) for other languages. | Info | Tracked in CLAUDE.md status. |
 
 ## Out of scope
 

@@ -51,9 +51,16 @@ export function createGatekeeper(deps: {
     },
 
     /** Classify an incoming message (from the other side: untrusted data) and decide. */
-    evaluateIncoming(input: { familyId: string; dealId?: string; text: string; proposal?: ModelProposal }): GatekeeperVerdict {
-      const { topics } = classify(deps.app.policies, input.text, input.proposal);
-      return this.evaluateTopics({ familyId: input.familyId, dealId: input.dealId, topics });
+    evaluateIncoming(input: { familyId: string; dealId?: string; text: string; proposal?: ModelProposal; translated?: string | null }): GatekeeperVerdict {
+      const topics = new Set(classify(deps.app.policies, input.text, input.proposal).topics);
+      // GAT-CLS-06: a risk worded in another language is caught by classifying the English translation too. The translation
+      // can only add risky topics; it can never make a message look harmless, because a model produced it.
+      if (input.translated) {
+        for (const t of classify(deps.app.policies, input.translated).topics) {
+          if (deps.app.policies.topics[t] !== "auto") topics.add(t);
+        }
+      }
+      return this.evaluateTopics({ familyId: input.familyId, dealId: input.dealId, topics: [...topics] });
     },
 
     /** Decide for topics the agent itself is about to act on (e.g. its own draft reply). */

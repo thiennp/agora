@@ -21,7 +21,8 @@ platform yourself. They never see or answer anything technical.
 3. **What changes over time:** "Does what people need change over time or by situation?" (becomes catalog stages;
    for seasons or other repeating cycles set `stageCycle` and let a range wrap, e.g. months 10 to 2 is Oct to Feb)
 4. **Where and who:** "Do people need to be near each other? What area first? Which languages do they speak?"
-   (becomes the region and languages)
+   (becomes the region and languages: any ISO 639-1 code works; en, de, es and vi have fixed wording on owner cards,
+   other languages are translated by the model when a Meta key is configured)
 5. **Handing things over:** "How would things usually change hands: meet up, a locker, by post?"
 5b. **Giving or swapping:** "Is it free, a swap, or can people agree on something in return?"
    (becomes the pricing mode: free only, swap only, or free-or-agreement)

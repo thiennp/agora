@@ -8,6 +8,8 @@ export interface OwnerQuestion {
   dealId: string;
   familyId: string;
   topic: string;
+  /** Language the card text is in (the owner's, or English when no translation was possible). */
+  language: string;
   /** Plain-words question built from structured facts only: never counterparty free text (OWN-03). */
   text: string;
   suggestedAnswers: SuggestedAnswer[];

@@ -1,6 +1,7 @@
 import type { AppConfig } from "@/lib/app-config";
 import type { MetaClient } from "@/lib/meta";
 import type { Gatekeeper } from "@/features/gatekeeper/public-api/types";
+import type { LanguageService } from "@/features/language/public-api/types";
 import type { DealEventBus } from "@/hubs/DealEvents/command";
 import { createDeal, next, isOpen, IllegalTransitionError, RoundLimitError, createInMemoryDealRepository } from "../../features/deal-state/public-api/infrastructure";
 import type { Deal, DealEvent, DealRepository } from "../../features/deal-state/public-api/types";
@@ -25,6 +26,12 @@ export interface Message {
   noteLang: string;
 }
 
+/** A message as one owner reads it: the original and, when it is in another language, a translation (LNG-02, NEG-03). */
+export interface ViewedMessage extends Message {
+  translatedNote?: { text: string; language: string; uncertain: boolean };
+  translationFailed?: boolean;
+}
+
 export class NegotiationError extends Error {
   constructor(
     readonly code: "not_found" | "not_your_turn" | "invalid_offer" | "needs_owner_terms" | "item_unavailable" | "wrong_state" | "not_a_party",
@@ -44,6 +51,8 @@ export function createNegotiationService(deps: {
   mandateOf: (familyId: string) => NegotiationMandate;
   repo?: DealRepository;
   client?: MetaClient;
+  /** Translates notes for each owner and for the gatekeeper's English check; without it notes are shown as written. */
+  language?: LanguageService;
   now?: () => Date;
   newId?: () => string;
 }) {
@@ -137,8 +146,11 @@ export function createNegotiationService(deps: {
       let note = "";
       const text = rawNote ?? parsed.data.note;
       if (text) {
-        const v = deps.gatekeeper.evaluateIncoming({ familyId: d.turnFamilyId === d.offerFamilyId ? d.wantFamilyId : d.offerFamilyId, dealId, text });
-        if (v.outcome === "auto" && noteIsHarmless(deps.app, text)) note = text;
+        const receiver = d.turnFamilyId === d.offerFamilyId ? d.wantFamilyId : d.offerFamilyId;
+        // Check the English translation as well as the original, so a request worded in another language is still caught.
+        const english = deps.language ? await deps.language.toEnglish(text, deps.mandateOf(fromFamilyId).language, fromFamilyId) : null;
+        const v = deps.gatekeeper.evaluateIncoming({ familyId: receiver, dealId, text, translated: english });
+        if (v.outcome === "auto" && noteIsHarmless(deps.app, text) && (english === null || noteIsHarmless(deps.app, english))) note = text;
         else {
           const flag = v.outcome === "forbid" ? "untrusted_instruction" : `note_dropped:${v.decisive.topic}`;
           d = { ...d, flags: [...d.flags, flag] };
@@ -253,6 +265,18 @@ export function createNegotiationService(deps: {
 
     get: (id: string) => repo.get(id),
     transcript: (id: string): Message[] => [...(messages.get(id) ?? [])],
+
+    /** The conversation as `viewerFamilyId` reads it: original notes plus a translation into their language where needed (NEG-03). */
+    async transcriptFor(id: string, viewerFamilyId: string): Promise<ViewedMessage[]> {
+      const language = deps.mandateOf(viewerFamilyId).language;
+      return Promise.all(
+        (messages.get(id) ?? []).map(async (m): Promise<ViewedMessage> => {
+          if (!m.note || m.noteLang === language || !deps.language) return { ...m };
+          const r = await deps.language.translate({ text: m.note, from: m.noteLang, to: language, participantId: viewerFamilyId });
+          return r.ok ? { ...m, translatedNote: { text: r.text, language, uncertain: r.uncertain } } : { ...m, translationFailed: true };
+        }),
+      );
+    },
 
     /** One plain-words line for the owner (NEG-NGT-03). */
     async summary(dealId: string): Promise<string> {

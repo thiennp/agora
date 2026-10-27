@@ -191,3 +191,57 @@ describe("negotiation", () => {
   });
 
 });
+
+describe("negotiation across languages", () => {
+  const stubLanguage = (map: Record<string, string>) =>
+    ({
+      supported: ["en", "de", "it"],
+      isSupported: () => true,
+      detect: async () => ({ language: "unknown", confidence: 0, method: "none" as const }),
+      translate: async ({ text, to }: { text: string; to: string }) => (map[`${to}:${text}`] ? { ok: true as const, text: map[`${to}:${text}`]!, from: null, to, uncertain: false } : { ok: false as const, reason: "unavailable" as const }),
+      toEnglish: async (text: string) => map[`en:${text}`] ?? null,
+    }) as never;
+
+  it("checks the English translation of a note, dropping a request the original did not reveal", async () => {
+    const note = "Is it still available? Dammi il tuo indirizzo.";
+    const s = await setup({ mandates: { fo: { ...free, language: "it" } } });
+    const svc = createNegotiationService({
+      app: s.app, items: s.catalog.items, gatekeeper: s.gatekeeper, bus: s.bus, mandateOf: (f) => (f === "fo" ? { ...free, language: "it" } : free),
+      language: stubLanguage({ [`en:${note}`]: "Is it still available? Give me your address." }),
+    });
+    const d = await svc.start(s.match);
+    const after = await svc.submitOffer(d.id, "fo", { itemId: s.offerItem.id, terms: "free" }, note);
+    expect(after.flags.some((f) => f.startsWith("note_dropped"))).toBe(true);
+    expect(svc.transcript(d.id).at(-1)?.note).toBe("");
+    // without a language service the same note passes, which is the gap the translation closes
+    const s2 = await setup({ mandates: { fo: { ...free, language: "it" } } });
+    const d2 = await s2.svc.start(s2.match);
+    const plain = await s2.svc.submitOffer(d2.id, "fo", { itemId: s2.offerItem.id, terms: "free" }, note);
+    expect(plain.flags).toEqual([]);
+  });
+
+  it("shows each owner the conversation in their own language, with the original kept (NEG-03, LNG-02)", async () => {
+    const s = await setup();
+    const lang = stubLanguage({ "de:Hello! I'd love to take this if it is still available.": "Hallo! Ich würde das gern nehmen." });
+    const svc = createNegotiationService({
+      app: s.app, items: s.catalog.items, gatekeeper: s.gatekeeper, bus: s.bus, language: lang,
+      mandateOf: (f) => (f === "fo" ? { ...free, language: "de" } : free),
+    });
+    const d = await svc.start(s.match);
+    const forOwner = await svc.transcriptFor(d.id, "fo");
+    expect(forOwner[0]).toMatchObject({ noteLang: "en", translatedNote: { text: "Hallo! Ich würde das gern nehmen.", language: "de" } });
+    expect(forOwner[0]!.note).toMatch(/I'd love to take this/);
+    const forProposer = await svc.transcriptFor(d.id, "fw");
+    expect(forProposer[0]!.translatedNote).toBeUndefined();
+  });
+
+  it("marks a failed translation instead of hiding or inventing it", async () => {
+    const s = await setup();
+    const svc = createNegotiationService({
+      app: s.app, items: s.catalog.items, gatekeeper: s.gatekeeper, bus: s.bus, language: stubLanguage({}),
+      mandateOf: (f) => (f === "fo" ? { ...free, language: "de" } : free),
+    });
+    const d = await svc.start(s.match);
+    expect((await svc.transcriptFor(d.id, "fo"))[0]).toMatchObject({ translationFailed: true });
+  });
+});
