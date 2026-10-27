@@ -13,8 +13,8 @@ export interface Shipment {
   mode: "simulated" | "test";
   labelRef?: string;
   trackingRef?: string;
-  /** Shown only to the sender. */
-  labelText?: string;
+  /** The label (it contains the recipient's address), encrypted at rest; decrypted only for the sender's view. */
+  labelTextEnc?: string;
   appointment?: Appointment;
   feeSplit?: FeeSplit;
   status?: ShipmentStatus;

@@ -2,7 +2,7 @@ import type { RelayMessage } from "../core/relay-message.schema";
 import { tracked } from "@/lib/state";
 
 export function createRelayStore() {
-  const rows = tracked("relay.rows", [] as RelayMessage[]);
+  const rows = tracked("relay.rows", [] as RelayMessage[], { swap: { original: "screenedOriginal" } });
   return {
     rows,
     forDeal: (dealId: string) => rows.filter((m) => m.dealId === dealId),

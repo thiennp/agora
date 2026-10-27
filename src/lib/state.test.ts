@@ -45,3 +45,15 @@ describe("tracked state", () => {
     expect(scope.names()).toEqual(["m", "m#2"]);
   });
 });
+
+describe("swap on save", () => {
+  it("writes the substitute field and never the swapped one", () => {
+    const scope = createStateScope();
+    const rows = withScope(scope, () => tracked("rows", [] as { original: string; screened: string }[], { swap: { original: "screened" } }));
+    rows.push({ original: "call me on 0151 123456", screened: "call me on [removed]" });
+    const json = scope.snapshot();
+    expect(json).not.toContain("0151");
+    expect(JSON.parse(json).rows[0].original).toBe("call me on [removed]");
+    expect(rows[0]!.original).toContain("0151"); // memory is untouched
+  });
+});

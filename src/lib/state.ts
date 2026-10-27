@@ -6,8 +6,13 @@
  */
 type Container = object;
 
+export interface TrackOptions {
+  /** When saving, write the value of the second field in place of the first (`{ original: "screenedOriginal" }`), so a field that must stay in memory never reaches the saved copy. */
+  swap?: Record<string, string>;
+}
+
 export interface StateScope {
-  track<T extends Container>(name: string, value: T): T;
+  track<T extends Container>(name: string, value: T, opts?: TrackOptions): T;
   snapshot(): string;
   restore(json: string): void;
   names(): string[];
@@ -46,17 +51,31 @@ function refill(target: Container, source: unknown): void {
 
 export function createStateScope(): StateScope {
   const items = new Map<string, Container>();
+  const options = new Map<string, TrackOptions>();
   const seen = new Map<string, number>();
   return {
-    track(name, value) {
+    track(name, value, opts) {
       // The same factory can run twice in one scope; the second gets "name#2" so names stay stable in creation order.
       const n = (seen.get(name) ?? 0) + 1;
       seen.set(name, n);
-      items.set(n === 1 ? name : `${name}#${n}`, value);
+      const key = n === 1 ? name : `${name}#${n}`;
+      items.set(key, value);
+      if (opts) options.set(key, opts);
       return value;
     },
     snapshot() {
-      return JSON.stringify(Object.fromEntries(items), encode);
+      const parts = [...items].map(([name, value]) => {
+        const swap = options.get(name)?.swap;
+        const replacer = swap
+          ? function (this: unknown, k: string, v: unknown) {
+              const from = swap[k];
+              if (from !== undefined && this && typeof this === "object" && from in this) return encode(k, (this as Record<string, unknown>)[from]);
+              return encode(k, v);
+            }
+          : encode;
+        return `${JSON.stringify(name)}:${JSON.stringify(value, replacer)}`;
+      });
+      return `{${parts.join(",")}}`;
     },
     restore(json) {
       const data = JSON.parse(json, decode) as Record<string, unknown>;
@@ -88,6 +107,6 @@ export function enterScope(scope: StateScope): () => void {
   };
 }
 
-export function tracked<T extends Container>(name: string, value: T): T {
-  return active ? active.track(name, value) : value;
+export function tracked<T extends Container>(name: string, value: T, opts?: TrackOptions): T {
+  return active ? active.track(name, value, opts) : value;
 }

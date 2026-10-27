@@ -159,6 +159,8 @@ describe("logistics: shipping", () => {
     expect(JSON.stringify(recipient)).not.toMatch(/Beispiel|labelText/);
     expect(recipient).toMatchObject({ addressGiven: true });
     expect(JSON.stringify(s.events)).not.toMatch(/Beispiel/);
+    // what is stored (and so what a saved copy of the state holds) has the address only encrypted, label included
+    expect(JSON.stringify([...s.shipments.rows.values()])).not.toMatch(/Beispiel|10115/);
   });
 
   it("records the fee split as terms only (LOG-SHP-03)", async () => {

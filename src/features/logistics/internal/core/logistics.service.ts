@@ -215,7 +215,7 @@ export function createLogistics(deps: {
         toDistrict: deps.constraintsOf(deal.wantFamilyId).districtCode, description: "Parcel",
       });
       const appointment = await deps.carrier.bookAppointment({ shipmentId: s.id, labelRef: label.labelRef, kind, window });
-      Object.assign(s, { carrier: deps.carrier.name, mode: label.mode, labelRef: label.labelRef, trackingRef: label.trackingRef, labelText: label.labelText, appointment, status: "appointment_booked" as const });
+      Object.assign(s, { carrier: deps.carrier.name, mode: label.mode, labelRef: label.labelRef, trackingRef: label.trackingRef, labelTextEnc: encryptText(deps.secret, label.labelText), appointment, status: "appointment_booked" as const });
       deps.bus.publish({ type: "ShipmentUpdated", dealId, status: "appointment_booked" });
       return { labelText: label.labelText, appointment };
     },
@@ -264,7 +264,7 @@ export function createLogistics(deps: {
         card.shipment = {
           status: s.status, appointment: s.appointment, trackingRef: s.trackingRef, feeSplit: s.feeSplit,
           // The label, and with it the recipient's address, goes to the sender only (LOG-SHP-04).
-          ...(viewerFamilyId === s.senderFamilyId ? { labelText: s.labelText } : {}),
+          ...(viewerFamilyId === s.senderFamilyId && s.labelTextEnc ? { labelText: decryptText(deps.secret, s.labelTextEnc) } : {}),
         };
       }
       return card;

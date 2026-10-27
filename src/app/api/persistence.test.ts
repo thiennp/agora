@@ -24,6 +24,9 @@ const views = async (id: string) => ({
   lb: await j(await listDeals(get("/api/deals?as=b"), ctx({}))),
 });
 
+// What the sender typed stays in memory; after a restart their own view shows the screened text instead, so compare without it.
+const noOriginal = (v: unknown): unknown => JSON.parse(JSON.stringify(v, (k, x) => (k === "original" ? undefined : x)));
+
 describe("saved state survives a restart", () => {
   let dir: string;
   let file: string;
@@ -48,11 +51,14 @@ describe("saved state survives a restart", () => {
     const q = p.cards.questionsFor("demo-mia")[0]!;
     expect((await answer(post({ as: "a", answer: "yes" }), ctx({ questionId: q.id }))).status).toBe(200);
     await relay(post({ as: "a", text: "Hello, is the jacket still free?" }), ctx({ dealId }));
+    // a message with a phone number: the saved copy keeps the screened text, never what was typed
+    await relay(post({ as: "a", text: "Call me on 0151 7654321 please" }), ctx({ dealId }));
     const before = await views(dealId);
     expect(before.a.conversation?.length ?? before.a.messages?.length ?? 0).toBeGreaterThan(0);
 
     // The file holds one document with every tracked store.
     const doc = JSON.parse(await readFile(file, "utf8"));
+    expect(await readFile(file, "utf8")).not.toContain("7654321");
     expect(Object.keys(doc)).toEqual(expect.arrayContaining(["negotiation.deals", "cards.questions", "relay.rows", "platform.meta"]));
 
     // Restart: the process forgets the platform; the next request builds it again from the file.
@@ -60,7 +66,9 @@ describe("saved state survives a restart", () => {
     p = await getPlatform();
     expect(p.restored).toBe(true);
     expect(p.dealId).toBe(dealId);
-    expect(await views(dealId)).toEqual(before);
+    const after = await views(dealId);
+    expect(noOriginal(after)).toEqual(noOriginal(before));
+    expect(JSON.stringify(after)).not.toContain("7654321");
 
     // The restored platform keeps working: finish the journey.
     for (let i = 0; i < 4; i++) {

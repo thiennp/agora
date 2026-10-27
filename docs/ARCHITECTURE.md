@@ -222,7 +222,7 @@ agora/
 ├── db/migrations/                        # SQL, each slice's tables prefixed by slice
 ├── evals/                                # golden sets and thresholds for real-model evaluation
 ├── fixtures/                             # recorded model outputs, seeded sandbox city
-├── e2e/                                  # Playwright: three key flows
+├── e2e/                                  # planned Playwright flows (not built; API journey tests stand in)
 ├── docs/                                 # PLAN.md, ARCHITECTURE.md, adr/
 ├── .github/workflows/ci.yml
 ├── eslint.config.mjs                     # boundary rules (no cross-slice internal imports)
@@ -590,14 +590,17 @@ identical and the journey finishes.
 
 What this is not: the relational tables in migrations 0001–0010 (the target schema, with retention and erasure per
 row) are still unused, there is one writer (no multi-process or multi-instance), the whole document is rewritten on each
-change (fine for a demo, not for scale), and retention jobs do not exist. The snapshot holds what the stores hold, including
-relayed deal-room text and encrypted handoff fields, so it is demo data to be deleted with the reset.
+change (fine for a demo, not for scale), and retention jobs do not exist. The snapshot holds the screened relay text, its
+translation and hash, agent notes and encrypted handoff fields. It never holds what an owner typed before screening (the saved
+copy substitutes the screened text, so after a restart the sender sees that), nor a plaintext address (the shipping label is
+stored encrypted). Encrypted fields use the demo's hard-coded key, so they are not protected against anyone who has the
+repository and the saved state. It is demo data, deleted with the reset.
 
 ## 12. Deployment
 
 - Web + API on Railway (Node, Postgres). Config via env; no secrets in the repo.
 - Demo state survives restarts when `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE` is set (section 11b).
-- Mock mode: `npm run dev:mock` seeds the sandbox city and uses LocalProvider; works with only a Meta API key.
+- Mock mode (`AGORA_MODE=mock`, the default): `npm run dev` seeds the demo scenario, uses the local memory provider and a simulated model and carrier; needs no Meta key.
 - Hosted public demo kept running through judging (Nov 5–8) with a spend cap.
 
 ## 12b. Scale, isolation, testing and security
@@ -652,14 +655,15 @@ Kubernetes for the hackathon. Every item below is either built now (marked **NOW
 | Pure unit + property tests | State machine, gatekeeper table, matcher scoring | Invariants: no confirmed deal without both owners; no illegal transitions; every gatekeeper row tested; exhaustive over the table **NOW** |
 | Contract tests | One suite run against every implementation of `MemoryProvider` (local and AgentWitch) and `CarrierAdapter` (simulated and test-mode) | Prevents adapter drift **NOW** |
 | Model-output tests | Every model output validated against a zod schema; CI uses recorded fixtures so it is deterministic and free | Fixtures refreshed on demand **NOW** |
-| Eval suites (real models, on demand/nightly) | Translation round-trip, intake labeling, topic classifier accuracy, negotiation quality | Fixed golden sets with thresholds; regressions reported, not silently accepted |
+| Eval suites (real models, on demand; `npm run evals` runs `vitest run evals`, no nightly schedule yet) | Translation round-trip, intake labeling, topic classifier accuracy, negotiation quality | Fixed golden sets with thresholds; regressions reported, not silently accepted |
 | Simulation as regression | The sandbox city runs in CI with a seeded RNG and fixture models; asserts 0 unauthorized commitments, 0 leaks, deal completion rate above a floor | Doubles as the benchmark **NOW** |
 | Red-team suites | Prompt injection, address/phone extraction, price-pressure, scam scripts | Must stay at 0 failures **NOW** |
-| End-to-end | Playwright on three flows: intake → match; negotiate → owner question → confirm; handoff/shipping | **NOW (3 flows)** |
+| End-to-end | Playwright on three flows: intake → match; negotiate → owner question → confirm; handoff/shipping | **Not built.** The API journey tests (`src/app/api/*.test.ts`: journey, items, shipping, restart) cover the flows without a browser, except intake (not built) |
 | Migrations | Apply on a copy; check rollback | Before each deploy |
 
-CI gates: typecheck, lint + boundaries, unit/property, contract, simulation smoke, secret scan. Nightly: eval
-suites. Never merge with a red gate.
+CI (`.github/workflows/ci.yml`) runs typecheck, lint + boundaries, the test suite (which includes the contract, red-team and
+simulation tests) and `npm run db:check`. A separate simulation smoke gate, a secret scan and a nightly eval run are not set
+up. Never merge with a red gate.
 
 ### Avoiding security issues
 
