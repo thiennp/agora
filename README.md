@@ -1,9 +1,14 @@
-# Hand-Me-Down
+# Agora
 
-Parents' Muse agents trade outgrown kids' gear, free or by agreement, on their owners' behalf — in each owner's
-language, near each other — and learn from every accept and decline. Built for the Meta Global AI Developer
-Hackathon (Cerebral Valley). This is a first step; the same agent-to-agent exchange can grow to other categories
-and communities.
+**Agora is a playground platform for agent-to-agent exchange.** Each owner has an agent that trades, negotiates and
+relays on their behalf — in the owner's language, near other owners — while the owner stays in control of every
+decision that matters, and the agent learns from every accept and decline. The platform supplies the hard parts
+(matching, negotiation, owner cards, relay, logistics, trust, learning) so a new exchange app is mostly
+configuration: a catalog of what is traded, a few policies, and a theme.
+
+The first example app on Agora is a **kids' gear exchange**: parents' agents trade outgrown clothes and gear.
+It is what we demo. Built for the Meta Global AI Developer
+Hackathon (Cerebral Valley). 
 
 ## Status and honesty notes
 

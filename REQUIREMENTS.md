@@ -1,4 +1,4 @@
-# Hand-Me-Down — business requirements
+# Agora — business requirements
 
 Top-level requirements for the whole project. Every folder below contains its own `REQUIREMENTS.md` that refines
 these for its capability. Requirement IDs are stable: `BR-nn` (business), `NFR-nn` (non-functional), and
@@ -6,7 +6,10 @@ these for its capability. Requirement IDs are stable: `BR-nn` (business), `NFR-n
 
 ## 1. Vision
 
-Parents buy a lot of baby and kids gear that is outgrown in months. Hand-Me-Down lets each parent's Muse agent trade
+Agora is a playground platform: anyone can stand up an agent-to-agent exchange app with minimal effort by
+configuring a catalog, policies and a theme. The first example app, described below, is a kids' gear exchange.
+
+Parents buy a lot of baby and kids gear that is outgrown in months. Agora lets each parent's Muse agent trade
 outgrown gear for free or by agreement with nearby parents, in their own languages, while the parent stays in
 control of every decision that matters. It is a first step: the same agent-to-agent exchange can later cover
 other categories, communities and trusted commerce.

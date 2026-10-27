@@ -1,4 +1,4 @@
-# Hand-Me-Down — project plan
+# Agora — project plan
 
 Meta Global AI Developer Hackathon (Cerebral Valley). Build window: Oct 27 – Nov 4, 2026.
 Submission deadline: **Wed Nov 4, 9:00 PM ET**. Judging Nov 5–8. Closing ceremony Mon Nov 9, 12:00 PM ET.
@@ -8,6 +8,7 @@ Submission deadline: **Wed Nov 4, 9:00 PM ET**. Judging Nov 5–8. Closing cerem
 
 ## 1. One-line pitch
 
+Agora is a playground platform for agent-to-agent exchange; the first example app on it is a kids' gear exchange:
 Parents' Muse agents trade outgrown kids' gear (free or by agreement) on their owners' behalf, in their
 owners' languages, near each other — and learn from every accept and decline.
 

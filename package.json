@@ -1,8 +1,8 @@
 {
-  "name": "hand-me-down",
+  "name": "agora",
   "version": "0.1.0",
   "private": true,
-  "description": "Parents' Muse agents trade outgrown kids' gear on their owners' behalf, in each owner's language.",
+  "description": "A playground platform where owners' agents trade, negotiate and relay on their behalf. Spin up an exchange app with minimal effort.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

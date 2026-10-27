@@ -1,4 +1,4 @@
-# Hand-Me-Down — architecture
+# Agora — architecture
 
 Planning notes written Oct 26 ET. Names and file layout may shift once code starts.
 
@@ -24,7 +24,7 @@ flowchart LR
     UI[Web app\nowner cards, intake, dashboard]
     VOICE[Voice in/out]
   end
-  subgraph Platform["Hand-Me-Down (public repo)"]
+  subgraph Platform["Agora (public repo)"]
     API[API + deal state machine]
     AG[Agents\nintake · forecaster · matcher\nnegotiator · translator · lessons]
     META[Meta client\nrouting · cost meter · adapters]
@@ -62,7 +62,7 @@ with `public-api/` (the only door in) and `internal/` (private); cross-slice eff
 files stay thin.
 
 ```
-hand-me-down/
+agora/
 ├── src/
 │   ├── app/                              # entry layer: Next.js routes only
 │   │   ├── (owner)/                      # onboarding, items, matches, deals/[id], cards
