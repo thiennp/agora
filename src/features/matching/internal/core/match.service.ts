@@ -11,6 +11,8 @@ export interface Match {
   wantItemId: string;
   score: number;
   distanceBand: DistanceBand;
+  /** Distance between the two districts in km, or null when it cannot be known. */
+  distanceKm: number | null;
   reason: string;
   factors: Factor[];
 }
@@ -68,8 +70,9 @@ export function createMatchService(deps: {
     },
 
     /** Best few counterparts for an item, with a reason each (MAT-01, MAT-02). */
-    candidatesFor(item: IndexedItem): MatchResult {
-      const mine = deps.limitsOf?.(item.familyId) ?? {};
+    candidatesFor(item: IndexedItem, opts?: { limits?: OwnerLimits }): MatchResult {
+      // `opts.limits` replaces the item owner's own limits for this call only (used to look beyond a learned limit with the owner's approval).
+      const mine = opts?.limits ?? deps.limitsOf?.(item.familyId) ?? {};
       if (mine.blockedCategories?.includes(item.category)) {
         return { matches: [], emptyReason: "You have chosen not to trade this category." };
       }
@@ -104,7 +107,7 @@ export function createMatchService(deps: {
           distanceKm: km,
           declines: declines.get(patternKey(item.category, item.familyId, other.familyId)) ?? 0,
         });
-        matches.push({ id, offerItemId: offer.id, wantItemId: want.id, score: s.total, distanceBand: s.band, reason: reasonLine(s), factors: s.factors });
+        matches.push({ id, offerItemId: offer.id, wantItemId: want.id, score: s.total, distanceBand: s.band, distanceKm: km, reason: reasonLine(s), factors: s.factors });
       }
 
       matches.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));

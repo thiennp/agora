@@ -55,6 +55,20 @@ export function judge(app: App, rules: HiddenRules, role: "giver" | "receiver", 
   return { confirm: true };
 }
 
+/**
+ * A simulated owner shown a stretch card sees only the facts the card shows (the distance, the condition, whether the size fits) and
+ * says yes if those are fine by their own rules, as a real owner would judge from the same card. They do not know what the other
+ * owner will decide.
+ */
+export function acceptsStretch(app: App, rules: HiddenRules, reasons: readonly Reason[], f: Facts): boolean {
+  return judge(app, rules, "receiver", {
+    distanceKm: reasons.includes("too_far") ? f.distanceKm : null,
+    offerCondition: reasons.includes("condition") ? f.offerCondition : undefined,
+    offerSize: reasons.includes("wrong_size") ? f.offerSize : undefined,
+    wantSize: reasons.includes("wrong_size") ? f.wantSize : undefined,
+  }).confirm;
+}
+
 /** Would both owners accept this pair? Used as the ground truth for match relevance. */
 export const acceptableToBoth = (app: App, giver: HiddenRules, receiver: HiddenRules, f: Facts): boolean =>
   judge(app, giver, "giver", f).confirm && judge(app, receiver, "receiver", f).confirm;

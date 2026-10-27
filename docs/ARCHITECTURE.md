@@ -309,7 +309,8 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 - `mandates`: id, family_id, topic, level (`auto`), scope (jsonb), expires_at, source (`owner`|`learned_with_consent`); never an always-ask or forbidden topic, one per family and topic
 - `owner_limits`: family_id, max_distance_km, blocked_categories, availability (jsonb), min_condition, allowed_terms
 - `owner_questions`: id, negotiation_id, family_id, topic, question, suggested_answers (jsonb), counterparty_context (redacted), status (`open`|`answered`|`expired`), answer, answered_at
-- `lessons`: id, family_id, kind (`decline`|`accept`), lesson_key, text, evidence_ids, seen_count, confidence, source (`agentwitch`|`local`)
+- `stretch_offers`: family_id, want_item_id, offer_item_id, counterpart_id, category, reasons, status (pending offers only; removed when answered or after 30 days)
+- `lessons`: id, family_id, kind (`decline`|`accept`|`stretch`), lesson_key, text, evidence_ids, seen_count, confidence, source (`agentwitch`|`local`)
 - `deal_outcomes`: family_id, negotiation_id, result, reason_code, category
 - `rule_proposals`: family_id, topic, evidence_count, status (suggestions only)
 - `model_calls`: id, role, model, tokens_in, tokens_out, cost_usd, latency_ms, created_at
@@ -538,7 +539,17 @@ interface MemoryProvider {
 5. Three identical yes answers in a row to one low-risk topic produce a standing-rule proposal in plain words; a no resets the
    count, dismissal is remembered, always-ask topics are never proposed, and nothing activates until the owner accepts (with
    an expiry).
-6. The benchmark that shows approval rising across rounds belongs to the simulation slice and is not built yet.
+6. **Relaxing with the owner's approval (stretch offers).** Tightening alone loses coverage when an owner's preferences loosen.
+   When learned limits leave a want without a match, the caller looks again with the owner's own base limits; a candidate that only
+   a learned limit excluded, and that is just beyond it (within 30% on distance, one condition step), becomes a **stretch offer**: a
+   plain card ("about 8 km away, further than the 7 km you usually accept; look at it anyway?") that names no one. Nothing starts
+   without the owner's yes, and the deal still needs both owners' confirmation. After a no, that reason is skipped for five
+   opportunities, and at most three offers wait at once. A stretch deal that both owners confirm writes a `stretch` lesson, which
+   counts twice against the matching decline lesson, so the limit loosens in steps (full, half, none) and tightens again with new
+   declines; it never goes past the owner's own base limits and the owner can delete the lesson. Measured in `docs/SIMULATION.md`:
+   with stable preferences cards are rare and unneeded; when preferences loosen, relaxation wins back about two thirds of the
+   coverage that tightening alone loses. The two-step lookup is done only in the simulation harness today.
+7. The simulation slice measures all of this (section 10).
 
 ## 10. Sandbox city and benchmark (`src/features/simulation`)
 
@@ -550,6 +561,8 @@ Full description, how to run it and the measured results are in `docs/SIMULATION
 - Each episode runs the real slices (catalog, matching, negotiation, gatekeeper, owner cards, learning) with deterministic ids and no
   live model. Per round the arm is measured on **held-out** episodes (never written back as lessons), then trained on separate ones;
   the learning-off arm is the baseline; several seeds give mean and range.
+- Four arms: learning off, tighten-only learning, learning with owner-approved relaxation (the product), and an oracle ceiling that knows
+  the hidden rules. A drift scenario makes half the families tolerate twice the distance from a chosen round.
 - Output: JSON and CSV (every row `simulated=true`), failures kept. Model-routing comparison and cost per deal need a Meta key and are
   not run; the harness takes the same city and seeds for any routing.
 

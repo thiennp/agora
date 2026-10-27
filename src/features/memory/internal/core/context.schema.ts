@@ -2,7 +2,7 @@
 export interface Lesson {
   id: string;
   familyId: string;
-  kind: "decline" | "accept";
+  kind: "decline" | "accept" | "stretch";
   /** Dedupe key, for example "decline:price:clothing". */
   key: string;
   text: string;

@@ -2,8 +2,8 @@ import type { AppConfig } from "@/lib/app-config";
 import type { DealEventBus } from "@/hubs/DealEvents/command";
 import type { Lesson, MemoryProvider, Outcome } from "@/features/memory/public-api/types";
 import type { NegotiationMandate } from "@/features/negotiation/public-api/types";
-import { confidenceFor, deriveAdjustments, levelOf, lessonFromDecision, tighten } from "../../features/lessons/public-api/infrastructure";
-import type { Limits } from "../../features/lessons/public-api/types";
+import { confidenceFor, deriveAdjustments, levelOf, lessonFromDecision, lessonFromStretch, tighten } from "../../features/lessons/public-api/infrastructure";
+import type { Limits, StretchReason } from "../../features/lessons/public-api/types";
 import { DEFAULT_THRESHOLD, proposalsFor } from "../../features/standing-rules/public-api/infrastructure";
 import type { Answer } from "../../features/standing-rules/public-api/types";
 
@@ -32,13 +32,43 @@ export interface RuleProposal {
   createdAt: string;
 }
 
+/**
+ * A match the agent skipped only because of a learned limit, offered to the owner to look at anyway. Nothing starts without the
+ * owner's yes (LRN-09). It names no one: the owner sees only why it was skipped.
+ */
+export interface StretchOffer {
+  id: string;
+  familyId: string;
+  wantItemId: string;
+  offerItemId: string;
+  counterpartFamilyId: string;
+  category: string;
+  reasons: StretchReason[];
+  text: string;
+  status: "pending" | "accepted" | "declined";
+  createdAt: string;
+}
+
+export interface StretchInput {
+  wantItemId: string;
+  offerItemId: string;
+  counterpartFamilyId: string;
+  category: string;
+  reasons: StretchReason[];
+  /** Facts shown to the owner, so they can judge for themselves. */
+  shown: { distanceKm?: number | null; usualMaxKm?: number; offerCondition?: string; usualFloor?: string };
+}
+
 export class LearningError extends Error {
-  constructor(readonly code: "not_found" | "not_owner" | "already_decided", message: string) {
+  constructor(readonly code: "not_found" | "not_owner" | "already_decided" | "too_many_open" | "not_accepted" | "invalid", message: string) {
     super(message);
   }
 }
 
 const TOPIC_WORDS: Record<string, string> = { pickup_time_window: "pickup times", size_question: "size questions" };
+const MAX_OPEN_STRETCH = 3;
+/** After an owner says no to a stretch for a reason, skip this many later opportunities for that reason before asking again. */
+const STRETCH_COOLDOWN = 5;
 const MAX_ANSWERS = 50;
 const MAX_EVIDENCE = 20;
 
@@ -60,6 +90,9 @@ export function createLearning(deps: {
   const answers = new Map<string, Answer[]>();
   const proposals = new Map<string, RuleProposal>();
   const dismissed = new Map<string, Set<string>>();
+  const stretchOffers = new Map<string, StretchOffer>();
+  const stretchDeals = new Map<string, { familyId: string; category: string; reasons: StretchReason[] }>();
+  const stretchCooldown = new Map<string, number>();
   // Events are handled one after another, in order: lessons are read-modify-write and must not overwrite each other.
   let tail: Promise<void> = Promise.resolve();
 
@@ -75,7 +108,10 @@ export function createLearning(deps: {
 
   async function learn(familyId: string, dealId: string, facts: { decision: "confirm" | "decline"; reasonCode?: string; category?: string }) {
     const base = lessonFromDecision(facts);
-    if (!base) return;
+    if (base) await writeLesson(familyId, dealId, base);
+  }
+
+  async function writeLesson(familyId: string, dealId: string, base: { kind: Lesson["kind"]; key: string; text: string }) {
     await safe("learn", async () => {
       const ctx = await deps.memory.getFamilyContext(familyId);
       const existing = ctx.lessons.find((l) => l.key === base.key);
@@ -139,7 +175,17 @@ export function createLearning(deps: {
     answers.set(e.familyId, list.slice(-MAX_ANSWERS));
     refreshProposals(e.familyId);
   });
-  deps.bus.subscribe("DealConfirmed", (e) => track(() => both(e.dealId, "confirmed")));
+  deps.bus.subscribe("DealConfirmed", (e) =>
+    track(async () => {
+      await both(e.dealId, "confirmed");
+      // A stretch deal that both owners confirmed is evidence that the learned limit was too tight for this owner.
+      const s = stretchDeals.get(e.dealId);
+      if (s) for (const reason of s.reasons) {
+        const base = lessonFromStretch({ reason, category: s.category });
+        if (base) await writeLesson(s.familyId, e.dealId, base);
+      }
+    }),
+  );
   deps.bus.subscribe("DealDeclined", (e) => track(() => both(e.dealId, "declined")));
   deps.bus.subscribe("DealExpired", (e) => track(() => both(e.dealId, "expired")));
   deps.bus.subscribe("HandoffFinished", (e) => track(() => both(e.dealId, e.ok ? "completed" : "not_completed")));
@@ -193,7 +239,62 @@ export function createLearning(deps: {
       dismissed.set(familyId, (dismissed.get(familyId) ?? new Set()).add(p.topic));
     },
 
+    /**
+     * The agent found a match that only a learned limit kept out; ask the owner whether to look at it (LRN-09). One offer per pair, at
+     * most three waiting at once so owners are not nagged.
+     */
+    offerStretch(familyId: string, input: StretchInput): StretchOffer | null {
+      if (input.reasons.length === 0) throw new LearningError("invalid", "a stretch offer needs at least one learned limit it goes beyond");
+      const same = [...stretchOffers.values()].find((o) => o.familyId === familyId && o.offerItemId === input.offerItemId && o.wantItemId === input.wantItemId);
+      if (same) return same;
+      // Back off after a no (LRN-10): each skipped opportunity uses up one step of the cooldown for the reasons involved.
+      const cooling = input.reasons.some((r) => (stretchCooldown.get(`${familyId}:${r}`) ?? 0) > 0);
+      if (cooling) {
+        for (const r of input.reasons) stretchCooldown.set(`${familyId}:${r}`, Math.max(0, (stretchCooldown.get(`${familyId}:${r}`) ?? 0) - 1));
+        return null;
+      }
+      if ([...stretchOffers.values()].filter((o) => o.familyId === familyId && o.status === "pending").length >= MAX_OPEN_STRETCH) {
+        throw new LearningError("too_many_open", "answer the waiting questions first");
+      }
+      const parts = input.reasons.map((r) => {
+        if (r === "too_far") return `it is about ${Math.round(input.shown.distanceKm ?? 0)} km away${input.shown.usualMaxKm ? `, further than the ${Math.round(input.shown.usualMaxKm)} km you usually accept` : ""}`;
+        if (r === "condition") return `it is in ${input.shown.offerCondition ?? "lower"} condition${input.shown.usualFloor ? `, below the ${input.shown.usualFloor} you usually want` : ""}`;
+        return "its size is not an exact fit";
+      });
+      const offer: StretchOffer = {
+        id: newId(), familyId, wantItemId: input.wantItemId, offerItemId: input.offerItemId, counterpartFamilyId: input.counterpartFamilyId,
+        category: input.category, reasons: input.reasons, status: "pending", createdAt: now().toISOString(),
+        text: `Your agent skipped a match because ${parts.join(" and ")}. Do you want to look at it anyway? Nothing is agreed until you and the other owner confirm.`,
+      };
+      stretchOffers.set(offer.id, offer);
+      return offer;
+    },
+    stretchOffersFor: (familyId: string) => [...stretchOffers.values()].filter((o) => o.familyId === familyId && o.status === "pending"),
+
+    /** The owner's answer. Only a yes lets the caller start a deal with this match. */
+    answerStretch(familyId: string, id: string, answer: "yes" | "no"): StretchOffer {
+      const o = stretchOffers.get(id);
+      if (!o) throw new LearningError("not_found", "offer not found");
+      if (o.familyId !== familyId) throw new LearningError("not_owner", "this offer belongs to someone else");
+      if (o.status !== "pending") throw new LearningError("already_decided", `this offer was already ${o.status}`);
+      o.status = answer === "yes" ? "accepted" : "declined";
+      for (const r of o.reasons) stretchCooldown.set(`${familyId}:${r}`, answer === "no" ? STRETCH_COOLDOWN : 0);
+      return { ...o };
+    },
+
+    /** After starting the deal for an accepted offer, link it so that if both owners confirm, the stretch counts as evidence. */
+    linkStretchDeal(familyId: string, offerId: string, dealId: string): void {
+      const o = stretchOffers.get(offerId);
+      if (!o) throw new LearningError("not_found", "offer not found");
+      if (o.familyId !== familyId) throw new LearningError("not_owner", "this offer belongs to someone else");
+      if (o.status !== "accepted") throw new LearningError("not_accepted", "the owner has not approved this offer");
+      stretchDeals.set(dealId, { familyId, category: o.category, reasons: o.reasons });
+    },
+
     async eraseFamily(familyId: string) {
+      for (const [id, o] of stretchOffers) if (o.familyId === familyId) stretchOffers.delete(id);
+      for (const [d, s] of stretchDeals) if (s.familyId === familyId) stretchDeals.delete(d);
+      for (const k of stretchCooldown.keys()) if (k.startsWith(`${familyId}:`)) stretchCooldown.delete(k);
       answers.delete(familyId);
       dismissed.delete(familyId);
       for (const [id, p] of proposals) if (p.familyId === familyId) proposals.delete(id);

@@ -197,3 +197,121 @@ describe("standing-rule proposals", () => {
     expect(() => s.learning.dismissProposal("fw", "missing")).toThrow(LearningError);
   });
 });
+
+describe("stretch offers: relaxing a learned limit only with the owner's approval (LRN-09)", () => {
+  const input = { wantItemId: "w1", offerItemId: "o1", counterpartFamilyId: "fo", category: "clothing", reasons: ["too_far" as const], shown: { distanceKm: 8.4, usualMaxKm: 7 } };
+  const tighten2 = async (s: Awaited<ReturnType<typeof setup>>) => {
+    decline(s.bus, "d1", "too_far");
+    decline(s.bus, "d2", "too_far");
+    await s.learning.settled();
+  };
+
+  it("asks in plain words without naming anyone, and starts nothing by itself", async () => {
+    const s = await setup();
+    const o = s.learning.offerStretch("fw", input)!;
+    expect(o.text).toMatch(/about 8 km away, further than the 7 km you usually accept.*Do you want to look at it anyway\? Nothing is agreed/);
+    expect(o.text).not.toMatch(/fo|f\d\d/);
+    expect(s.learning.stretchOffersFor("fw")).toHaveLength(1);
+    expect(s.learning.stretchOffersFor("fo")).toEqual([]);
+    expect(s.learning.offerStretch("fw", input)!.id).toBe(o.id);
+    expect(() => s.learning.offerStretch("fw", { ...input, reasons: [] })).toThrow(LearningError);
+  });
+
+  it("limits how many offers wait at once, so owners are not nagged", async () => {
+    const s = await setup();
+    for (let i = 0; i < 3; i++) s.learning.offerStretch("fw", { ...input, offerItemId: `o${i}` });
+    expect(() => s.learning.offerStretch("fw", { ...input, offerItemId: "o9" })).toThrow(/waiting questions/);
+    const [first] = s.learning.stretchOffersFor("fw");
+    s.learning.answerStretch("fw", first!.id, "yes");
+    expect(() => s.learning.offerStretch("fw", { ...input, offerItemId: "o9" })).not.toThrow();
+  });
+
+  it("backs off after a no: the next five opportunities for that reason are skipped, other reasons are unaffected (LRN-10)", async () => {
+    const s = await setup();
+    const o = s.learning.offerStretch("fw", input)!;
+    s.learning.answerStretch("fw", o.id, "no");
+    for (let i = 0; i < 5; i++) expect(s.learning.offerStretch("fw", { ...input, offerItemId: `skip${i}` })).toBeNull();
+    expect(s.learning.offerStretch("fw", { ...input, offerItemId: "sixth" })).not.toBeNull();
+    expect(s.learning.offerStretch("fw", { ...input, offerItemId: "cond", reasons: ["condition"] })).not.toBeNull();
+    expect(s.learning.offerStretch("other", { ...input, offerItemId: "x" })).not.toBeNull();
+    // a yes clears the cooldown for its reasons
+    const sixth = s.learning.stretchOffersFor("fw").find((x) => x.offerItemId === "sixth")!;
+    s.learning.answerStretch("fw", sixth.id, "yes");
+    expect(s.learning.offerStretch("fw", { ...input, offerItemId: "again" })).not.toBeNull();
+  });
+
+  it("checks the owner and the answer, and links a deal only to an accepted offer", async () => {
+    const s = await setup();
+    const o = s.learning.offerStretch("fw", input)!;
+    expect(() => s.learning.answerStretch("fo", o.id, "yes")).toThrow(/someone else/);
+    expect(() => s.learning.linkStretchDeal("fw", o.id, "d9")).toThrow(/has not approved/);
+    expect(s.learning.answerStretch("fw", o.id, "yes").status).toBe("accepted");
+    expect(() => s.learning.answerStretch("fw", o.id, "no")).toThrow(/already accepted/);
+    expect(() => s.learning.linkStretchDeal("fo", o.id, "d9")).toThrow(/someone else/);
+    expect(() => s.learning.linkStretchDeal("fw", o.id, "d9")).not.toThrow();
+    const declined = s.learning.offerStretch("fw", { ...input, offerItemId: "o2" })!;
+    s.learning.answerStretch("fw", declined.id, "no");
+    expect(() => s.learning.linkStretchDeal("fw", declined.id, "d10")).toThrow(/has not approved/);
+  });
+
+  it("loosens the limit one step per approved and confirmed stretch deal, and never without one", async () => {
+    const s = await setup();
+    await tighten2(s);
+    decline(s.bus, "d3", "too_far"); // three declines: a stretch deal outweighs two of them, so it takes two confirmed stretches to clear the limit
+    await s.learning.settled();
+    const base = { maxDistanceKm: 10 };
+    expect((await s.learning.limitsFor("fw", base)).maxDistanceKm).toBe(7);
+    // an offer the owner declines, or an accepted offer whose deal is not confirmed, loosens nothing
+    // a declined offer on another reason, so it does not put the distance reason into its cooldown
+    const no = s.learning.offerStretch("fw", { ...input, offerItemId: "o-no", reasons: ["condition"] })!;
+    s.learning.answerStretch("fw", no.id, "no");
+    s.bus.publish({ type: "DealConfirmed", dealId: "never-linked", offerItemId: "i", wantItemId: "j" });
+    await s.learning.settled();
+    expect((await s.learning.limitsFor("fw", base)).maxDistanceKm).toBe(7);
+
+    const yes = s.learning.offerStretch("fw", input)!;
+    s.learning.answerStretch("fw", yes.id, "yes");
+    s.learning.linkStretchDeal("fw", yes.id, "stretch-1");
+    s.bus.publish({ type: "DealConfirmed", dealId: "stretch-1", offerItemId: "i", wantItemId: "j" });
+    await s.learning.settled();
+    expect((await s.learning.limitsFor("fw", base)).maxDistanceKm).toBe(8.5);
+    const lessons = await s.learning.whatILearned("fw");
+    expect(lessons.map((l) => l.text)).toContain("Was happy to look beyond the usual distance limit for clothing deals.");
+
+    const yes2 = s.learning.offerStretch("fw", { ...input, offerItemId: "o2" })!;
+    s.learning.answerStretch("fw", yes2.id, "yes");
+    s.learning.linkStretchDeal("fw", yes2.id, "stretch-2");
+    s.bus.publish({ type: "DealConfirmed", dealId: "stretch-2", offerItemId: "i", wantItemId: "j" });
+    await s.learning.settled();
+    expect((await s.learning.limitsFor("fw", base)).maxDistanceKm).toBe(10);
+  });
+
+  it("tightens again after new declines, and lets the owner delete the stretch lesson to tighten at once", async () => {
+    const s = await setup();
+    await tighten2(s);
+    for (const i of [1, 2]) {
+      const o = s.learning.offerStretch("fw", { ...input, offerItemId: `o${i}` })!;
+      s.learning.answerStretch("fw", o.id, "yes");
+      s.learning.linkStretchDeal("fw", o.id, `st-${i}`);
+      s.bus.publish({ type: "DealConfirmed", dealId: `st-${i}`, offerItemId: "i", wantItemId: "j" });
+    }
+    await s.learning.settled();
+    expect((await s.learning.limitsFor("fw", { maxDistanceKm: 10 })).maxDistanceKm).toBe(10);
+    for (const d of ["d3", "d4", "d5"]) decline(s.bus, d, "too_far");
+    await s.learning.settled();
+    expect((await s.learning.limitsFor("fw", { maxDistanceKm: 10 })).maxDistanceKm).toBe(8.5);
+    const stretchLesson = (await s.learning.whatILearned("fw")).find((l) => /beyond the usual/.test(l.text))!;
+    await s.learning.forget("fw", stretchLesson.id);
+    expect((await s.learning.limitsFor("fw", { maxDistanceKm: 10 })).maxDistanceKm).toBe(7);
+  });
+
+  it("cannot touch always-ask topics, and erasing the family removes its offers", async () => {
+    const s = await setup();
+    const o = s.learning.offerStretch("fw", input)!;
+    s.learning.answerStretch("fw", o.id, "yes");
+    expect(s.gatekeeper.evaluateIncoming({ familyId: "fw", text: "Can you do 5 euros?" }).outcome).toBe("ask");
+    await s.learning.eraseFamily("fw");
+    expect(s.learning.stretchOffersFor("fw")).toEqual([]);
+    expect(() => s.learning.linkStretchDeal("fw", o.id, "d1")).toThrow(/not found/);
+  });
+});

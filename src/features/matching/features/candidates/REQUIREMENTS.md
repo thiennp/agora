@@ -21,6 +21,7 @@ Matching.
 | MAT-CAN-04 | Named districts (no coordinates) match only inside the same name; an unknown distance never satisfies an owner's distance limit. | Must | Tests for named and grid districts. |
 | MAT-CAN-05 | The lookup sizes its search per direction: a grid cell is about 5.6 km tall but narrower east-west away from the equator, so the number of cells to search is worked out separately for latitude and longitude. | Must | A candidate 13.6 km east at 52.5 N is found. |
 | MAT-CAN-06 | An owner's learned "exact size only" categories exclude candidates of a different size. | Must | Learning and matching tests. |
+| MAT-CAN-07 | A match carries the distance in km (or null), and a caller may replace the item owner's limits for one call to look beyond them with the owner's approval; the other owner's limits always apply. | Must | Matching tests. |
 
 ## Out of scope
 

@@ -16,6 +16,26 @@ const WHY: Record<ReasonCode, string> = {
   other: "of another reason",
 };
 
+const SHORT: Record<ReasonCode, string> = {
+  too_far: "distance",
+  wrong_size: "size",
+  condition: "condition",
+  price: "terms",
+  timing: "timing",
+  other: "other matters",
+};
+
+/**
+ * A lesson that the owner was happy to look beyond a learned limit and then confirmed the deal (the owner approved the stretch and
+ * the deal). It counts against the matching "decline" lesson and so loosens that limit one step. Structured facts only.
+ */
+export function lessonFromStretch(f: { reason: string; category?: string }): { kind: "stretch"; key: string; text: string } | null {
+  const reason = REASON_CODES.find((r) => r === f.reason);
+  if (!reason) return null;
+  const cat = f.category ?? "any";
+  return { kind: "stretch", key: `stretch:${reason}:${cat}`, text: `Was happy to look beyond the usual ${SHORT[reason]} limit for ${f.category ? `${f.category} ` : ""}deals.` };
+}
+
 /**
  * A lesson from one decision, built only from structured facts (reason code and category). Free text the owner typed is never
  * used, so a lesson can hold no names, places or contact details and can safely be mirrored (LRN-LES-01).

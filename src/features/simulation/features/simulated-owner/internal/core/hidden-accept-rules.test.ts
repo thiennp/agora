@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadApp } from "@/lib/app-config";
-import { acceptableToBoth, deriveHiddenRules, judge, type HiddenRules } from "./hidden-accept-rules";
+import { acceptableToBoth, acceptsStretch, deriveHiddenRules, judge, type HiddenRules } from "./hidden-accept-rules";
 
 const strict: HiddenRules = { maxDistanceKm: 3, minCondition: "good", exactSize: true };
 
@@ -40,5 +40,19 @@ describe("hidden accept rules", () => {
     expect(acceptableToBoth(app, lenient, lenient, f)).toBe(true);
     expect(acceptableToBoth(app, strict, lenient, f)).toBe(false);
     expect(acceptableToBoth(app, lenient, strict, { ...f, distanceKm: 1 })).toBe(false);
+  });
+});
+
+describe("stretch cards", () => {
+  it("are judged only on the facts the card shows", async () => {
+    const app = await loadApp("kids-gear");
+    const rules: HiddenRules = { maxDistanceKm: 9, minCondition: "good", exactSize: true };
+    const facts = { distanceKm: 8, offerCondition: "worn", offerSize: "74", wantSize: "68" };
+    expect(acceptsStretch(app, rules, ["too_far"], facts)).toBe(true);
+    expect(acceptsStretch(app, rules, ["too_far"], { ...facts, distanceKm: 10 })).toBe(false);
+    expect(acceptsStretch(app, rules, ["condition"], facts)).toBe(false);
+    expect(acceptsStretch(app, rules, ["wrong_size"], facts)).toBe(false);
+    expect(acceptsStretch(app, { ...rules, exactSize: false }, ["wrong_size"], facts)).toBe(true);
+    expect(acceptsStretch(app, rules, ["too_far", "condition"], facts)).toBe(false);
   });
 });

@@ -30,7 +30,8 @@ not built yet; until they exist these are the rules the code must meet, not beha
 | Errors (no personal data, secret fingerprints only) | 30 days (decided) | nothing personal to remove |
 | Relay messages (screened text, translation, hash) | until the deal ends plus 30 days (proposed) | deleted |
 | Handover place and delivery address (encrypted) | until the handoff completes plus 30 days (proposed) | deleted |
-| Lessons and deal outcomes | until the owner deletes them or erases the account | deleted |
+| Lessons (including stretch lessons) and deal outcomes | until the owner deletes them or erases the account | deleted |
+| Pending stretch offers (item and counterpart references, reasons) | until answered or 30 days (proposed) | deleted |
 | Reports (hash-chained evidence, pseudonyms) | 12 months after filing (proposed) | reports about the person stay for the retention period; reports they filed are unlinked from them |
 | Community posts (tier 2) | while the community exists (proposed) | the member's own posts are removed; a post that was not delivered to someone leaves no copy for them beyond a count |
 | Filtered-post review list (tier 2) | 30 days (proposed) | deleted |

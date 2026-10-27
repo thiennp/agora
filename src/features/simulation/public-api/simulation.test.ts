@@ -87,6 +87,59 @@ describe("benchmark", () => {
     expect(run.rows).toHaveLength(6);
   });
 
+  it("has an oracle ceiling that the learning arms stay below, so headroom is visible", async () => {
+    const run = await runBenchmarkSeeds({ rounds: 6, trainEpisodes: 2, evalEpisodes: 3, seeds: [20261027, 20261028, 20261029] });
+    for (const r of run.rows) {
+      expect(r.confirmedPer100OracleMean!).toBeGreaterThanOrEqual(r.confirmedPer100OnMean!);
+      expect(r.confirmedPer100OracleMean!).toBeGreaterThanOrEqual(r.confirmedPer100OffMean!);
+    }
+    for (const rep of run.reports) for (const m of rep.arms.oracle_ceiling) {
+      expect(m.ownerApprovalRate).toBe(1);
+      expect(m.unauthorizedCommitments).toBe(0);
+    }
+  });
+
+  it("asks before relaxing a learned limit, never nags, and costs few interruptions (LRN-09, LRN-10)", async () => {
+    const run = await runBenchmarkSeeds({ rounds: 8, trainEpisodes: 2, evalEpisodes: 3, seeds: [20261027, 20261028, 20261029, 20261030, 20261031] });
+    for (const rep of run.reports) {
+      for (const arm of ["learning_tighten_only", "learning_off", "oracle_ceiling"] as const) for (const m of rep.arms[arm]) expect(m.stretchOffers).toBe(0);
+      for (const m of rep.arms.learning_on) {
+        expect(m.stretchConfirmed).toBeLessThanOrEqual(m.stretchAccepted);
+        expect(m.stretchAccepted).toBeLessThanOrEqual(m.stretchOffers);
+        // never more cards than wants, and only a small share of them
+        expect(m.stretchOffers).toBeLessThanOrEqual(m.wants * 0.25);
+      }
+    }
+    const extra = run.rows.map((r) => r.interruptionsOnMean! - r.interruptionsTightenOnlyMean!);
+    expect(extra.reduce((a, b) => a + b, 0) / extra.length).toBeLessThan(0.1);
+    // relaxing never costs confirmed deals compared with only tightening
+    expect(run.rows.reduce((a, r) => a + r.confirmedPer100OnMean!, 0)).toBeGreaterThanOrEqual(run.rows.reduce((a, r) => a + r.confirmedPer100TightenOnlyMean!, 0) - 0.5);
+  });
+
+  it("recovers coverage with the owner's approval when owners' preferences loosen (drift from round 5)", async () => {
+    const run = await runBenchmarkSeeds({ rounds: 10, trainEpisodes: 2, evalEpisodes: 3, seeds: [20261027, 20261028, 20261029, 20261030, 20261031], drift: { fromRound: 5, factor: 2 } });
+    expect(run.reports[0]!.config.drift).toEqual({ fromRound: 5, factor: 2 });
+    const after = run.rows.filter((r) => r.round >= 6);
+    const avg = (f: (r: (typeof after)[number]) => number | null) => after.reduce((a, r) => a + (f(r) ?? 0), 0) / after.length;
+    const on = avg((r) => r.confirmedPer100OnMean);
+    const tight = avg((r) => r.confirmedPer100TightenOnlyMean);
+    const off = avg((r) => r.confirmedPer100OffMean);
+    // Tightening alone loses confirmed deals once owners loosen; relaxing with approval wins back most of it.
+    expect(tight).toBeLessThan(off);
+    expect(on).toBeGreaterThan(tight + 0.5);
+    expect((on - tight) / (off - tight)).toBeGreaterThan(0.4);
+    // approval still far above no learning, and the oracle shows how much headroom remains
+    expect(avg((r) => r.approvalOnMean)).toBeGreaterThan(avg((r) => r.approvalOffMean) + 0.2);
+    expect(avg((r) => r.confirmedPer100OracleMean)).toBeGreaterThan(on);
+    // the cost in owner questions stays small
+    expect(avg((r) => r.interruptionsOnMean) - avg((r) => r.interruptionsTightenOnlyMean)).toBeLessThan(0.1);
+    // some stretch deals were approved and confirmed, and every one of them started from an approved card
+    const stretchConfirmed = run.reports.flatMap((r) => r.arms.learning_on).reduce((a, m) => a + m.stretchConfirmed, 0);
+    const stretchAccepted = run.reports.flatMap((r) => r.arms.learning_on).reduce((a, m) => a + m.stretchAccepted, 0);
+    expect(stretchConfirmed).toBeGreaterThan(0);
+    expect(stretchConfirmed).toBeLessThanOrEqual(stretchAccepted);
+  });
+
   it("produces the plan's metrics and zero unauthorized commitments (SIM-BEN-01, metric 8)", async () => {
     const r = await runBenchmark({ ...small, seed: 3 });
     for (const m of [...r.arms.learning_on, ...r.arms.learning_off]) {
@@ -120,7 +173,7 @@ describe("benchmark", () => {
       expect(lines[0]!.startsWith("simulated,")).toBe(true);
       expect(lines.slice(1).every((l) => l.startsWith("true,"))).toBe(true);
     }
-    expect(csv.perRound.trim().split("\n")).toHaveLength(1 + 2 * small.rounds);
+    expect(csv.perRound.trim().split("\n")).toHaveLength(1 + 4 * small.rounds);
     expect(csv.comparison.trim().split("\n")).toHaveLength(1 + small.rounds);
   });
 });

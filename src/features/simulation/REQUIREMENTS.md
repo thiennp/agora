@@ -25,6 +25,9 @@ Judges; developers.
 | SIM-08 | Several seeds are reported as mean and range per round. | Should | Seed summary test; `npm run simulate`. |
 | SIM-09 | Coverage-adjusted success (confirmed deals per 100 wants) is reported next to approval rate, because learning raises approval partly by proposing less. | Must | Metric and report note. |
 | SIM-10 | Not measured: cost per deal and model choices (no live model), privacy leaks (covered by screening evals); swap-only apps are not supported yet. Documented in docs/SIMULATION.md. | Info | Report notes. |
+| SIM-11 | Four arms run on the same city and seeds: learning off, learning with tighten-only limits, learning with owner-approved relaxation (the product), and an oracle ceiling that knows the hidden rules and is not a real behaviour. | Must | Arm and ceiling tests. |
+| SIM-12 | A drift scenario (`--drift N`) makes half the families tolerate twice the distance from round N, to test whether learned limits recover. | Must | Drift test; docs/SIMULATION.md. |
+| SIM-13 | Report stretch cards shown, approved and confirmed, and owner questions per deal including cards; stretch cards never appear in arms that do not use them and never exceed a quarter of wants. | Must | Stretch tests. |
 
 ## Out of scope
 

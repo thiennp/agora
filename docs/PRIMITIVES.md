@@ -48,7 +48,7 @@ one cached similarity per post compared with member interests, never one model c
 
 | Primitive | What it is | Status |
 |---|---|---|
-| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | built (lessons from decisions, tighten-only adjustments, standing-rule proposals, local memory and an AgentWitch mirror; the simulation benchmark that measures the learning curve is built, see `docs/SIMULATION.md`) |
+| **Self-learning** | Agents learn from accepts, declines, dismissals and engagement. Lessons are per member, local first (AgentWitch optional in the background). | built (lessons from decisions, tighten-only adjustments, standing-rule proposals, owner-approved relaxation of learned limits (stretch offers), local memory and an AgentWitch mirror; the simulation benchmark that measures the learning curve is built, see `docs/SIMULATION.md`) |
 | **Evolving** | The system and members' agents may *propose* changes (a new standing rule, a tuned threshold, a new circle). Nothing changes without approval by the owner (personal settings) or by vote (community settings). Every change is versioned and reversible. | later |
 | **Voting** | Members decide community matters together: rules, settings, events. Votes run through agents and owner cards. | later |
 

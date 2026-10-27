@@ -104,3 +104,23 @@ describe("candidate lookup at higher latitudes", () => {
     expect(r.matches.map((x) => x.offerItemId)).toEqual(["east"]);
   });
 });
+
+describe("looking beyond the owner's limits for one call", () => {
+  it("returns the distance in km and lets the caller replace the owner's own limits for this call only", async () => {
+    const m = await setup({ w: { maxDistanceKm: 2 } });
+    m.onListed(it_({ id: "far", districtCode: "g:52.50:13.50" }));
+    const want = it_({ kind: "want", familyId: "w", districtCode: "g:52.50:13.40" });
+    expect(m.candidatesFor(want).matches).toEqual([]);
+    const wide = m.candidatesFor(want, { limits: { maxDistanceKm: 12 } });
+    expect(wide.matches.map((x) => x.offerItemId)).toEqual(["far"]);
+    expect(wide.matches[0]!.distanceKm).toBeGreaterThan(6);
+    expect(wide.matches[0]!.distanceKm).toBeLessThan(8);
+    expect(m.candidatesFor(want).matches).toEqual([]);
+  });
+
+  it("still applies the other owner's limits when the caller widens its own", async () => {
+    const m = await setup({ giver: { maxDistanceKm: 2 } });
+    m.onListed(it_({ id: "far", familyId: "giver", districtCode: "g:52.50:13.50" }));
+    expect(m.candidatesFor(it_({ kind: "want", familyId: "w", districtCode: "g:52.50:13.40" }), { limits: { maxDistanceKm: 12 } }).matches).toEqual([]);
+  });
+});
