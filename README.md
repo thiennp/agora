@@ -29,7 +29,12 @@ Hackathon (Cerebral Valley).
 
 ## Create an app
 
-See [docs/CREATE-AN-APP.md](docs/CREATE-AN-APP.md): paste one prompt into Muse and it builds an app on the platform.
+Paste this into Muse, nothing else:
+
+> Read the instructions at https://raw.githubusercontent.com/thiennp/agora/main/docs/CREATE-AN-APP.md and follow them.
+
+Muse then interviews you about your idea in plain language and builds the app. Details for the agent are in
+[docs/CREATE-AN-APP.md](docs/CREATE-AN-APP.md). (The link works once the repo is public.)
 
 ## Layout
 
