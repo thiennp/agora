@@ -1,4 +1,4 @@
-# Pass-It-On — project plan
+# Hand-Me-Down — project plan
 
 Meta Global AI Developer Hackathon (Cerebral Valley). Build window: Oct 27 – Nov 4, 2026.
 Submission deadline: **Wed Nov 4, 9:00 PM ET**. Judging Nov 5–8. Closing ceremony Mon Nov 9, 12:00 PM ET.

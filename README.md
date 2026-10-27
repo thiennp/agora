@@ -1,4 +1,4 @@
-# Pass-It-On
+# Hand-Me-Down
 
 Parents' Muse agents trade outgrown kids' gear, free or by agreement, on their owners' behalf — in each owner's
 language, near each other — and learn from every accept and decline. Built for the Meta Global AI Developer
