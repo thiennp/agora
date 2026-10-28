@@ -91,7 +91,7 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
     return (
       <div className="stack-lg">
         <Card title={`${built.app.name} is ready`} prominent>
-          <p>Your app is built and you are its creator. Open it to see it and share it with your people.</p>
+          <p>Your app is built and you are its creator. Open it to see it and share it.</p>
           <p><Link className="btn primary" href={built.path}>Open my app</Link></p>
         </Card>
         <Card title="Keep your recovery code">

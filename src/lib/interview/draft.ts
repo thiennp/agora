@@ -5,7 +5,7 @@ import { cleanText, slugify } from "./text";
 
 /**
  * What the model drafts (docs/CREATE-AN-APP.md): the wording and the groupings that need understanding. Everything that decides
- * behaviour (topics, pricing, handover, languages, region, safety) is set by code from the tapped answers, so a draft cannot relax
+ * behaviour (topics, pricing, handover, languages, region, safety) is set by code from the answers and the kind of app, so a draft cannot relax
  * an always-ask rule even if the model tried, and the finished config still goes through the app schema (`validateDraft`).
  */
 export const sketchSchema = z.object({
@@ -26,18 +26,24 @@ const FEELS: Record<string, { accent: string; radius: "sharp" | "soft" | "round"
   playful: { accent: "#c2417a", radius: "round" },
 };
 
-const HANDOVER = { meet: ["pickup"], drop: ["locker", "parcel_shop"], post: ["shipping"] } as const;
-const PRICING = { free: "free_only", swap: "swap_only", agree: "free_or_agreement" } as const;
-const NOT_YET = "Learning together and helping each other are designed but not available yet. Your app does swapping, lending and giving today; your wish is noted for the team.";
+/**
+ * What the interview does not ask (an app is open to any Muse user): set from the kind of app the person described, and shown in the
+ * summary as "Set for you". Swapping apps may ask for something in return and hand things over; the others are free and have no handover.
+ */
+const DEFAULTS = {
+  exchange: { pricing: "free_or_agreement", handoffModes: ["pickup", "shipping"] },
+  other: { pricing: "free_only", handoffModes: ["pickup"] },
+} as const;
+export const defaultsFor = (a: AnswerMap) => (a.purpose?.value === "learn" || a.purpose?.value === "organise" ? DEFAULTS.other : DEFAULTS.exchange);
+const NOT_YET = "Learning together, running events and organising shifts are designed but not available yet. Your app does swapping, lending and giving today; your wish is noted for the team.";
 
 /** Plain-words sketch made by code alone: used when the model is unavailable or its draft is rejected. Valid by construction. */
 export function fallbackSketch(a: AnswerMap): Sketch {
-  const things = a.things?.label ?? "things";
+  const things = a.actions?.label ?? "things";
   const labels = things.split(/,|;|\band\b|&/i).map((s) => cleanText(s, 40)).filter((s) => s.length >= 2).slice(0, 6);
-  const people = cleanText(a.people?.label, 80) || "your community";
   return {
-    tagline: cleanText(`For ${people}`, 140).padEnd(3, "."),
-    participantNoun: "member",
+    tagline: cleanText(a.purpose?.label, 140).padEnd(3, "."),
+    participantNoun: "person",
     categories: (labels.length ? labels : ["Things"]).map((label) => ({ label, hints: [] })),
     forbidden: [],
     wishes: [],
@@ -64,7 +70,7 @@ export interface Assembled {
 export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
   const name = cleanText(a.name?.label, 40);
   const idBase = slugify(name) || "my-app";
-  const place = a.place?.value ?? "online";
+  const defaults = defaultsFor(a);
   const catIds = uniqueSlugs(sketch.categories.map((c) => c.label), "category");
   const forbidden = sketch.forbidden.map((f) => ({ ...f, keywords: f.keywords.map((k) => k.toLowerCase().trim()).filter((k) => k.length >= 2) }));
   if (a.care?.value === "safe") {
@@ -74,12 +80,12 @@ export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
   const feel = FEELS[a.feel?.value ?? "friendly"] ?? FEELS.friendly!;
   const notes = [...sketch.wishes.map((w) => cleanText(w, 160))];
   const purpose = a.purpose?.value;
-  if (purpose === "learn" || purpose === "help") notes.push(NOT_YET);
+  if (purpose === "learn" || purpose === "organise") notes.push(NOT_YET);
   const raw = {
     id: idBase.length >= 3 ? idBase : `${idBase}-app`,
     name,
     tagline: sketch.tagline,
-    region: { name: place === "online" ? "Anywhere" : cleanText(a.placeName?.label, 80) || "Anywhere" },
+    region: { name: "Anywhere" },
     participant: { noun: sketch.participantNoun.toLowerCase(), fields: [] },
     catalog: {
       stageUnit: "month-of-year",
@@ -89,10 +95,10 @@ export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
       stages: [],
     },
     policies: {
-      pricing: { mode: PRICING[(a.pricing?.value ?? "agree") as keyof typeof PRICING] ?? "free_or_agreement" },
+      pricing: { mode: defaults.pricing },
       forbiddenItems: forbidden.map((f, i) => ({ id: forbiddenIds[i]!, label: f.label, keywords: f.keywords, reason: f.reason })),
       maxNegotiationRounds: 3,
-      handoffModes: [...(HANDOVER[(a.handover?.value ?? "meet") as keyof typeof HANDOVER] ?? ["pickup"])],
+      handoffModes: [...defaults.handoffModes],
       // The always-ask topics are written here by code and are never read from the model (GAT-02).
       topics: {
         commitment: "ask", price_terms: "ask", identity_reveal: "ask", location_reveal: "ask", shipping_choice: "ask", safety_exception: "ask",
@@ -100,8 +106,9 @@ export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
       },
       standingRuleTopics: [],
       safetyRules: [],
-      languages: a.languages?.codes?.length ? a.languages.codes : ["en"],
-      locationGranularity: place === "city" || place === "online" ? "city" : "district",
+      // Muse handles languages for each person; this is only the platform's default.
+      languages: ["en"],
+      locationGranularity: "city",
     },
     theme: { accent: feel.accent, radius: feel.radius },
     simulation: { cityDir: "sandbox" },

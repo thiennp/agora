@@ -18,12 +18,8 @@ const j = async (r: Response) => (await r.json()) as any;
 
 const answers = [
   { step: "purpose", choice: "exchange" },
-  { step: "people", text: "Friends who like fashion" },
-  { step: "things", text: "Clothes, shoes and bags" },
-  { step: "place", choice: "online" },
-  { step: "languages", choice: "en" },
-  { step: "handover", choice: "post" },
-  { step: "pricing", choice: "free" },
+  { step: "actions", text: "Offer clothes, shoes and bags" },
+  { step: "how", text: "People post what they have, others ask, then they agree" },
   { step: "care", choice: "none" },
   { step: "name", text: "Clothes Swap Club" },
   { step: "feel", choice: "friendly" },
@@ -43,13 +39,13 @@ describe("create an app by interview, end to end in mock mode (BR-40, BR-41, BR-
       const r = await interview(post("/api/interview", { answers: answers.slice(0, i) }), ctx());
       expect(r.status).toBe(200);
       const t = await j(r);
-      expect(t).toMatchObject({ kind: "ask", question: { step: answers[i]!.step, n: i + 1, of: 10 } });
+      expect(t).toMatchObject({ kind: "ask", question: { step: answers[i]!.step, n: i + 1, of: 6 } });
     }
     const r = await interview(post("/api/interview", { answers }), ctx());
     const review = await j(r);
     expect(review).toMatchObject({ kind: "review", source: "code" });
     expect(review.draft.id).toBe("clothes-swap-club");
-    expect(review.lines.map((l: { label: string }) => l.label)).toContain("Handing things over");
+    expect(review.lines.map((l: { label: string }) => l.label)).toContain("Set for you");
 
     expect((await getApp(new Request("http://localhost/api/apps/clothes-swap-club"), ctx({ app: "clothes-swap-club" }))).status).toBe(404); // nothing stored before the yes
 
@@ -61,7 +57,7 @@ describe("create an app by interview, end to end in mock mode (BR-40, BR-41, BR-
     const cookie = b.headers.get("set-cookie")!.split(";")[0]!;
     expect(cookie).toMatch(/^agora_s_clothes-swap-club=/);
 
-    expect((await loadApp("clothes-swap-club")).policies.handoffModes).toEqual(["shipping"]);
+    expect((await loadApp("clothes-swap-club")).policies.handoffModes).toEqual(["pickup", "shipping"]);
     const who = await me(new Request("http://localhost/api/apps/clothes-swap-club/me", { headers: { cookie } }), ctx({ app: "clothes-swap-club" }));
     expect(await j(who)).toMatchObject({ role: "creator" });
     // The new app works as a platform of its own, for its creator only.
