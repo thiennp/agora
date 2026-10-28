@@ -215,7 +215,14 @@ describe("logistics: outcomes", () => {
 describe("logistics: no money", () => {
   it("contains no payment code (LOG-04)", () => {
     const files: string[] = [];
-    const walk = (d: string) => readdirSync(d).forEach((f) => { const p = join(d, f); statSync(p).isDirectory() ? walk(p) : /\.(ts|tsx)$/.test(p) && !/\.test\.ts$/.test(p) && !/\.contract\.ts$/.test(p) && files.push(p); });
+    const isSource = (p: string) => /\.(ts|tsx)$/.test(p) && !/\.test\.ts$/.test(p) && !/\.contract\.ts$/.test(p);
+    const walk = (d: string) => {
+      for (const f of readdirSync(d)) {
+        const p = join(d, f);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (isSource(p)) files.push(p);
+      }
+    };
     walk("src/features/logistics");
     expect(files.length).toBeGreaterThan(5);
     for (const f of files) {

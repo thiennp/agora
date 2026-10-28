@@ -1,5 +1,7 @@
 name: ci
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -10,5 +12,6 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      # Unit, property, contract, red-team and eval suites (evals/ run under vitest too), plus the seeded simulation.
       - run: npm test
       - run: npm run db:check

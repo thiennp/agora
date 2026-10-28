@@ -1,6 +1,6 @@
 import type { AppConfig } from "@/lib/app-config";
 import type { City, SimFamily } from "./persona.schema";
-import { hashSeed, pick, rng } from "./rng";
+import { hashSeed, rng } from "./rng";
 
 export interface ItemSpec {
   category: string;

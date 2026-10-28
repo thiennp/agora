@@ -1,0 +1,355 @@
+{
+  "answerable": [
+    {
+      "q": "What does the gatekeeper do when a topic is unknown?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/gatekeeper/REQUIREMENTS.md",
+        "docs/adr/0005-agents-propose-code-decides.md"
+      ]
+    },
+    {
+      "q": "How many negotiation rounds are allowed before a deal ends?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/negotiation/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "When does an unconfirmed deal expire?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/negotiation/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "Where are exact addresses stored and when are they revealed?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "docs/PRIVACY.md",
+        "src/features/logistics/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "How is the exact meeting place encrypted?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "docs/SECURITY.md",
+        "src/lib/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "How long are relay messages kept?",
+      "anyOf": [
+        "docs/PRIVACY.md"
+      ]
+    },
+    {
+      "q": "What is a stretch offer?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "docs/SIMULATION.md",
+        "src/features/learning/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "Can learning loosen an owner's limits?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/learning/REQUIREMENTS.md",
+        "docs/adr/0005-agents-propose-code-decides.md"
+      ]
+    },
+    {
+      "q": "Which arms does the simulation compare?",
+      "anyOf": [
+        "docs/SIMULATION.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "How do I create a new app?",
+      "anyOf": [
+        "docs/CREATE-AN-APP.md",
+        "docs/DRY-RUN-garden-tools.md"
+      ]
+    },
+    {
+      "q": "Which primitives does the platform offer?",
+      "anyOf": [
+        "docs/PRIMITIVES.md"
+      ]
+    },
+    {
+      "q": "What is the fractal slice architecture?",
+      "anyOf": [
+        "docs/adr/0001-fractal-slice-architecture.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "What is the deletion test for a slice?",
+      "anyOf": [
+        "docs/adr/0001-fractal-slice-architecture.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "Why can an app not relax the always-ask topics?",
+      "anyOf": [
+        "docs/adr/0002-platform-and-apps.md",
+        "docs/adr/0005-agents-propose-code-decides.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "How are model calls metered and budgeted?",
+      "anyOf": [
+        "docs/adr/0006-model-provider-port-and-metering.md",
+        "src/lib/meta/REQUIREMENTS.md",
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "Which model translates messages?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/lib/meta/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What levels does the scam signal score have?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/trust/REQUIREMENTS.md",
+        "src/features/trust/features/scam-signals/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "When is an agent banned?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/trust/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What does the carrier port do?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/logistics/REQUIREMENTS.md",
+        "src/features/logistics/features/carriers/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What is the export format for reports?",
+      "anyOf": [
+        "docs/PROTOCOL.md"
+      ]
+    },
+    {
+      "q": "What happens to audit entries when a member is erased?",
+      "anyOf": [
+        "docs/PRIVACY.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "How many matching shards are needed at one billion members?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "Why is matching slow in a dense city?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "When should we move to a cell-based architecture?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "How are apps isolated from each other at scale?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "How can an AI assistant query the docs?",
+      "anyOf": [
+        "docs/DOCS-PLATFORM.md"
+      ]
+    },
+    {
+      "q": "What does the demo mode lack compared with live mode?",
+      "anyOf": [
+        "CLAUDE.md",
+        "docs/SECURITY.md",
+        "README.md"
+      ]
+    },
+    {
+      "q": "When is the submission deadline?",
+      "anyOf": [
+        "docs/PLAN.md"
+      ]
+    },
+    {
+      "q": "What does the judge dashboard show?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/dashboard/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What is the length limit and rate limit for relay messages?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/negotiation/features/relay/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What does BR-38 require?",
+      "anyOf": [
+        "REQUIREMENTS.md",
+        "docs/adr/0004-tier-gate-config-shape-retention.md"
+      ]
+    },
+    {
+      "q": "How is a prompt injection handled?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "docs/adr/0005-agents-propose-code-decides.md",
+        "docs/SECURITY.md"
+      ]
+    }
+  ],
+  "unanswerable": [
+    "How do I configure kubernetes autoscaling for the payment gateway?",
+    "What is the recipe for chocolate cake?",
+    "How do I train a diffusion model on my own GPUs?",
+    "Who won the football world cup in 2022?",
+    "How do I deploy to AWS Lambda with Terraform?",
+    "What is the chief executive's home address?"
+  ],
+  "heldOut": [
+    {
+      "q": "How does the system stop an agent from agreeing to a price on its own?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "docs/adr/0005-agents-propose-code-decides.md",
+        "src/features/gatekeeper/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What is stored in the record of each model request?",
+      "anyOf": [
+        "docs/adr/0006-model-provider-port-and-metering.md",
+        "src/lib/meta/REQUIREMENTS.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "Who is allowed to write the meeting place for a pickup?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/logistics/REQUIREMENTS.md",
+        "src/features/logistics/features/handoff/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What is the oracle ceiling in the benchmark?",
+      "anyOf": [
+        "docs/SIMULATION.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "Which languages does the topic classifier cover?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/gatekeeper/REQUIREMENTS.md",
+        "src/features/gatekeeper/features/classifier/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "How are lessons written without including names or places?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/learning/REQUIREMENTS.md",
+        "src/features/learning/features/lessons/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What stops one viral app from starving the others?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "How should budgets be enforced across many servers?",
+      "anyOf": [
+        "docs/SCALE.md"
+      ]
+    },
+    {
+      "q": "What does the schema reject in an app config?",
+      "anyOf": [
+        "docs/adr/0002-platform-and-apps.md",
+        "docs/CREATE-AN-APP.md",
+        "src/lib/app-config/REQUIREMENTS.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "Can members chat with each other directly?",
+      "anyOf": [
+        "CLAUDE.md",
+        "README.md",
+        "docs/ARCHITECTURE.md",
+        "docs/PRIMITIVES.md"
+      ]
+    },
+    {
+      "q": "What was decided about sensitive attributes and circles?",
+      "anyOf": [
+        "docs/adr/0004-tier-gate-config-shape-retention.md",
+        "docs/PRIMITIVES.md",
+        "docs/ARCHITECTURE.md"
+      ]
+    },
+    {
+      "q": "Which part translates between languages while keeping numbers intact?",
+      "anyOf": [
+        "docs/ARCHITECTURE.md",
+        "src/features/language/REQUIREMENTS.md",
+        "src/features/language/features/translation/REQUIREMENTS.md"
+      ]
+    },
+    {
+      "q": "What do I run to see the learning curves?",
+      "anyOf": [
+        "CLAUDE.md",
+        "README.md",
+        "docs/SIMULATION.md"
+      ]
+    },
+    {
+      "q": "How do I register the docs MCP server in my assistant?",
+      "anyOf": [
+        "docs/DOCS-PLATFORM.md"
+      ]
+    },
+    {
+      "q": "In what order would slices be extracted into services?",
+      "anyOf": [
+        "docs/adr/0001-fractal-slice-architecture.md",
+        "docs/ARCHITECTURE.md",
+        "docs/SCALE.md"
+      ]
+    }
+  ]
+}

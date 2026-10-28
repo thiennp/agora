@@ -64,7 +64,8 @@ export function createMetaClient(deps: MetaClientDeps) {
       let usage = { inputTokens: 0, outputTokens: 0 };
       try {
         const res = await adapter.complete({ model: route.model, system, prompt: opts.prompt, json: Boolean(opts.schema), images: opts.images });
-        usage = res;
+        // Copy the counts only: the reply text must never reach the call record (logs hold counts, not message text).
+        usage = { inputTokens: res.inputTokens, outputTokens: res.outputTokens };
         const value = opts.schema ? parseModelOutput(res.text, opts.schema) : res.text;
         ok = true;
         return value;
@@ -97,7 +98,8 @@ export function createMetaClientFromEnv(app: MetaClientDeps["app"], env: Env = l
   const adapters: Partial<Record<Provider, ModelAdapter>> = { mock: createMockAdapter() };
   const providers: Record<ModelId, Provider> = { "muse-spark": "mock", "muse-spark-open": "mock" };
   if (env.MODE === "live") {
-    adapters["meta-api"] = createMetaApiAdapter({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! });
+    if (!env.META_API_KEY) throw new Error("AGORA_MODE=live requires META_API_KEY");
+    adapters["meta-api"] = createMetaApiAdapter({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY });
     providers["muse-spark"] = "meta-api";
     providers["muse-spark-open"] = "meta-api";
     if (env.OPEN_MODEL_URL && env.OPEN_MODEL_KEY) {

@@ -226,7 +226,7 @@ agora/
 ├── docs/                                 # PLAN.md, ARCHITECTURE.md, adr/
 ├── .github/workflows/ci.yml
 ├── eslint.config.mjs                     # boundary rules (no cross-slice internal imports)
-├── structure-validation.config.json      # allowed folders per level
+├── structure-validation.config.json      # allowed folders per level (empty placeholder; not built)
 └── README.md
 ```
 
@@ -290,7 +290,7 @@ Producers import the hub's `command` API; consumers import its `query`/listener 
 5. Hubs import no slice; cross-slice side effects go through a hub, not direct calls or a global event bus.
 6. Deletion test: removing `voice/` (plus its route wiring) leaves the app working; removing `logistics/` leaves
    deals ending at "confirmed, pickup by owners"; removing `simulation/` changes nothing for users.
-7. Enforced by ESLint boundary rules and structure validation in CI.
+7. Enforced by ESLint boundary rules (`no-restricted-imports`) in CI. Structure validation (allowed folders per level) is planned, not built.
 
 ## 4. Data model (Postgres)
 
@@ -626,6 +626,16 @@ Known limits: crops are rectangles, not masks (masks are base85 rasters whose de
 Stance: a **modular monolith** with strict boundaries now (one deployable, one Postgres). No microservices or
 Kubernetes for the hackathon. Every item below is either built now (marked **NOW**) or a documented next move.
 
+> **Status check (2026-10-27).** Several items below were marked **NOW** at planning time and are not in the code. Verified
+> absent: the Postgres queue with idempotency keys and the outbox; feature flags and kill switches; a persisted append-only
+> audit log (the demo keeps in-memory counters); the retention job; per-request authentication (the demo has two personas);
+> Postgres row-level security; CSRF, CSP and upload validation; secret scanning in CI; the Playwright end-to-end flows;
+> structure validation (`structure-validation.config.json` is an empty placeholder; the import boundaries are enforced by
+> ESLint only); nightly eval runs. What is built and tested: the model client, router and cost meter with budgets, the ports and
+> contract suites, the deal state machine and gatekeeper (unit, property and red-team tests), field encryption, a per-process
+> rate limiter, the CI workflow (typecheck, lint, tests), and the simulation as a regression test. The path from here to many
+> users is in `docs/SCALE.md`.
+
 ### Scaling to millions of users and bots
 
 1. **An agent is a row, not a process.** Agents are stateless workers invoked by events and loaded from the
@@ -676,7 +686,7 @@ Kubernetes for the hackathon. Every item below is either built now (marked **NOW
 | Eval suites (real models, on demand; `npm run evals` runs `vitest run evals`, no nightly schedule yet) | Translation round-trip, intake labeling, topic classifier accuracy, negotiation quality | Fixed golden sets with thresholds; regressions reported, not silently accepted |
 | Simulation as regression | The sandbox city runs in CI with a seeded RNG and fixture models; asserts 0 unauthorized commitments, 0 leaks, deal completion rate above a floor | Doubles as the benchmark **NOW** |
 | Red-team suites | Prompt injection, address/phone extraction, price-pressure, scam scripts | Must stay at 0 failures **NOW** |
-| End-to-end | Playwright on three flows: intake → match; negotiate → owner question → confirm; handoff/shipping | **Not built.** The API journey tests (`src/app/api/*.test.ts`: journey, items, shipping, restart) cover the flows without a browser, except intake (not built) |
+| End-to-end | Playwright on three flows: intake → match; negotiate → owner question → confirm; handoff/shipping | **Not built.** The API journey tests (`src/app/api/*.test.ts`: journey, items, shipping, restart) cover the flows without a browser, except intake (not built); `src/app/api/invariants.test.ts` checks the never-relaxed rules through the real route handlers |
 | Migrations | Apply on a copy; check rollback | Before each deploy |
 
 CI (`.github/workflows/ci.yml`) runs typecheck, lint + boundaries, the test suite (which includes the contract, red-team and
