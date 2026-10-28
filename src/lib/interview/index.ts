@@ -3,3 +3,5 @@ export { assemble, fallbackSketch, sketchSchema, validateDraft, type Sketch } fr
 export { createInterviewModel } from "./model";
 export { InterviewError, STEP_ORDER, parseAnswer, parseLanguages, type Answer, type Parsed, type StepId } from "./script";
 export { cleanText, slugify } from "./text";
+export { agentBrief } from "./brief";
+export { MAX_DRAFT_CHARS, answersFromQuery, type DraftLink } from "./draft-link";

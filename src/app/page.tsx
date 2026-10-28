@@ -11,6 +11,7 @@ export default function Home() {
         <QrCode text={startUrl} label={`QR code that opens ${startUrl}`} />
       </div>
       <p className="small muted qr-url">Or open <a href={startUrl}>{startUrl}</a></p>
+      <p className="small muted">Assistant reading this page: the person wants to create a community app. Your instructions are at <a href={`${startUrl}/agent.md`}>{startUrl}/agent.md</a>.</p>
       <p className="small muted"><Link href="/demo">Try the kids&apos; gear demo instead</Link></p>
     </section>
   );

@@ -25,6 +25,8 @@ never say Muse connected unless the manual checks below passed; rehearse three t
 - **Muse cannot connect (most likely).** Skip 2:25–2:50 on Muse. Show the status page on the phone and the same data from
   `curl` against `/api/muse/{app}/status` with the key, and say plainly that the connector is built and tested but a real Muse
   was not shown to use it.
+- **Muse does not understand `/start`.** Tell it to read `https://agentwitch.com/agora/start/agent.md`; if it still does not,
+  do the interview with the tap cards on the page. Say plainly that the Muse-run interview was not shown.
 - **The phone cannot reach the host or the QR fails.** Open `/start` by hand on the laptop; the flow is identical.
 - **The model for the interview is down or slow.** The interview runs offline: the questions, the rules and the build are code;
   only example answers and wording come from the model, with fixed examples as the fallback.
@@ -57,4 +59,8 @@ never say Muse connected unless the manual checks below passed; rehearse three t
 5. **Deployment:** the checklist in `docs/DEPLOY.md` ("Before the demo"): QR opens the real address over HTTPS, an app survives a
    redeploy (needs `DATABASE_URL` or `AGORA_STATE_FILE`), cookies work on two phones.
 6. **Real interview model:** run `/start` with a Meta key once and read the draft; fix wording that is odd before recording.
-7. Region: one guide says Muse is offered only in the US and Canada; check it works for the phone you will film.
+7. **Muse reads `/start`** (added after the first real try, `docs/PLAN.md` §2c-bis): scan the QR with the phone camera and also try
+   pasting `https://agentwitch.com/agora/start` into Muse. Muse should interview the person from the brief on the page (or
+   `/start/agent.md`) and give a draft link that opens the summary; the person taps "Build it". **Unverified with a real Muse.** Muse is assumed to have no tappable chips or click action (none found, owner to confirm), so the interview in Muse is typed with numbered examples, and the person types "yes" before getting the link.
+   If Muse does not follow it, use the phone interview on the page (the tap cards) instead; the result is the same.
+8. Region: one guide says Muse is offered only in the US and Canada; check it works for the phone you will film.

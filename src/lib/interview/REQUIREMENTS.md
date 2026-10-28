@@ -22,6 +22,7 @@ A person who scans the home page QR code and wants an app for their community.
 | INT-04 | Code sets every rule (pricing, handover, languages, region, safety topics); the always-ask topics are `ask` whatever the model says; the finished config passes the app schema before it is shown or stored. | Must | `interview.test.ts` ("keeps every always-ask topic", `validateDraft`). |
 | INT-05 | A person's words are untrusted data: cleaned, capped, sent to the model as data under a rule to ignore instructions in them, never used as an id without slugging. | Must | `interview.test.ts`. |
 | INT-06 | Say plainly when the idea needs something that does not exist yet and build the closest version. | Should | `interview.test.ts` (notes). |
+| INT-07 | An assistant that reads `/start` gets its task from a brief generated from the script (`brief.ts`); it hands the person a draft link of answers (`draft-link.ts`): per-step query values or `?draft=` JSON, max 2000 characters, unknown keys ignored, read by `parseAnswer` in fixed order, unusable parts dropped with a plain sentence. The link never builds: only the person's tap does. | Must | `draft-link.test.ts`, `src/app/api/start-agent.test.ts`. |
 
 ## Out of scope
 
