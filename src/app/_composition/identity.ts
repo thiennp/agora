@@ -1,4 +1,4 @@
-import { createIdentityStore, IdentityError, type IdentityBackend, type IdentityStore, type Principal, type Role } from "@/lib/identity";
+import { createIdentityStore, createMuseKeyStore, IdentityError, type IdentityBackend, type IdentityStore, type MuseKeyStore, type Principal, type Role } from "@/lib/identity";
 import { createFileBackend, createPostgresBackend } from "./persistence";
 import { loadEnv } from "@/lib/env";
 import { repoAppIds } from "@/lib/app-config";
@@ -7,17 +7,26 @@ import { repoAppIds } from "@/lib/app-config";
 export const LIGHT_IDENTITY_NOTICE =
   "This is light identity, not a real account. Your phone holds a private session, and the recovery code is the only way back in on a new phone. Anyone who has the code is you. Keep it somewhere safe and do not share it or post it.";
 
-const g = globalThis as unknown as { __agoraIdentity?: IdentityStore };
+const g = globalThis as unknown as { __agoraIdentity?: IdentityStore; __agoraMuseKeys?: MuseKeyStore };
 
 /** Same backend choice as the apps: DATABASE_URL (row `identity` of `app_state`), else `<AGORA_STATE_FILE>.identity.json`, else memory. */
-function backendFromEnv(env: { DATABASE_URL?: string; AGORA_STATE_FILE?: string }): IdentityBackend | undefined {
-  if (env.DATABASE_URL) return createPostgresBackend(env.DATABASE_URL, "identity");
-  if (env.AGORA_STATE_FILE) return createFileBackend(`${env.AGORA_STATE_FILE}.identity.json`);
+function backendFromEnv(env: { DATABASE_URL?: string; AGORA_STATE_FILE?: string }, name = "identity"): IdentityBackend | undefined {
+  if (env.DATABASE_URL) return createPostgresBackend(env.DATABASE_URL, name);
+  if (env.AGORA_STATE_FILE) return createFileBackend(`${env.AGORA_STATE_FILE}.${name}.json`);
   return undefined;
 }
 
 export function getIdentityStore(): IdentityStore {
   return (g.__agoraIdentity ??= createIdentityStore(backendFromEnv(loadEnv())));
+}
+
+/** The per-member keys of a person's own Muse (BR-44); same backend choice, own row (`muse-keys`). */
+export function getMuseKeyStore(): MuseKeyStore {
+  return (g.__agoraMuseKeys ??= createMuseKeyStore(backendFromEnv(loadEnv(), "muse-keys")));
+}
+
+export function useMuseKeyStore(store: MuseKeyStore | undefined): void {
+  g.__agoraMuseKeys = store;
 }
 
 /** Replace the store (tests). */

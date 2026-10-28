@@ -5,6 +5,8 @@ import { Badge } from "@/components/Badge";
 import { BarList } from "@/components/BarList";
 import { Banner, Card } from "@/components/Card";
 import { LineChart } from "@/components/LineChart";
+import { MuseKeyPanel } from "@/components/MuseKeyPanel";
+import { getMuseKeyStore } from "@/app/_composition/identity";
 import { memberStatusView } from "@/app/_composition/member-status";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,7 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
   if (v.kind === "denied") notFound();
   const s = v.status;
   const waiting = s.waiting.questions.length + s.waiting.confirmations.length + s.waiting.offers.length;
+  const keys = await getMuseKeyStore().list(app, id);
   const total = s.deals.length + s.items.length;
 
   return (
@@ -94,6 +97,10 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
         {s.rules.length === 0 ? <p className="muted">None. Your agent asks every time. You can let it decide small things like a pickup time on its own.</p> : (
           <ul className="list">{s.rules.map((r) => <li key={r.id}>Decides {r.topic} on its own{r.expiresAt ? <span className="small muted"> · until {r.expiresAt.slice(0, 10)}</span> : null}</li>)}</ul>
         )}
+      </Card>
+
+      <Card title="Connect your own Muse">
+        <MuseKeyPanel appId={app} initial={keys} />
       </Card>
     </div>
   );
