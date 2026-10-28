@@ -72,7 +72,7 @@ Ask instead of searching: the docs are indexed (`/docs` chat, the `agora-docs` M
 
 Demo decision (Oct 28): the demo is a real Muse creating an app live from a QR code on the home page, with an app
 overview and invite QR at `agentwitch.com/agora/app/{app}` and a member status page at `/agora/app/{app}/muse/{id}`
-(BR-39 to BR-45, `docs/PLAN.md` §2c). Built so far (Oct 28): the home page is one QR code that opens `/start` (address from `AGORA_PUBLIC_URL`, else the request's host), `/start` is a placeholder that says the interview is not built, and the old landing page moved to `/demo`. Everything else is not built. Step 0 (can a real Muse connect): desk check done, hands-on check by the owner pending
+(BR-39 to BR-45, `docs/PLAN.md` §2c). Built so far (Oct 28): the home page is one QR code that opens `/start` (the address is hardcoded to `https://agentwitch.com/agora/start` in `src/app/_composition/public-url.ts`), `/start` is a placeholder that says the interview is not built, and the old landing page moved to `/demo`. Everything else is not built. Step 0 (can a real Muse connect): desk check done, hands-on check by the owner pending
 (`docs/PLAN.md` §2d); Meta documents custom connectors built from an API, MCP in the consumer app is unconfirmed.
 
 Built: app config schema and loader, Meta client (routing, cost meter, budgets), family profile and consent,
@@ -96,7 +96,7 @@ accounts and real authentication, voice (request format not yet read). The Meta 
 
 ## Working here
 
-- Env: `AGORA_PUBLIC_URL` (address the home page QR code opens, optional), `AGORA_MODE` (mock default), `AGORA_STATE_FILE` / `DATABASE_URL`, `AGORA_INTAKE` (`simulated` default, or `meta` with `META_API_KEY`).
+- Env: `AGORA_MODE` (mock default), `AGORA_STATE_FILE` / `DATABASE_URL`, `AGORA_INTAKE` (`simulated` default, or `meta` with `META_API_KEY`).
 - `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run evals:intake` (needs a Meta key; makes 24 photos, about $0.60 in Muse Spark calls), `npm run bench:matching` (lookup latency at N items), `npm run capacity` (the tables in `docs/SCALE.md`), `npm run mcp:docs`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.
