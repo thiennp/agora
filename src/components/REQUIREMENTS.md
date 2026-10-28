@@ -20,6 +20,8 @@ All pages.
 | CMP-04 | Every `ui/` component is original code under the repository's MIT licence; icons are inline SVG drawn for the project; fonts are the system stack. | Must | No template, UI kit or asset is copied in; `THIRD_PARTY_LICENSES.md` lists dependencies. |
 | CMP-02 | Never import a feature internal folder. | Must | Lint enforced. |
 
+| CMP-JOIN | `JoinForm` (join on the invite page, then the recovery code once) and `CopyLink` (share or copy the invite link) hold no secret and call only the join API. | Must | `src/app/api/app-page.test.ts`. |
+
 ## Out of scope
 
 - Business logic.
