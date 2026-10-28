@@ -8,4 +8,4 @@ dist/
 .DS_Store
 tsconfig.tsbuildinfo
 next-env.d.ts
-reports/
+/reports/

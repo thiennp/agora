@@ -43,5 +43,6 @@ NFR-02.
 - [Owner cards](owner-cards/REQUIREMENTS.md)
 - [Safety](safety/REQUIREMENTS.md)
 - [Simulation](simulation/REQUIREMENTS.md)
+- [Styleguide](styleguide/REQUIREMENTS.md)
 - [Trust](trust/REQUIREMENTS.md)
 - [Voice](voice/REQUIREMENTS.md)

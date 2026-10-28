@@ -78,3 +78,11 @@ src/lib          shared infrastructure (db, queue, crypto, Meta model access)
 src/components   design system
 db  evals  fixtures  e2e  docs  .github
 ```
+
+## Licence
+
+Agora is open source under the [MIT licence](LICENSE), free to use, copy and change. All code in this repository,
+including the interface components and design tokens, was written for it; no UI kit or template is copied in. The
+packages it depends on are all open source and free of charge; their licences are listed in
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md), including the few non-permissive ones that arrive as transitive
+tooling.

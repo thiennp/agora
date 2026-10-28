@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Links() {
   const path = usePathname();
   const as = useSearchParams().get("as") === "b" ? "b" : "a";
   const q = `?as=${as}`;
   const item = (href: string, label: string, match: (p: string) => boolean) => (
-    <Link href={`${href}${href === "/dashboard" || href === "/docs" ? "" : q}`} aria-current={match(path) ? "page" : undefined}>{label}</Link>
+    <Link href={`${href}${["/dashboard", "/docs", "/styleguide"].includes(href) ? "" : q}`} aria-current={match(path) ? "page" : undefined}>{label}</Link>
   );
-  const here = path.startsWith("/dashboard") ? "/dashboard" : path.startsWith("/docs") ? "/docs" : path.startsWith("/deals") ? "/deals" : path.startsWith("/items") ? "/items" : "/cards";
+  const here = path.startsWith("/dashboard") ? "/dashboard" : path.startsWith("/docs") ? "/docs" : path.startsWith("/styleguide") ? "/styleguide" : path.startsWith("/deals") ? "/deals" : path.startsWith("/items") ? "/items" : "/cards";
   return (
     <>
       <nav className="nav" aria-label="Main">
@@ -20,8 +21,9 @@ function Links() {
         {item("/deals", "Deals", (p) => p.startsWith("/deals"))}
         {item("/dashboard", "Dashboard", (p) => p.startsWith("/dashboard"))}
         {item("/docs", "Docs", (p) => p.startsWith("/docs"))}
+        {item("/styleguide", "Styleguide", (p) => p.startsWith("/styleguide"))}
       </nav>
-      {here !== "/dashboard" && here !== "/docs" ? (
+      {here !== "/dashboard" && here !== "/docs" && here !== "/styleguide" ? (
         <div className="persona" role="group" aria-label="Act as">
           <Link href={`${path}?as=a`} aria-current={as === "a" ? "true" : undefined}>Mia · EN</Link>
           <Link href={`${path}?as=b`} aria-current={as === "b" ? "true" : undefined}>Jonas · DE</Link>
@@ -34,11 +36,12 @@ function Links() {
 export function Nav() {
   return (
     <header className="site-header">
-      <div className="container">
+      <div className="wrap">
         <Link href="/" className="brand">Ag<span>o</span>ra</Link>
         <Suspense fallback={null}>
           <Links />
         </Suspense>
+        <ThemeToggle />
       </div>
     </header>
   );
