@@ -59,7 +59,7 @@ export async function dealView(p: Platform, dealId: string, key: PersonaKey) {
   const conversation = await p.relay.conversationFor(dealId, me.id);
   const signals = await p.relay.signalsAbout(dealId, me.id);
   return {
-    persona: me, other: otherOf(p, key),
+    persona: me, other: p.byId.get(d.offerFamilyId === me.id ? d.wantFamilyId : d.offerFamilyId) ?? otherOf(p, key),
     deal: { id: d.id, state: d.state, round: d.round, maxRounds: d.maxRounds, role: d.offerFamilyId === me.id ? "giving" : "receiving", flags: d.flags, expiresAt: d.expiresAt },
     summary: await p.negotiation.summary(dealId), item: await itemText(p, d.offerItemId),
     history: d.history

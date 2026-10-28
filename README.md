@@ -11,7 +11,7 @@ approval, records, time, workflows, matching, notifications, language and trust.
 [docs/PRIMITIVES.md](docs/PRIMITIVES.md).
 
 **The idea in one line:** paste one link into Muse, answer plain-language questions about your community, and Muse builds
-the app on Agora for you. (Designed, not yet tried end to end with a real Muse.)
+the app on Agora for you. (The flow is built and tested in mock mode; it has not been tried with a real Muse.)
 
 Example apps on the platform:
 - [`apps/kids-gear`](apps/kids-gear) — parents' agents trade outgrown kids' gear. This is the hackathon demo.
@@ -50,7 +50,7 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Open `/demo` (the home page `/` is a QR code that opens `/start`, the create-an-app entry, which is a placeholder until the interview is built; the code always points at `https://agentwitch.com/agora/start`, so it only opens once that is deployed), pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
+Open `/demo` (the home page `/` is a QR code that opens `/start`, the create-an-app interview; the code always points at `https://agentwitch.com/agora/start`, so scanning it only works once that is deployed. Locally, open `/start` directly), pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
 judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
 in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
 `npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo needs no Meta key: translation
@@ -58,7 +58,15 @@ and the carrier are simulated. The items page also takes a photo: by default (`A
 items are cut from fixed places on it; with `AGORA_INTAKE=meta` and `META_API_KEY` in `.env`, Muse Spark names the items and SAM 3.1 finds
 each one. The photo is never kept, only a small picture of each item you list.
 
-## Create an app
+## Muse-first demo
+
+A person scans the QR code on the home page, answers a short interview on their phone and gets an app: an overview with an invite
+QR, a join page for friends, and a status page per member showing what their agent works on. A person's own Muse can read that
+status through a read-only connector (`docs/MUSE-CONNECTOR.md`); it can never answer a card. The whole flow runs offline in mock
+mode (`npm test` covers it: `src/app/api/muse-first-flow.test.ts`). Not tried with a real Muse. The script, the fallback and the list of what is
+simulated are in [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md).
+
+## Create an app (paste into Muse)
 
 Paste this into Muse, nothing else:
 

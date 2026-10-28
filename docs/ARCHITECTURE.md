@@ -690,6 +690,12 @@ Known limits of the pipeline: crops are rectangles, not masks (masks are base85 
 
 Not built: voice answers ("something else" is typed), the real-model quality of the draft and examples (only tested with stubs, never run against Muse Spark), an edit screen (the person goes back one question), and a draft for the other primitives (circles, voting, scheduling: they are noted as wishes).
 
+## 11e. Members as parties, and the Muse-first flow end to end
+
+A member of a stored app is a **party** of that app's platform (docs/adr/0007-stored-app-members-are-parties.md): `getPlatform(app)` registers every membership of the app (`Platform.addMember`: language, shared coarse district, default limits, an agent) before it returns, and `route()` makes the session the persona, so the member's items, deals, cards, lessons and rules are real and show on the status page (BR-43) and through the Muse read API (BR-44). The two demo apps keep the built-in personas.
+
+The whole flow is tested in mock mode through the real routes (`src/app/api/muse-first-flow.test.ts`): QR home page, interview, build, overview and invite, a second person joins, both list items and the wanting member's agent opens a deal, the status page and the read API show it, and the member key is refused on every write route. What it does not cover: a browser (no Playwright), a real model, a real Muse.
+
 ## 12. Deployment
 
 - Web + API on Railway (Node, Postgres). Config via env; no secrets in the repo.

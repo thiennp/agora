@@ -111,11 +111,16 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       if (process.env.AGORA_MODE === "live") throw new HttpError(501, "auth_not_built", "The demo console is not available in live mode: there are no accounts yet.");
       // Which app this request is about: the `app` path parameter, else `?app=`, else the demo app (BR-41).
       const appId = params.app ?? new URL(req.url).searchParams.get("app") ?? undefined;
-      const platform = await platformFor(appId);
+      let platform = await platformFor(appId);
       // A stored app is a space its members see (BR-42, BR-45): no session for this app, no access. The demo apps keep their personas.
       if (appId !== undefined && isStoredApp(appId)) {
         const who = await authorize(req, appId);
         if (req.method !== "GET") assertHuman(who); // an external Muse reads; every write needs the person's own session (BR-07, BR-44)
+        // The caller acts as themselves, whatever `as` says: both persona keys resolve to the member the session proves, so one member
+        // cannot act for another by naming a different persona.
+        const me = platform.byId.get(who.memberId);
+        if (!me) throw new HttpError(403, "not_a_party", "You are not a member of this app.");
+        platform = { ...platform, personas: { a: me, b: me } };
       }
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
       const result = await run({ input, platform, params, as });
