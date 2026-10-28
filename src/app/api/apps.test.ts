@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { platformFor, resetRateLimit } from "@/app/_composition/api";
+import { useIdentityStore } from "@/app/_composition/identity";
+import { createIdentityStore } from "@/lib/identity";
 import { useAppStore } from "@/app/_composition/apps";
 import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
 import { POST as createApp } from "./apps/route";
@@ -8,6 +10,7 @@ import { POST as addItem } from "./items/route";
 import { GET as listDeals } from "./deals/route";
 
 const req = (path: string, body?: unknown) => new Request(`http://localhost${path}`, body === undefined ? undefined : { method: "POST", body: JSON.stringify(body) });
+const withCookie = (r: Request, cookie: string) => new Request(r, { headers: { cookie } });
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
 const j = async (r: Response) => (await r.json()) as any;
 const config = async (id: string) => ({ ...(await loadApp("garden-tools")), id, name: `Club ${id}`, tagline: "Swap with friends" });
@@ -15,6 +18,7 @@ const config = async (id: string) => ({ ...(await loadApp("garden-tools")), id, 
 describe("apps as data over HTTP (BR-41)", () => {
   beforeEach(() => {
     resetRateLimit();
+    useIdentityStore(createIdentityStore());
     useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
   });
 
@@ -41,7 +45,8 @@ describe("apps as data over HTTP (BR-41)", () => {
   });
 
   it("keeps each app's data apart: the demo app and a stored app never see each other's items or deals", async () => {
-    await createApp(req("/api/apps", await config("scoped-club")), ctx());
+    const created = await createApp(req("/api/apps", await config("scoped-club")), ctx());
+    const cookie = created.headers.get("set-cookie")!.split(";")[0]!;
     const demo = await platformFor();
     const other = await platformFor("scoped-club");
     expect(other).not.toBe(demo);
@@ -49,11 +54,11 @@ describe("apps as data over HTTP (BR-41)", () => {
     expect(demo.app.id).not.toBe("scoped-club");
 
     // The demo app has its seeded deal, the new app starts empty.
-    expect((await j(await listDeals(req("/api/deals?as=a&app=scoped-club"), ctx()))).deals).toHaveLength(0);
+    expect((await j(await listDeals(withCookie(req("/api/deals?as=a&app=scoped-club"), cookie), ctx()))).deals).toHaveLength(0);
     expect((await j(await listDeals(req("/api/deals?as=a"), ctx()))).deals.length).toBeGreaterThan(0);
 
     // An item added to the stored app is in its catalog and not in the demo app's.
-    const added = await addItem(req("/api/items?app=scoped-club", { as: "a", kind: "offer", category: "hand-tools", condition: "good", description: "A good spade" }), ctx());
+    const added = await addItem(withCookie(req("/api/items?app=scoped-club", { as: "a", kind: "offer", category: "hand-tools", condition: "good", description: "A good spade" }), cookie), ctx());
     expect(added.status).toBe(200);
     const { id } = await j(added);
     expect(await other.catalog.items.get(id)).toBeTruthy();

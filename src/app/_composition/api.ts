@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { loadApp } from "@/lib/app-config";
 import { getAppStore } from "./apps";
+import { assertHuman } from "@/lib/identity";
+import { authorize, isStoredApp } from "./identity";
 import { getPlatform, type Platform, type PersonaKey } from "./platform";
 
 /** Stable error shape for every route (API-03): { error: { code, message } }. */
@@ -11,9 +13,14 @@ export class HttpError extends Error {
   }
 }
 
+/** A successful answer that also sets cookies (a session is granted). Never cached. */
+export class Reply {
+  constructor(readonly body: unknown, readonly cookies: string[] = []) {}
+}
+
 const STATUS: Record<string, number> = {
   not_found: 404, not_owner: 403, not_a_party: 403, restricted: 403, not_host: 403, not_recipient: 403, not_allowed: 403,
-  already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, app_exists: 409, too_many_apps: 409, rate_limited: 429,
+  unauthenticated: 401, invalid_recovery: 401, forbidden: 403, too_many_members: 409, already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, app_exists: 409, too_many_apps: 409, rate_limited: 429,
 };
 
 /** The platform of an app by id; an id no repository or stored app has is a 404, not a server error. */
@@ -30,7 +37,12 @@ export async function platformFor(appId?: string): Promise<Platform> {
 }
 
 const limiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
-export const resetRateLimit = () => limiter.reset();
+/** Guessing a recovery code is the one attack light identity invites, so it gets its own, much tighter limit (per address). */
+export const recoveryLimiter = createRateLimiter({ limit: 8, windowMs: 15 * 60_000 });
+export const resetRateLimit = () => {
+  limiter.reset();
+  recoveryLimiter.reset();
+};
 
 export const personaKey = z.enum(["a", "b"]);
 
@@ -50,10 +62,11 @@ async function serve<S extends z.ZodTypeAny>(
   ctx: { params: Promise<Record<string, string>> },
   schema: S,
   run: (input: z.infer<S>, params: Record<string, string>) => Promise<unknown>,
+  limit = limiter,
 ): Promise<Response> {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-    const rl = limiter.check(ip);
+    const rl = limit.check(ip);
     if (!rl.ok) throw new HttpError(429, "rate_limited", `Too many requests. Try again in ${rl.retryAfterSec} seconds.`);
 
     let raw: unknown = {};
@@ -70,7 +83,13 @@ async function serve<S extends z.ZodTypeAny>(
     }
     const parsed = schema.safeParse(raw);
     if (!parsed.success) throw new HttpError(400, "invalid_input", parsed.error.issues.map((i) => `${i.path.join(".") || "input"}: ${i.message}`).join("; "));
-    return json(200, await run(parsed.data as z.infer<S>, (await ctx.params) ?? {}));
+    const out = await run(parsed.data as z.infer<S>, (await ctx.params) ?? {});
+    if (out instanceof Reply) {
+      const h = new Headers({ "content-type": "application/json", "cache-control": "no-store" });
+      for (const c of out.cookies) h.append("set-cookie", c);
+      return new Response(JSON.stringify(out.body), { status: 200, headers: h });
+    }
+    return json(200, out);
   } catch (e) {
     if (e instanceof HttpError) return json(e.status, { error: { code: e.code, message: e.message } }, e.status === 429 ? { "retry-after": "5" } : undefined);
     const code = (e as { code?: unknown }).code;
@@ -93,6 +112,11 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       // Which app this request is about: the `app` path parameter, else `?app=`, else the demo app (BR-41).
       const appId = params.app ?? new URL(req.url).searchParams.get("app") ?? undefined;
       const platform = await platformFor(appId);
+      // A stored app is a space its members see (BR-42, BR-45): no session for this app, no access. The demo apps keep their personas.
+      if (appId !== undefined && isStoredApp(appId)) {
+        const who = await authorize(req, appId);
+        if (req.method !== "GET") assertHuman(who); // an external Muse reads; every write needs the person's own session (BR-07, BR-44)
+      }
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
       const result = await run({ input, platform, params, as });
       if (req.method !== "GET") await platform.persist();
@@ -104,7 +128,10 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
  * A route that reads public project documentation, so it needs neither the demo scenario nor demo mode. Same rate limit,
  * validation and error shape as `route`.
  */
-export function publicRoute<S extends z.ZodTypeAny>(opts: { schema: S }, run: (ctx: { input: z.infer<S>; params: Record<string, string> }) => Promise<unknown>) {
+export function publicRoute<S extends z.ZodTypeAny>(
+  opts: { schema: S; limiter?: ReturnType<typeof createRateLimiter> },
+  run: (ctx: { input: z.infer<S>; params: Record<string, string>; req: Request }) => Promise<unknown>,
+) {
   return (req: Request, ctx: { params: Promise<Record<string, string>> }): Promise<Response> =>
-    serve(req, ctx, opts.schema, (input, params) => run({ input, params }));
+    serve(req, ctx, opts.schema, (input, params) => run({ input, params, req }), opts.limiter);
 }

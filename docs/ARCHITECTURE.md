@@ -98,9 +98,25 @@ repository apps first, then the registered store, so `src/` still never imports 
 `/app/{app}` (`/agora/app/{app}` in production) is its page. **Per-app scoping:** `getPlatform(appId)` builds one platform per
 app (own catalog, deals, cards, relay, audit, feed) and every API route takes `?app={id}` (default: the demo app `APP`). Only the
 demo app is seeded with the Mia and Jonas scenario; other apps start empty. Saved state is per app (`app_state` row `platform:<app>`
-or file `<AGORA_STATE_FILE>.<app>`; the demo app keeps its original name). Not yet: who may create an app or act in it (light identity,
-step 2), members and personas of their own (the two demo personas still stand in for owners in every app), the overview and
-invite (steps 4 and 5). Until step 2, creating an app is an unauthenticated write, rate limited and capped, and disclosed as such.
+or file `<AGORA_STATE_FILE>.<app>`; the demo app keeps its original name). Not yet: members and personas of their own (the two demo personas still stand in for owners in every app), the overview and
+invite (steps 4 and 5). Creating an app is still open to anyone (rate limited, capped) but now makes the caller its creator (light identity, below).
+
+**Light identity (BR-45, `docs/PLAN.md` §2c step 2).** `src/lib/identity` is app-agnostic. A *membership* (app, role `creator`
+or `member`, a random 128-bit member id) is created when someone creates an app (creator) or taps Join on the invite page
+(member). A *session* is a 256-bit random token that only its SHA-256 is stored for; the browser holds it in an `agora_s_<app>`
+cookie (HttpOnly, SameSite=Lax, Secure over https, 30 days, `no-store` on the answers that set it). It is read from the cookie only,
+never from a URL, query or body, so screenshots and forwarded links cannot leak it. A session belongs to one app: it is refused for
+any other. The member id may appear in URLs (`/app/{app}/muse/{id}`) because it only names a page; opening it needs the session of
+that member (`assertSelf`). **Authorization:** `route()` (all platform routes) demands a valid session for the app when it is a
+stored app, and a human session for every write (`assertHuman`: a principal that came in as `via: "muse"` can read and never write,
+so it can never answer an owner card, BR-07); `authorize(req, app, role?)` gives creator-only routes (`GET /api/apps/{app}/members`).
+Repository apps (kids-gear, garden-tools) keep the two personas and need no session. **Recovery:** each membership gets a 100-bit
+recovery code, shown once. `POST /api/apps/{app}/recover` (code in the body, 8 tries per 15 minutes per address) opens a session
+on the new phone, ends every older session and replaces the code, so a copied or used code is dead. Storage: one document
+(`app_state` row `identity`, or `<AGORA_STATE_FILE>.identity.json`, else memory), replaced on every change. **What it is not:**
+no proof of who anyone is. Whoever holds a session or the code is that member; losing both loses the membership. Every response
+that grants a session carries that notice (`LIGHT_IDENTITY_NOTICE`). Join is open to anyone who finds the app (capped at 500
+members per app); an invite secret is step 4's decision. Rate limiting still keys on `x-forwarded-for`.
 
 Slice naming: `family`, `catalog` and the deal vocabulary are exchange-flavoured. `family` becomes `members` when the community
 section lands (cheap now, expensive later); `catalog` stays the exchange recipe's records.
@@ -670,7 +686,7 @@ Kubernetes for the hackathon. Every item below is either built now (marked **NOW
 
 > **Status check (2026-10-27).** Several items below were marked **NOW** at planning time and are not in the code. Verified
 > absent: the Postgres queue with idempotency keys and the outbox; feature flags and kill switches; a persisted append-only
-> audit log (the demo keeps in-memory counters); the retention job; per-request authentication (the demo has two personas);
+> audit log (the demo keeps in-memory counters); the retention job; real accounts (the demo has two personas for the seeded apps; stored apps have light identity, §2b);
 > Postgres row-level security; CSRF, CSP and upload validation; secret scanning in CI; the Playwright end-to-end flows;
 > structure validation (`structure-validation.config.json` is an empty placeholder; the import boundaries are enforced by
 > ESLint only); nightly eval runs. What is built and tested: the model client, router and cost meter with budgets, the ports and
