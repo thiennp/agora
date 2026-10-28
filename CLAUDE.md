@@ -65,7 +65,8 @@ Any change to a requirement, behaviour, config field or scope updates the docs i
 
 1. `README.md`  2. `docs/PRIMITIVES.md` (what the platform offers, with status)  3. `REQUIREMENTS.md` (top-down; every
 folder refines it)  4. `docs/PLAN.md`  5. `docs/ARCHITECTURE.md` (section 2b: platform vs apps)  6. `docs/CREATE-AN-APP.md`
-(instructions for the agent that builds an app)  7. `docs/adr/`
+(instructions for the agent that builds an app)  7. `docs/adr/`  8. `docs/SCALE.md` (what changes at 100M and 1B members and for many apps)
+Ask instead of searching: the docs are indexed (`/docs` chat, the `agora-docs` MCP server in `.mcp.json`, `/api/docs/*`); see `docs/DOCS-PLATFORM.md`.
 
 ## Status (update when it changes)
 
@@ -77,17 +78,17 @@ faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
 tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
 simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0011 (0001–0010 one per slice, 0011 the saved demo state; `npm run db:check` applies them to an empty Postgres 16, needs Docker; model_calls, audit and queue tables are not written yet),
-two example apps, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
+two example apps, a **docs Q&A platform** (`src/lib/docs-kb`: heading-aware BM25 index, cited answers that refuse when the docs do not cover the question, a chat page at `/docs`, `/api/docs/*`, an MCP server; retrieval measured by `evals/docs-qa.eval.test.ts`), a capacity model and a matching benchmark behind `docs/SCALE.md`, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
 dashboard that draws the learning curves from the simulation CSV, a synthetic-city map and live safety checks (the red-team and screening sets). It runs in **demo mode only** (`AGORA_MODE=mock`, the
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
 carrier. Demo state is saved after every change to Postgres (`DATABASE_URL`) or a file (`AGORA_STATE_FILE`) and restored on start (docs/ARCHITECTURE.md §11b); with neither it is memory only. `AGORA_MODE=live` answers 501 until accounts are built (only `live` is refused; there is no separate demo value).
-Scaffold only (empty files, no behaviour yet): the `safety`, `intake` and `voice` slices, the dashboard slice's sub-features (the dashboard's logic lives in `src/app/_composition`), `src/lib/{audit,budget,db,flags,queue}.ts`, `db/seed.sql`, the golden-file evals, and Playwright e2e (the demo journey is covered by `src/app/api/api.test.ts`). Safety rules are enforced today in `schema.ts` (`safetyRules`), `catalog` and `gatekeeper/classifier`.
+Scaffold only (empty files, no behaviour yet): the `safety`, `intake` and `voice` slices, the dashboard slice's sub-features (the dashboard's logic lives in `src/app/_composition`), the golden-file evals, and Playwright e2e (the demo journey is covered by `src/app/api/*.test.ts`). Safety rules are enforced today in `schema.ts` (`safetyRules`), `catalog` and `gatekeeper/classifier`.
 Also built in the demo app: shipping in the deal room (propose another way to hand over, recipient's encrypted address, postage split as terms only, simulated label shown to the sender only, tracking), and an items page (add an offer or want from the app's own categories, see the matcher's candidates, ask the agent to propose a deal; several deals at once).
-Not built: photo intake (decided to build; the Meta vision and SAM 3.1 calls are probed live, see docs/ARCHITECTURE.md §13; the items form stands in), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), relational Postgres repositories (migrations 0001–0010 are unused; demo state is one saved document), Postgres-backed memory, intake, voice,
+Not built: durable relational storage, a queue/outbox, authentication, feature flags, a retention job, e2e browser tests and secret scanning (see the status check in `docs/ARCHITECTURE.md` section 12b), embedding-based search for the docs Q&A (lexical only; held-out recall is 73%), photo intake (decided to build; the Meta vision and SAM 3.1 calls are probed live, see docs/ARCHITECTURE.md §13; the items form stands in), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), relational Postgres repositories (migrations 0001–0010 are unused; demo state is one saved document), Postgres-backed memory, intake, voice,
 accounts and real authentication, voice (request format not yet read). The Meta Responses adapter has been checked live (text, JSON mode, image input, SAM 3.1), but the demo app does not call it: it runs on the mock client.
 
 ## Working here
 
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run bench:matching` (lookup latency at N items), `npm run capacity` (the tables in `docs/SCALE.md`), `npm run mcp:docs`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

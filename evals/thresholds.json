@@ -8,5 +8,10 @@
     "leakRecall": 1.0,
     "falsePositiveRate": 0.05,
     "scamMinLevelRecall": 1.0
+  },
+  "docsQa": {
+    "recallAt3": 0.9,
+    "heldOutRecallAt3": 0.7,
+    "refusalRate": 1.0
   }
 }
