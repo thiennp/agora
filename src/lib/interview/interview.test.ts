@@ -209,5 +209,7 @@ describe("text helpers", () => {
     expect(slugify("Café Swap 2!")).toBe("cafe-swap-2");
     expect(slugify("123")).toBe("");
     expect(slugify("日本")).toBe("");
+    expect(slugify("Đổi Đồ Hà Nội")).toBe("doi-do-ha-noi");
+    expect(slugify("Łódź Straße Ølsen")).toBe("lodz-strasse-olsen");
   });
 });

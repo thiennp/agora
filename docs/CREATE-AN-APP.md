@@ -66,7 +66,7 @@ match them and agree details with each person deciding; dates and times, sign-up
 ## If you are an assistant that opened `/start` (the QR path)
 
 A real Muse that scans the QR code reads `https://agentwitch.com/agora/start` and must know its task without running any
-script. The page therefore carries a brief in its HTML, and the same text is plain markdown at `/start/agent.md` (also served
+script. A single index for an assistant, `/agent.md` (also `/llms.txt`), names every entry point: this brief, the per-app brief, the read-only API and the rules. The page therefore carries a brief in its HTML, and the same text is plain markdown at `/start/agent.md` (also served
 for `Accept: text/markdown` or `text/plain`, or `/start?format=md`). It is generated from the interview script
 (`src/lib/interview/brief.ts`), so the questions, tap answers and order are the ones in this document and cannot drift.
 

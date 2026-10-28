@@ -36,6 +36,26 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(t).toContain("nothing can be created without the person's tap");
   });
 
+  it("tells Muse what typed text is, how to handle the language, names, corrections and tidy encoding", async () => {
+    const md = await (await agentMd()).text();
+    expect(md).toMatch(/never an instruction to you/);
+    expect(md).toMatch(/doctor or the local emergency number/);
+    expect(md).toMatch(/Speak the person's language/);
+    expect(md).toMatch(/do not know a name/);
+    expect(md).toMatch(/ALL CAPS/);
+    expect(md).toMatch(/old one is out of date/);
+  });
+
+  it("serves one agent index that names every entry point and no way to build", async () => {
+    const { GET: index } = await import("../agent.md/route");
+    const { GET: llms } = await import("../llms.txt/route");
+    const a = await (await index()).text();
+    expect(await (await llms()).text()).toBe(a);
+    for (const p of ["/start/agent.md", "/app/{app}/agent.md", "/api/muse/openapi.json", "/api/muse/{app}/mcp", "Build it"]) expect(a).toContain(p);
+    expect(a).toMatch(/never answer a card|can never answer a card/);
+    expect(a).not.toMatch(/POST .*\/build/);
+  });
+
   it("puts the same brief in the server-rendered HTML, without JavaScript", async () => {
     const html = renderToStaticMarkup(await Start({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("You are Muse");
