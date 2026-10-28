@@ -53,8 +53,10 @@ npm run dev          # http://localhost:3000
 Open the home page, pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
 judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
 in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
-`npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo uses no Meta key: translation
-and the carrier are simulated, and photo intake is not built yet (decided to build).
+`npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo needs no Meta key: translation
+and the carrier are simulated. The items page also takes a photo: by default (`AGORA_INTAKE=simulated`) no model looks at it and sample
+items are cut from fixed places on it; with `AGORA_INTAKE=meta` and `META_API_KEY` in `.env`, Muse Spark names the items and SAM 3.1 finds
+each one. The photo is never kept, only a small picture of each item you list.
 
 ## Create an app
 

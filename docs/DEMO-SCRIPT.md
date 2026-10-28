@@ -5,7 +5,7 @@ labelled on screen.
 
 | Time | Shot | Must be real |
 |---|---|---|
-| 0:00–0:25 | A parent photographs a pile of outgrown clothes; items separate into listings | intake (not built yet, decided to build; the Meta calls are probed live; today the owner adds items with a form at `/items`) |
+| 0:00–0:25 | A parent photographs a pile of outgrown clothes; items separate into listings | intake (built: `/items`, "Give things away from a photo"; run the demo with `AGORA_INTAKE=meta` and a Meta key so the models really look at the photo, otherwise the items are samples) |
 | 0:25–1:15 | Another parent's agent in a different language matches and negotiates; side-by-side translation | matching, negotiation, language |
 | 1:15–1:45 | Owner cards: price and address request pause the agent; both confirm; locker or shipping label and appointment (test mode, disclosed) | gatekeeper, owner cards, logistics |
 | 1:45–2:20 | Learning curve: approval rising and the cards an owner answers per confirmed deal falling (about 3.7 against 13.4 without learning in the simulation); a declined deal changes the next proposal | simulation and benchmark (built: `npm run simulate`; the chart screen is not built yet) |

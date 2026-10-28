@@ -1,9 +1,10 @@
 import { loadApp, type AppConfig } from "@/lib/app-config";
 import { loadEnv } from "@/lib/env";
-import { CostMeter, createMetaClient, createMockAdapter, createRouter } from "@/lib/meta";
+import { CostMeter, createMetaApiAdapter, createMetaClient, createMockAdapter, createRouter, createSamClient } from "@/lib/meta";
 import { createDealEventBus, type DealEventBus } from "@/hubs/DealEvents/command";
 import { createCatalogService } from "@/features/catalog/public-api/infrastructure";
 import { createGatekeeper } from "@/features/gatekeeper/public-api/infrastructure";
+import { createIntake, createMetaPorts, createSimulatedPorts } from "@/features/intake/public-api/infrastructure";
 import { createLanguageService } from "@/features/language/public-api/infrastructure";
 import { createLearning } from "@/features/learning/public-api/infrastructure";
 import { createLogistics, createSimulatedCarrier } from "@/features/logistics/public-api/infrastructure";
@@ -127,6 +128,24 @@ async function build(opts: { fresh?: boolean } = {}) {
     constraintsOf: (f) => ({ districtCode: byId.get(f)!.districtCode, availability: byId.get(f)!.availability }),
   });
   const matcher = createMatchService({ app, limitsOf: (f) => book.limitsOf(f) });
+  // Photo intake: simulated and offline unless AGORA_INTAKE=meta, which uses Muse Spark vision and SAM 3.1 with META_API_KEY. Only this
+  // step calls the real Meta API in the demo; everything else keeps the mock client above. Crops are not part of the saved state.
+  const intake = createIntake({
+    catalog: app.catalog,
+    ports:
+      env.AGORA_INTAKE === "meta"
+        ? createMetaPorts({
+            catalog: app.catalog,
+            sam: createSamClient({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }),
+            client: createMetaClient({
+              app,
+              adapters: { "meta-api": createMetaApiAdapter({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }) },
+              router: createRouter({ providers: { "muse-spark": "meta-api", "muse-spark-open": "meta-api" } }),
+              meter: new CostMeter({ perParticipantUsd: 1, globalUsd: 50 }),
+            }),
+          })
+        : createSimulatedPorts(app.catalog),
+  });
   leave();
 
   const backend: StateBackend | null = backendFromEnv(env);
@@ -170,7 +189,7 @@ async function build(opts: { fresh?: boolean } = {}) {
   await persist();
 
   return {
-    app, personas: who, byId, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, dealId,
+    app, personas: who, byId, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake, dealId,
     createdAt: meta.createdAt!, persistence: (backend?.kind ?? "memory") as "memory" | "file" | "postgres", persist, restored: Boolean(saved),
     async wipe() {
       await tail;

@@ -21,7 +21,8 @@ Parent owner.
 | INT-04 | Let the owner correct label, size and condition before publishing. | Should | Edits are saved to the draft. |
 | INT-05 | Ask for another photo when the image is poor instead of guessing. | Must | Blurred or dark inputs trigger a retake prompt. |
 
-Status: not built (scaffold only), decided to build on Oct 28. The calls are confirmed live (docs/ARCHITECTURE.md §13): Muse Spark names the items from the photo, SAM 3.1 returns a box per item from a one-noun concept prompt, crops are cut from the boxes. INT-03 as written ("background removed") is met by box crops only in part: masks are base85 rasters whose decoding is not yet read, so background removal is a stretch and the person/face check must run on the crop. The demo's items form (`/items`) stands in until intake lands.
+Status (Oct 28): built for the demo (docs/ARCHITECTURE.md §11c). Photo to drafts works end to end: shrink and strip metadata, pixel and model checks (INT-05), vision names the items with category, size, condition and confidence (INT-01, INT-LAB), SAM 3.1 boxes, crops by box, original overwritten and never stored (INT-02, tested), the owner edits each draft before listing (INT-04). Offline simulation by default; `AGORA_INTAKE=meta` uses the real models (checked live on one generated photo of four items: four drafts in 7.6 s).
+Not done: INT-03 as written. Crops are boxes, not masks, so the background stays in, and there is no separate face detector or 100-photo leak test; a person or readable text flagged by the vision model means no picture is kept for that item. INT-01's six-item accuracy test is not run.
 
 ## Out of scope
 

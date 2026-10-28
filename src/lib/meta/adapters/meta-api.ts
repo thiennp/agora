@@ -15,7 +15,7 @@ interface ResponsesBody {
  *
  * Checked against the live API on Oct 28, 2026: `instructions`, `reasoning.effort`, `store` and `text.format` are accepted.
  * `store: false` keeps responses from being retained by the provider; reasoning effort is `low` because the default (`high`)
- * spends hundreds of reasoning tokens on one-line answers. Vision, SAM and voice requests are not covered here.
+ * spends hundreds of reasoning tokens on one-line answers. Image input was checked the same day; SAM 3.1 is in sam.ts; voice is not covered.
  */
 export function createMetaApiAdapter(o: { baseUrl: string; apiKey: string; fetchImpl?: typeof fetch; modelNames?: Partial<Record<ModelId, string>> }): ModelAdapter {
   const doFetch = o.fetchImpl ?? fetch;
@@ -30,7 +30,10 @@ export function createMetaApiAdapter(o: { baseUrl: string; apiKey: string; fetch
         body: JSON.stringify({
           model: names[req.model] ?? req.model,
           instructions,
-          input: req.prompt,
+          // With images the input is one user message holding the text and each image (docs/ARCHITECTURE.md section 13).
+          input: req.images?.length
+            ? [{ type: "message", role: "user", content: [{ type: "input_text", text: req.prompt }, ...req.images.map((image_url) => ({ type: "input_image", image_url }))] }]
+            : req.prompt,
           reasoning: { effort: "low" },
           store: false,
           ...(req.json ? { text: { format: { type: "json_object" } } } : {}),

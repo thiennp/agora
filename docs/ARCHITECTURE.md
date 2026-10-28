@@ -596,6 +596,24 @@ copy substitutes the screened text, so after a restart the sender sees that), no
 stored encrypted). Encrypted fields use the demo's hard-coded key, so they are not protected against anyone who has the
 repository and the saved state. It is demo data, deleted with the reset.
 
+
+## 11c. Photo intake (demo)
+
+`POST /api/intake/photo` takes one photo (data URL; the page shrinks it to 1600 px and re-encodes it first) and returns item drafts. The steps, all in `src/features/intake`:
+
+1. **Shrink and strip.** `sharp` rotates the photo upright, limits it to 1600 px and re-encodes it as JPEG, so camera metadata is gone. A file that is not a photo answers `unreadable`.
+2. **Pixel check.** Too dark (mean brightness) or very blurry (edge-filter variation) answers `retake` before any model is paid for. This is a coarse filter; the vision model gives its own verdict next.
+3. **Name the items.** One Muse Spark vision call (Meta client, role `intake`, schema-checked) lists each item with a name, a one-noun concept, the app's category, size only if printed on a visible label, condition if it can tell, a confidence, and flags for a person or readable text in the item's area. The prompt carries the app's own categories, sizes and conditions.
+4. **Find each item.** One SAM 3.1 call per concept, in parallel; a failing call costs only that item its outline. Items flagged with a person or text are not sent to SAM at all.
+5. **Crop.** Boxes are scaled, clamped, de-duplicated and padded 3 percent; a pair found as two boxes is one item, several of a thing get one draft each when the count matches. Each crop is cut from the shrunk copy, shrunk to 480 px, and held by draft id.
+6. **Discard.** The original bytes are overwritten with zeros as soon as the shrunk copy exists, and the shrunk copy before the call returns.
+
+The owner then checks each draft (name, category, size, condition; anything guessed or low confidence says "please check") and lists the ones they want through `POST /api/items` with the draft id, which moves the picture to the item. Crops live in an in-memory store (`crops/internal/infrastructure/store-crops.ts`): drafts for 30 minutes, items until withdrawn. They are not in the saved demo state, so after a restart items work but show no picture.
+
+`AGORA_INTAKE` picks the models: `simulated` (default, offline: three sample items from the app's own categories cut from fixed places on the photo, always "please check", and the page says no model looked at it) or `meta` (Muse Spark and SAM 3.1 through `META_API_KEY`; a separate Meta client with its own budget, so the rest of the demo stays on the mock client). Failures never reach the owner as errors: `retake`, `unreadable` and `unavailable` are answers the page explains, and the form below always still works.
+
+Known limits: crops are rectangles, not masks (masks are base85 rasters whose decoding is not documented on the pages read), so background stays in; person and text checks rely on the vision model's flags, not a separate face detector; SAM calls are not in the cost meter; only one real photo (a generated one) has been run through the live path.
+
 ## 12. Deployment
 
 - Web + API on Railway (Node, Postgres). Config via env; no secrets in the repo.

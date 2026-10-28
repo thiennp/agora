@@ -12,5 +12,6 @@ export const POST = route({ schema: z.object({ as: personaKey }) }, async ({ pla
   if (item.familyId !== me.id) throw new HttpError(403, "not_owner", "That item is not yours.");
   await platform.catalog.items.withdraw(item.id);
   platform.matcher.onUnlisted(item.id);
+  platform.intake.crops.removeItem(item.id);
   return { ok: true };
 });

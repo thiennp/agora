@@ -85,7 +85,7 @@ describe("meta client", () => {
 
   it("works offline in mock mode", async () => {
     const app = await loadApp("kids-gear");
-    const client = createMetaClientFromEnv(app, { MODE: "mock", APP: "kids-gear" });
+    const client = createMetaClientFromEnv(app, { MODE: "mock", AGORA_INTAKE: "simulated", APP: "kids-gear" });
     expect(await client.call({ role: "translator", prompt: "hello" })).toContain("mock");
   });
 
@@ -127,6 +127,22 @@ describe("meta client", () => {
     const bad = createMetaApiAdapter({ baseUrl: "https://example.test/v1", apiKey: "secret-key", fetchImpl: (async () => new Response("echo: be brief hi", { status: 429 })) as unknown as typeof fetch });
     const err = await bad.complete({ model: "muse-spark", system: "s", prompt: "p" }).catch((e: Error) => e);
     expect((err as Error).message).toBe("meta-api error 429");
+  });
+
+  it("meta api adapter sends images as one user message with the text; partner hosts refuse images", async () => {
+    let body: { input?: unknown } = {};
+    const meta = createMetaApiAdapter({
+      baseUrl: "https://example.test/v1",
+      apiKey: "k",
+      fetchImpl: (async (_u: string, init: RequestInit) => {
+        body = JSON.parse(init.body as string);
+        return new Response(JSON.stringify({ output: [{ type: "message", content: [{ type: "output_text", text: "ok" }] }] }));
+      }) as unknown as typeof fetch,
+    });
+    await meta.complete({ model: "muse-spark", system: "s", prompt: "what is this", images: ["data:image/jpeg;base64,AAAA"] });
+    expect(body.input).toEqual([{ type: "message", role: "user", content: [{ type: "input_text", text: "what is this" }, { type: "input_image", image_url: "data:image/jpeg;base64,AAAA" }] }]);
+    const partner = createHttpAdapter({ provider: "baseten", baseUrl: "https://example.test/v1", apiKey: "k", fetchImpl: (async () => new Response("{}")) as unknown as typeof fetch });
+    await expect(partner.complete({ model: "muse-spark-open", system: "s", prompt: "p", images: ["data:image/jpeg;base64,AAAA"] })).rejects.toThrow("does not read images");
   });
 
   it("baseten uses the hackathon's open-weight model name", async () => {

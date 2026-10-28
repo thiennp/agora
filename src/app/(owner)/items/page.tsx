@@ -2,6 +2,7 @@ import { ActionButton } from "@/components/ActionButton";
 import { Badge } from "@/components/Badge";
 import { Card } from "@/components/Card";
 import { ItemForm } from "@/components/ItemForm";
+import { PhotoIntake } from "@/components/PhotoIntake";
 import { OwnerShell } from "@/components/OwnerShell";
 import { StartDealButton } from "@/components/StartDealButton";
 import { Unavailable } from "@/components/Unavailable";
@@ -29,7 +30,10 @@ export default async function ItemsPage({ searchParams }: { searchParams: Promis
       {view.items.map((i) => (
         <Card key={i.id} as="article">
           <div className="row between">
-            <h3>{i.kind === "offer" ? "Giving" : "Looking for"}: {i.text}</h3>
+            <div className="row" style={{ flexWrap: "nowrap" }}>
+              {i.crop ? <img src={i.crop} alt={i.text} width={56} height={56} style={{ objectFit: "cover", borderRadius: 8, flex: "none" }} /> : null}
+              <h3>{i.kind === "offer" ? "Giving" : "Looking for"}: {i.text}</h3>
+            </div>
             <Badge tone={TONE[i.status] ?? "neutral"}>{i.status.replace(/_/g, " ")}</Badge>
           </div>
           {i.condition ? <p className="muted small">Condition: {i.condition}</p> : null}
@@ -52,6 +56,9 @@ export default async function ItemsPage({ searchParams }: { searchParams: Promis
           {i.status === "listed" ? <ActionButton url={`/api/items/${i.id}/withdraw`} body={{ as }} variant="ghost" confirmText="Take this off the list?">Take it off the list</ActionButton> : null}
         </Card>
       ))}
+      <Card title="Give things away from a photo">
+        <PhotoIntake as={as} options={view.options} />
+      </Card>
       <Card title="Add an item">
         <ItemForm as={as} options={view.options} />
       </Card>

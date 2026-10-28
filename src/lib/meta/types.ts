@@ -13,6 +13,8 @@ export interface ModelRequest {
   prompt: string;
   /** Ask for JSON output. */
   json?: boolean;
+  /** Images to look at, as data URLs (`data:image/jpeg;base64,...`). Only the Meta API host reads images. */
+  images?: string[];
 }
 
 export interface ModelResponse {

@@ -99,7 +99,7 @@ export async function itemsView(p: Platform, key: PersonaKey) {
           }),
         );
       }
-      return { id: i.id, kind: i.kind, text: itemLabel(p, i), category: i.category, condition: i.condition ?? null, status: i.status, flags: i.safetyFlags.map((f) => f.advice), matches, emptyReason };
+      return { id: i.id, kind: i.kind, text: itemLabel(p, i), category: i.category, condition: i.condition ?? null, status: i.status, flags: i.safetyFlags.map((f) => f.advice), matches, emptyReason, crop: p.intake.crops.forItem(i.id) ?? null };
     }),
   );
   const cfg = p.app.catalog;

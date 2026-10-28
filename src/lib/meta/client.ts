@@ -18,6 +18,8 @@ export interface CallOptions<S extends z.ZodTypeAny | undefined> {
   prompt: string;
   /** When given, output is parsed as JSON and validated; one retry on invalid output. */
   schema?: S;
+  /** Images (data URLs) the model should look at with the prompt. */
+  images?: string[];
 }
 
 export interface MetaClientDeps {
@@ -61,7 +63,7 @@ export function createMetaClient(deps: MetaClientDeps) {
       let ok = false;
       let usage = { inputTokens: 0, outputTokens: 0 };
       try {
-        const res = await adapter.complete({ model: route.model, system, prompt: opts.prompt, json: Boolean(opts.schema) });
+        const res = await adapter.complete({ model: route.model, system, prompt: opts.prompt, json: Boolean(opts.schema), images: opts.images });
         usage = res;
         const value = opts.schema ? parseModelOutput(res.text, opts.schema) : res.text;
         ok = true;

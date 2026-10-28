@@ -101,7 +101,8 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | **Trust and moderation**: scam signals, reports with evidence, bans, abuse limits, export for Meta | built for 1:1 conversations (screening, scam signals, reputation, hash-chained reports, `agora.report.v1` export); not yet applied to community posts; review tooling not built |
 | **Moderation and roles**: members and admins; a member can report a post, an admin can hide a post or remove a member; screening applies to posts as to 1:1 messages | designed (minimal, tier 2) |
 | **Meta client**: model routing, cost meter, per-member and global budgets, schema-validated output | built |
-| **Voice and photo intake**: originals discarded | designed |
+| **Photo intake**: originals discarded, crops only | built in the demo (items page; simulated offline, real models with `AGORA_INTAKE=meta`) |
+| **Voice intake** | designed |
 | **Dashboard**: live feed, learning curve, cost, privacy, safety | built in part (learning curves, live counters, failures; no map, cost or privacy-test panel) |
 
 ## Primitive to slice map
@@ -120,7 +121,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | Workflows | `negotiation/deal-state`, `logistics` | |
 | Language, Trust, Meta client | `language`, `trust`, `lib/meta` | |
 | Simulation and benchmark | `simulation` | sandbox city, simulated owners with hidden rules, held-out benchmark, CSV |
-| Time, Notifications, Voice and photo | none yet | |
+| Time, Notifications, Voice | none yet | |
 | Dashboard | `src/app/(judge)/dashboard`, `src/app/_composition` | reads the simulation CSV |
 
 ## Guarantees that no app, vote or evolution can change
@@ -160,7 +161,7 @@ reputation, reports and export), logistics (handoff modes, encrypted places and 
 Also built: the simulation slice (sandbox city, simulated owners, held-out benchmark, CSV export).
 
 Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
-windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice and photo intake. A demo web app exists (owner cards, deal room, judge dashboard) in demo mode only.
+windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice intake. A demo web app exists (owner cards, deal room, judge dashboard) in demo mode only.
 
-Scaffold only: the `safety`, `intake` and `voice` slices are empty files; their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
+Scaffold only: the `safety` and `voice` slices are empty files (the `intake` slice is built except its sub-feature `capture`, whose upload lives in the page); their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
 per-primitive sections as each primitive lands, and existing apps must keep working.

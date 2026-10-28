@@ -18,6 +18,7 @@ export function createHttpAdapter(opts: HttpAdapterOptions): ModelAdapter {
   return {
     provider: opts.provider,
     async complete(req: ModelRequest) {
+      if (req.images?.length) throw new Error(`${opts.provider} does not read images`);
       const res = await doFetch(`${opts.baseUrl.replace(/\/$/, "")}/chat/completions`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${opts.apiKey}` },
