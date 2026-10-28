@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { postJson } from "./post";
+import { useScope } from "./ScopeContext";
 
 export interface QuestionProps {
   id: string;
@@ -18,13 +18,14 @@ export interface QuestionProps {
 /** A question the agent could not decide alone: one tap to answer. "Remember" is offered only where a standing rule is allowed. */
 export function QuestionCard({ id, as, text, answers, canRemember, language }: QuestionProps) {
   const router = useRouter();
+  const { post } = useScope();
   const [remember, setRemember] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function answer(a: "yes" | "no") {
     setBusy(true);
     setError(null);
-    const r = await postJson(`/api/owner-questions/${id}/answer`, { as, answer: a, ...(remember && a === "yes" ? { rememberDays: 30 } : {}) });
+    const r = await post(`/api/owner-questions/${id}/answer`, { as, answer: a, ...(remember && a === "yes" ? { rememberDays: 30 } : {}) });
     setBusy(false);
     if (!r.ok) return setError(r.message);
     router.refresh();

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Badge } from "./Badge";
 import { ActionButton } from "./ActionButton";
+import { useScope } from "./ScopeContext";
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 type Card =
   | { empty: true }
@@ -27,12 +30,13 @@ const fmt = (w?: { from: string; to: string }) => (w ? `${new Date(w.from).toLoc
 
 /** How the item changes hands. Empty until both owners confirm; the exact meeting place appears only after both agree. */
 export function HandoffPanel({ dealId, as, card, role, dropPoints, modes }: { dealId: string; as: "a" | "b"; card: Card; role: string; dropPoints: { id: string; name: string }[]; modes: string[] }) {
+  const { other: them } = useScope();
   const [place, setPlace] = useState("");
   const [address, setAddress] = useState("");
   const [other, setOther] = useState("");
   const [why, setWhy] = useState("no_show");
   const url = `/api/deals/${dealId}/handoff`;
-  if (card.empty) return <p className="muted">The handover plan opens when both families have confirmed the deal.</p>;
+  if (card.empty) return <p className="muted">The plan opens when you and {them} have both confirmed.</p>;
   const done = card.state === "completed" || card.state === "not_completed";
   return (
     <div className="stack">
@@ -51,7 +55,7 @@ export function HandoffPanel({ dealId, as, card, role, dropPoints, modes }: { de
         <div className="stack">
           <div className="row">
             <Badge tone={card.approvedByYou ? "accent" : "neutral"}>{card.approvedByYou ? "You agreed" : "You have not agreed yet"}</Badge>
-            <Badge tone={card.approvedByOther ? "accent" : "neutral"}>{card.approvedByOther ? "The other family agreed" : "The other family has not agreed yet"}</Badge>
+            <Badge tone={card.approvedByOther ? "accent" : "neutral"}>{card.approvedByOther ? `${cap(them)} agreed` : `${cap(them)} has not agreed yet`}</Badge>
           </div>
           {card.mode === "pickup" && role === "giving" ? (
             <div className="stack">

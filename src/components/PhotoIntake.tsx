@@ -6,7 +6,7 @@ import type { IntakeDraft, IntakeResult } from "@/features/intake/public-api/cli
 import { Badge } from "./Badge";
 import { Banner } from "./Card";
 import { Button } from "./Button";
-import { postJson } from "./post";
+import { useScope } from "./ScopeContext";
 import type { ItemOptions } from "./ItemForm";
 
 const MAX_SIDE = 1600;
@@ -39,6 +39,7 @@ interface Row {
  */
 export function PhotoIntake({ as, options }: { as: "a" | "b"; options: ItemOptions }) {
   const router = useRouter();
+  const { post } = useScope();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ tone: "warn" | "bad" | "accent"; text: string } | null>(null);
@@ -58,7 +59,7 @@ export function PhotoIntake({ as, options }: { as: "a" | "b"; options: ItemOptio
       setBusy(false);
       return setMsg({ tone: "warn", text: "This browser could not open that photo. Try a JPEG or PNG." });
     }
-    const r = await postJson<IntakeResult>("/api/intake/photo", { as, image });
+    const r = await post<IntakeResult>("/api/intake/photo", { as, image });
     setBusy(false);
     if (input.current) input.current.value = "";
     if (!r.ok) return setMsg({ tone: "bad", text: r.message });
@@ -77,7 +78,7 @@ export function PhotoIntake({ as, options }: { as: "a" | "b"; options: ItemOptio
     let done = 0;
     for (const row of rows) {
       if (!row.include) continue;
-      const r = await postJson<{ flags: string[] }>("/api/items", {
+      const r = await post<{ flags: string[] }>("/api/items", {
         as,
         kind: "offer",
         category: row.category,

@@ -24,15 +24,19 @@ This is a public page. Anyone can open it, and so can you. Nothing on it is priv
 
 ## What a person can do in it
 
-Made for ${app.participant}s (set up for ${app.region}). Anyone with Muse can use it.
+Made for ${app.participant === "person" ? "people" : `${app.participant}s`}${app.region === "Anywhere" ? "" : ` (set up for ${app.region})`}. Anyone with Muse can use it.
 
 ${list(d.features)}
 
 ## How it works
 
 - The person uses the app by opening ${link} on their own phone. The first visit makes their private record in this app (a session on that phone and a recovery code, shown once). There is no sign-up form and no password.
-- In the app, the person's own agent works for them: it lists what they offer or want, looks for a match, and talks to the other side's agent for them.
+- In the app, the person posts what they offer or need. Their own agent looks for a post that fits, and when the person asks it to, talks to the other side's agent for them.
 - Nothing is decided without the person. Every question that matters waits for them in the app, and the person confirms it there with their own tap.
+
+## What it does not do
+
+${list(d.limits)}
 
 ## What this app must never do
 
@@ -48,6 +52,6 @@ ${list(d.rules)}
 
 ## Status, honestly
 
-Using the app through Muse alone is not built yet. Today the person opens the link and uses the app in their browser; a person's Muse may later read their own status through a read-only connector. Whether Muse can relay a confirmation is not decided.
+Today the person opens the link and uses the app in their browser: they post what they offer or need, see which posts fit, ask their agent to reach out, answer its questions, confirm with their own tap, and message the other person through the agents. A person's own Muse can read their status through a read-only connector, but cannot post, answer or confirm for them. Using the app through Muse alone is not built, and whether Muse can relay a confirmation is not decided.
 `;
 }

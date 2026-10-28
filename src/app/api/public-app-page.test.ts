@@ -62,7 +62,7 @@ describe("public, Muse-readable app page (BR-42, docs/PLAN.md §2c-ter)", () => 
     expect(r.status).toBe(200);
     expect(r.headers.get("content-type")).toContain("text/markdown");
     const t = await r.text();
-    for (const part of ["Club A", "Neighbours swap seeds", "What a person can do", "How it works", "must never do", "How you (Muse) should use this", "never have to click", "not built yet", "https://agentwitch.com/agora/app/club-a"]) {
+    for (const part of ["Club A", "Neighbours swap seeds", "What a person can do", "How it works", "must never do", "How you (Muse) should use this", "never have to click", "is not built", "https://agentwitch.com/agora/app/club-a"]) {
       expect(t).toContain(part);
     }
     expect(t).not.toMatch(/community|invite/i);
@@ -98,7 +98,7 @@ describe("public, Muse-readable app page (BR-42, docs/PLAN.md §2c-ter)", () => 
     expect(((await again.json()) as any).alreadyMember).toBe(true);
     const html = await page("club-a", cookieOf(first));
     expect(html).toContain("You are using");
-    expect(html).toContain("what your agent is doing for you in this app");
+    expect(html).toContain("what your agent is doing for you");
   });
 
   it("does not create anyone when a page is only read (an assistant runs no script)", async () => {

@@ -7,7 +7,7 @@ import { UseAppForm } from "@/components/UseAppForm";
 import { QrCode } from "@/components/QrCode";
 import { appPageView, type AppPageView } from "@/app/_composition/app-views";
 import { PUBLIC_BASE_URL, appUrl } from "@/app/_composition/public-url";
-import { appAgentBrief } from "@/lib/app-config";
+import { appAgentBrief, appVocabulary, loadApp } from "@/lib/app-config";
 
 export async function generateMetadata({ params }: { params: Promise<{ app: string }> }) {
   const id = (await params).app;
@@ -24,10 +24,13 @@ function About({ view }: { view: Described }) {
     <>
       <Card title="What it is for">
         <p>{description.purpose}</p>
-        <p className="muted">Made for {app.participant}s, set up for {app.region}. Anyone with Muse can use it.</p>
+        <p className="muted">Made for {app.participant === "person" ? "people" : `${app.participant}s`}{app.region === "Anywhere" ? "" : `, set up for ${app.region}`}. Anyone with Muse can use it.</p>
       </Card>
       <Card title="What you can do">
         <ul className="list">{description.features.map((f) => <li key={f}>{f}</li>)}</ul>
+      </Card>
+      <Card title="What it does not do">
+        <ul className="list">{description.limits.map((r) => <li key={r}>{r}</li>)}</ul>
       </Card>
       <Card title="The rules">
         <ul className="list">{description.rules.map((r) => <li key={r}>{r}</li>)}</ul>
@@ -59,6 +62,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
   const view = await appPageView(id, (await cookies()).toString());
   if (view.kind === "unknown") notFound();
   const { app } = view;
+  const w = appVocabulary(await loadApp(id));
 
   if (view.kind === "stranger") {
     return (
@@ -91,7 +95,10 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <CopyLink url={url} title={`Use ${app.name}`} />
           <p className="small muted">The link holds no password and opens a public page. Anyone who has it can use the app.</p>
         </Card>
-        <p><Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you in this app</Link></p>
+        <p className="row">
+          <Link className="btn primary" href={`/app/${app.id}/items`}>{w.style === "board" ? "Post what you offer or need" : "Add what you offer or need"}</Link>
+          <Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you</Link>
+        </p>
         <Card title={`People using your app (${view.members.length})`}>
           {view.members.length === 0 ? (
             <p className="muted">Nobody is using it yet. Share the link to get started.</p>
@@ -115,7 +122,10 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <p className="small muted">You are using</p>
           <h1>{app.name}</h1>
         </div>
-        <p><Link className="btn primary" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you in this app</Link></p>
+        <p className="row">
+          <Link className="btn primary" href={`/app/${app.id}/items`}>{w.style === "board" ? "Post what you offer or need" : "Add what you offer or need"}</Link>
+          <Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you</Link>
+        </p>
         <About view={view} />
         <ForAssistant view={view} />
       </div>

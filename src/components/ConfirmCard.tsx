@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
-import { postJson } from "./post";
+import { useScope } from "./ScopeContext";
 
 const REASONS: [string, string][] = [["too_far", "Too far"], ["wrong_size", "Wrong size"], ["condition", "Condition"], ["price", "Terms"], ["timing", "Timing"], ["other", "Something else"]];
 
 /** The owner's yes or no. A deal is final only when both owners have said yes; declining asks why, so the agent can learn. */
 export function ConfirmCard({ id, dealId, as, item, role }: { id: string; dealId: string; as: "a" | "b"; item: string; role: string }) {
   const router = useRouter();
+  const { post, other } = useScope();
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState("too_far");
   const [busy, setBusy] = useState(false);
@@ -18,7 +19,7 @@ export function ConfirmCard({ id, dealId, as, item, role }: { id: string; dealId
   async function decide(decision: "confirm" | "decline") {
     setBusy(true);
     setError(null);
-    const r = await postJson(`/api/deals/${dealId}/confirm`, { as, cardId: id, decision, ...(decision === "decline" ? { reason: { code: reason } } : {}) });
+    const r = await post(`/api/deals/${dealId}/confirm`, { as, cardId: id, decision, ...(decision === "decline" ? { reason: { code: reason } } : {}) });
     setBusy(false);
     if (!r.ok) return setError(r.message);
     router.refresh();
@@ -30,7 +31,7 @@ export function ConfirmCard({ id, dealId, as, item, role }: { id: string; dealId
         <Badge tone="accent">You are {role}</Badge>
       </div>
       <p>{item}</p>
-      <p className="muted small">The agents agree, but nothing is final until you and the other family both confirm.</p>
+      <p className="muted small">The agents agree, but nothing is final until you and {other} both confirm.</p>
       {declining ? (
         <div className="stack">
           <label htmlFor={`why-${id}`}>Why not? (this helps your agent learn)</label>

@@ -101,6 +101,20 @@ validates it, rejects it with the list of problems if it is wrong, and serves it
 change or redeploy. The id must be new (3–40 lowercase letters, digits and dashes, starting with a letter). A stored app has no
 sandbox folder, so set `simulation.cityDir` to `sandbox`; it is not used.
 
+## What a created app can do today
+
+A person who opens the app's link uses it in the browser at `/app/{app}/items` (post what they offer or need), `/cards` (answer their
+agent, confirm), `/deals` (the conversation room with the screened, relayed chat) and `/muse/{id}` (their status). The words come from
+your config: the app's name, its categories, and the style the platform derives from it. **An app that is free and pick-up only is a
+board**: plain posts ("You offer", "You need") and one-to-one conversations. Anything else is an exchange (things offered, wanted and
+handed over; swap, free and handover words appear only there).
+
+The platform's only matching is exchange-shaped. So **a created app cannot** run events, a calendar, RSVPs or sign-up lists, send an
+announcement to everyone, hold a group chat, take photos into items, move money, book a real carrier or translate for real (both are
+simulated for now). A running club, a learning group or an office app gets one person posting what they offer or need and another
+person's agent finding them. Say that in plain words in the summary instead of promising the rest, and write the wish under
+"Out of scope".
+
 ## When the idea does not fit
 
 The platform cannot express everything. If the person wants something the config cannot say:

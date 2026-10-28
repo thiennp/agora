@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 import "./globals.css";
 
@@ -16,9 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="btn skip">Skip to content</a>
         <Nav />
         <main id="main" className="wrap">{children}</main>
-        <footer className="wrap small muted" style={{ paddingBottom: 32 }}>
-          Demo mode: no accounts, simulated translation and carrier, synthetic families in the dashboard. Nothing here is real user data.
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );
