@@ -57,7 +57,7 @@ worked example and fallback. Photo intake is not cancelled, but it comes after t
 
 The flow (BR-39 to BR-45):
 1. The home page shows only a QR code. Scanning it opens `agentwitch.com/agora/start` on the phone.
-2. Muse interviews the person about the app they want (name, what it is for, who joins, how things work), one question
+2. Muse interviews the person about the app they want (what it is for, what a person can do in it, how it works, what it should never do or share, name, feel; about six questions, no closed audience: an app is for any Muse user), one question
    at a time, with tap answers: 2–3 suggestions plus "something else" (typed or voice). The last step is one yes:
    "Here is your app: … Build it?"
 3. Muse builds the app: a config checked against the app schema, saved as data. No code change, no redeploy.

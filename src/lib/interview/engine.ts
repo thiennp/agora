@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { AppConfig } from "../app-config";
-import { assemble, fallbackSketch, sketchSchema, type AnswerMap, type Assembled, type Sketch } from "./draft";
+import { assemble, defaultsFor, fallbackSketch, sketchSchema, type AnswerMap, type Assembled, type Sketch } from "./draft";
 import {
-  EXAMPLES, InterviewError, STEP_ORDER, isStepId, languageName, parseAnswer, stepOf,
+  EXAMPLES, InterviewError, REMOVED_MESSAGE, STEP_ORDER, isRemovedStep, isStepId, parseAnswer, stepOf,
   type Answer, type Option, type Parsed, type StepId,
 } from "./script";
 import { cleanText } from "./text";
@@ -10,7 +10,7 @@ import { cleanText } from "./text";
 /** The model's two jobs. It may fail or answer badly at any time: the interview then runs on code alone. */
 export interface InterviewModel {
   /** 2 or 3 example answers for a step, fitted to what the person has said so far. */
-  examples(step: "things" | "people" | "name", answers: Parsed[]): Promise<string[]>;
+  examples(step: "actions" | "name", answers: Parsed[]): Promise<string[]>;
   /** A raw draft (checked against `sketchSchema` here, never trusted). */
   sketch(answers: Parsed[]): Promise<unknown>;
 }
@@ -19,7 +19,7 @@ export const examplesSchema = z.object({ examples: z.array(z.string().min(2).max
 
 export interface Question {
   step: StepId;
-  /** 1-based position and total, for "Question 3 of 10". */
+  /** 1-based position and total, for "Question 3 of 6". */
   n: number;
   of: number;
   ask: string;
@@ -43,8 +43,6 @@ export type Turn =
 export const PROMISE = "Your agent will always check with you before it agrees to anything, gives money terms, shares who you are or where you live, chooses shipping, or makes a safety exception.";
 const MAX_ANSWERS = STEP_ORDER.length;
 
-const isLocal = (a: AnswerMap) => a.place !== undefined && a.place.value !== "online";
-const planned = (a: AnswerMap): StepId[] => STEP_ORDER.filter((s) => s !== "placeName" || isLocal(a));
 
 /** Read the answers so far in order. Throws `invalid_answer` for a wrong step, an unusable answer or too many answers. */
 function readAnswers(answers: Answer[]): { parsed: Parsed[]; map: AnswerMap } {
@@ -52,8 +50,8 @@ function readAnswers(answers: Answer[]): { parsed: Parsed[]; map: AnswerMap } {
   const map: AnswerMap = {};
   const parsed: Parsed[] = [];
   answers.forEach((a, i) => {
-    const expected = planned(map)[i];
-    if (!isStepId(a.step) || a.step !== expected) throw new InterviewError("invalid_answer", "The answers are out of order. Start again.");
+    if (isRemovedStep(a.step)) throw new InterviewError("invalid_answer", REMOVED_MESSAGE);
+    if (!isStepId(a.step) || a.step !== STEP_ORDER[i]) throw new InterviewError("invalid_answer", "The answers are out of order. Start again.");
     const p = parseAnswer(a);
     map[a.step] = p;
     parsed.push(p);
@@ -65,22 +63,20 @@ const valueLabel = (p: Parsed | undefined, fallback = "-") => (p ? p.label : fal
 
 /** The plain-words summary shown before the yes. Built from the checked config, not from the model's words. */
 export function summarize(a: AnswerMap, config: AppConfig): SummaryLine[] {
-  const modes = { pickup: "Meet up", locker: "A locker", parcel_shop: "A shop", shipping: "Post" } as const;
-  const pricing = { free_only: "Everything is free", swap_only: "Swaps only", free_or_agreement: "Free, or people agree something in return" } as const;
+  const d = defaultsFor(a);
+  const pricing = { free_only: "free", swap_only: "swaps only", free_or_agreement: "free, or people agree something in return" } as const;
   return [
     { label: "Name", value: config.name },
     { label: "What it is for", value: valueLabel(a.purpose) },
-    { label: "Who joins", value: `${valueLabel(a.people)} (called ${config.participant.noun}s)` },
-    { label: "What people share", value: config.catalog.categories.map((c) => c.label).join(", ") },
-    { label: "Where", value: config.region.name },
-    { label: "Languages", value: config.policies.languages.map(languageName).join(", ") },
-    { label: "Handing things over", value: config.policies.handoffModes.map((m) => modes[m]).join(" or ").replace(/ or ([A-Z])/g, (_, c: string) => ` or ${c.toLowerCase()}`) },
-    { label: "Giving or swapping", value: pricing[config.policies.pricing.mode] },
+    { label: "What people can do", value: valueLabel(a.actions) },
+    { label: "How it works", value: valueLabel(a.how) },
     { label: "Careful about", value: config.policies.forbiddenItems.length ? config.policies.forbiddenItems.map((f) => f.label).join(", ") : "Nothing in particular" },
+    // What was not asked, said honestly (docs/CREATE-AN-APP.md "What the platform sets for you").
+    { label: "Set for you", value: `Open to any Muse user, online. Muse handles languages. Money terms: ${pricing[d.pricing]}. ${(d.handoffModes as readonly string[]).includes("shipping") ? "Things can be met up for or posted." : "Meeting up in person."}` },
   ];
 }
 
-async function examplesFor(step: "things" | "people" | "name", parsed: Parsed[], map: AnswerMap, model: InterviewModel): Promise<string[]> {
+async function examplesFor(step: "actions" | "name", parsed: Parsed[], map: AnswerMap, model: InterviewModel): Promise<string[]> {
   try {
     const got = examplesSchema.safeParse({ examples: await model.examples(step, parsed) });
     if (got.success) {
@@ -91,7 +87,7 @@ async function examplesFor(step: "things" | "people" | "name", parsed: Parsed[],
     // The model is optional: static examples below.
   }
   const kind = map.purpose?.value;
-  return EXAMPLES[step][kind === "learn" || kind === "help" ? kind : "exchange"]!;
+  return EXAMPLES[step][kind === "learn" || kind === "organise" ? kind : "exchange"];
 }
 
 async function draftFor(map: AnswerMap, parsed: Parsed[], model: InterviewModel): Promise<Assembled & { source: "model" | "code" }> {
@@ -110,7 +106,7 @@ async function draftFor(map: AnswerMap, parsed: Parsed[], model: InterviewModel)
  */
 export async function advance(answers: Answer[], model: InterviewModel): Promise<Turn> {
   const { parsed, map } = readAnswers(answers);
-  const order = planned(map);
+  const order = STEP_ORDER;
   const said = parsed.map((p) => ({ label: stepOf(p.step).ask, value: p.label }));
   const next = order[parsed.length];
   if (next === undefined) {
@@ -119,9 +115,11 @@ export async function advance(answers: Answer[], model: InterviewModel): Promise
   }
   const step = stepOf(next);
   const options =
-    next === "things" || next === "people" || next === "name"
+    next === "actions" || next === "name"
       ? (await examplesFor(next, parsed, map, model)).map((label, i) => ({ id: `e${i}`, label }))
-      : step.options;
+      : next === "how"
+        ? EXAMPLES.how[map.purpose?.value === "learn" || map.purpose?.value === "organise" ? map.purpose.value : "exchange"].map((label, i) => ({ id: `e${i}`, label }))
+        : step.options;
   return {
     kind: "ask",
     said,

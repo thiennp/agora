@@ -44,12 +44,8 @@ const j = async (r: Response) => (await r.json()) as any;
 
 const answers = [
   { step: "purpose", choice: "exchange" },
-  { step: "people", text: "Friends who like fashion" },
-  { step: "things", text: "Clothes, shoes and bags" },
-  { step: "place", choice: "online" },
-  { step: "languages", choice: "en" },
-  { step: "handover", choice: "post" },
-  { step: "pricing", choice: "free" },
+  { step: "actions", text: "Offer clothes, shoes and bags" },
+  { step: "how", text: "People post what they have, others ask, then they agree" },
   { step: "care", choice: "none" },
   { step: "name", text: "Clothes Swap Club" },
   { step: "feel", choice: "friendly" },
