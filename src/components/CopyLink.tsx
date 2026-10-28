@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "./Button";
 
-/** Copies the invite link, or shares it with the phone's own share sheet when there is one. */
+/** Copies the share link, or shares it with the phone's own share sheet when there is one. */
 export function CopyLink({ url, title }: { url: string; title: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   async function act() {
@@ -18,7 +18,7 @@ export function CopyLink({ url, title }: { url: string; title: string }) {
   }
   return (
     <div className="stack">
-      <Button variant="primary" onClick={act}>{state === "copied" ? "Done" : "Share the invite link"}</Button>
+      <Button variant="primary" onClick={act}>{state === "copied" ? "Done" : "Share the link"}</Button>
       {state === "failed" ? <p className="small error-text" role="alert">Could not copy. Select the link above and copy it by hand.</p> : null}
     </div>
   );

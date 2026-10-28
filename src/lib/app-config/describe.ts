@@ -8,15 +8,15 @@ const TOPIC = {
 } as const;
 
 export interface AppDescription {
-  /** What the app is for and who joins, in the app's own words. */
+  /** What the app is for, in the app's own words. */
   purpose: string;
-  /** What members can do here. */
+  /** What people can do here. */
   features: string[];
-  /** What every member can rely on. Fixed platform rules come last and cannot be relaxed by the app. */
+  /** What every person using the app can rely on. Fixed platform rules come last and cannot be relaxed by the app. */
   rules: string[];
 }
 
-/** Plain-language name, purpose, features and rules of an app, derived from its validated config; shown on the join page and the overview (BR-42). Reads config only, never member data. */
+/** Plain-language name, purpose, features and rules of an app, derived from its validated config; shown on the public page, the overview and the agent page (BR-42). Reads config only, never member data. */
 export function describeApp(app: AppConfig): AppDescription {
   const p = app.policies;
   const features = [
@@ -29,7 +29,7 @@ export function describeApp(app: AppConfig): AppDescription {
     ...(p.forbiddenItems.length ? [`Not allowed: ${p.forbiddenItems.map((f) => f.label.toLowerCase()).join(", ")}.`] : []),
     `Your agent always asks you first before ${ALWAYS_ASK_TOPICS.map((t) => TOPIC[t]).join(", ")}.`,
     `Only your ${p.locationGranularity} is stored until both sides agree to share more.`,
-    "Messages between members go through agents, which screen, translate and skip what is not relevant to you.",
+    "Messages between people using the app go through agents, which screen, translate and skip what is not relevant to you.",
     "No money moves through this app, and it gives no medical, legal or developmental advice.",
   ];
   return { purpose: app.tagline, features, rules };
