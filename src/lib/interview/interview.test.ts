@@ -21,6 +21,11 @@ const full: Answer[] = [
 ];
 
 describe("interview wording (every question is part of creating the app)", () => {
+  it("asks the first question as one clear question and does not repeat question 2 in question 3", () => {
+    expect(stepOf("purpose").ask).toBe("What would you like your app to help people do together?");
+    expect(stepOf("how").ask).not.toMatch(/what can a person do/i);
+    for (const id of STEP_ORDER) expect(stepOf(id).ask.length, id).toBeLessThan(80);
+  });
   it("names the app in every question", () => {
     for (const id of STEP_ORDER) expect(stepOf(id).ask, id).toMatch(/\bapp\b/i);
   });
@@ -130,10 +135,45 @@ describe("the draft: the model drafts, code decides and validates", () => {
     }
   });
 
-  it("adds a plain note when the idea needs features that do not exist yet", async () => {
-    const t = await advance([{ ...full[0]!, choice: "learn" }, ...full.slice(1)], none);
-    expect(t.kind === "review" && t.notes.join(" ")).toMatch(/not available yet/);
-    expect(t.kind === "review" && t.draft.policies).toMatchObject({ pricing: { mode: "free_only" }, handoffModes: ["pickup"] });
+  it("for learning and organising says plainly what the app will and will not do, without calling the choice unsupported", async () => {
+    for (const choice of ["learn", "organise"]) {
+      const t = await advance([{ ...full[0]!, choice }, ...full.slice(1)], none);
+      if (t.kind !== "review") throw new Error("expected review");
+      const notes = t.notes.join(" ");
+      expect(notes).toMatch(/What your app will do/);
+      expect(notes).toMatch(/does not do yet/);
+      expect(notes).not.toMatch(/not available|designed but/i);
+      expect(t.draft.policies).toMatchObject({ pricing: { mode: "free_only" }, handoffModes: ["pickup"] });
+    }
+  });
+
+  it("keeps the person's own care words verbatim: shown back and carried into the config as their rule", async () => {
+    const mine = "No sharing of phone numbers";
+    const t = await advance([...full.slice(0, 3), { step: "care", text: mine }, ...full.slice(4)], none);
+    if (t.kind !== "review") throw new Error("expected review");
+    expect(t.lines.find((l) => l.label === "Careful about")?.value).toBe(mine);
+    expect(t.draft.policies.ownerRules).toEqual([mine]);
+    expect(t.draft.policies.topics.identity_reveal).toBe("ask");
+    validateDraft(t.draft);
+    const said = await advance(full.slice(0, 4), none);
+    expect(said.kind === "ask" && said.said.length).toBe(4);
+  });
+
+  it("says nothing in particular only when care is empty, including a typed 'none'", async () => {
+    for (const care of [{ step: "care" as const, choice: "none" }, { step: "care" as const, text: "None." }]) {
+      const t = await advance([...full.slice(0, 3), care, ...full.slice(4)], none);
+      expect(t.kind === "review" && t.lines.find((l) => l.label === "Careful about")?.value).toBe("Nothing in particular");
+      expect(t.kind === "review" && t.draft.policies.ownerRules).toEqual([]);
+    }
+  });
+
+  it("lists as 'Set for you' only the defaults that apply to the purpose", async () => {
+    const walk = await advance([{ step: "purpose", choice: "organise" }, ...full.slice(1)], none);
+    const set = walk.kind === "review" ? walk.lines.find((l) => l.label === "Set for you")!.value : "";
+    expect(set).toMatch(/any Muse user/);
+    expect(set).not.toMatch(/money|free|meet|post|pick/i);
+    const swap = await advance(full, none);
+    expect(swap.kind === "review" && swap.lines.find((l) => l.label === "Set for you")!.value).toMatch(/Money terms.*met up for or posted/);
   });
 
   it("validateDraft rejects an app that relaxes a rule or is malformed", async () => {

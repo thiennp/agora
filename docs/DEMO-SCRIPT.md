@@ -61,6 +61,6 @@ never say Muse connected unless the manual checks below passed; rehearse three t
 6. **Real interview model:** run `/start` with a Meta key once and read the draft; fix wording that is odd before recording.
 7. **Muse reads `/start`** (added after the first real try, `docs/PLAN.md` §2c-bis): scan the QR with the phone camera and also try
    pasting `https://agentwitch.com/agora/start` into Muse. Muse should interview the person from the brief on the page (or
-   `/start/agent.md`) and give a draft link that opens the summary; the person taps "Build it". **Unverified with a real Muse.** Muse is assumed to have no tappable chips or click action (none found, owner to confirm), so the interview in Muse is typed with numbered examples, and the person types "yes" before getting the link.
+   `/start/agent.md`) and give a draft link that opens the summary; the person taps "Build it". **Unverified with a real Muse.** Muse is assumed to have no tappable chips or click action (none found, owner to confirm), so the interview in Muse is typed with numbered examples, and the person agrees ("yes", "ok", "looks good") before getting the link. Check that a care answer typed in the person's own words shows up verbatim under "Careful about", and that a learn or organise app shows "What your app will do" with no money or handover line.
    If Muse does not follow it, use the phone interview on the page (the tap cards) instead; the result is the same.
 8. Region: one guide says Muse is offered only in the US and Canada; check it works for the phone you will film.

@@ -8,7 +8,7 @@ const PARAM = (id: StepId) => id;
 
 function answersFor(id: StepId): string {
   const step = stepOf(id);
-  if (step.options.length) return step.options.map((o) => `\`${o.id}\` = ${o.label}`).join("; ") + "; or the person's own words";
+  if (step.options.length) return step.options.map((o, i) => `${i + 1}=\`${o.id}\` (${o.label})`).join("; ") + "; or the person's own words";
   const ex = id === "actions" || id === "how" || id === "name" ? EXAMPLES[id].exchange : undefined;
   return `the person's own words, max ${step.maxLength} characters${ex ? ` (examples: ${ex.join(" / ")})` : ""}`;
 }
@@ -26,26 +26,35 @@ A person scanned a QR code because they want to create an app that any Muse user
 ## What to do
 
 1. **Open with one clear sentence** that says what is happening, in the person's language. Say it in these words or very close: "${INTERVIEW_PURPOSE}"
-2. Interview them **one plain question at a time**, in ordinary chat text. **Phrase every question as part of creating their app**, using the wording below, so each question makes sense alone. At a new topic, restate in a few words what it is for ("Next, for your app: …"). Give 2 to 3 example answers as a short numbered list, like "1) Offer things I no longer need  2) Ask for something I am looking for  3) Agree a swap, or tell me in your own words", and say they can just reply with a number or type their own answer. Do not rely on buttons or chips. No technical words. About 6 questions suffice; use the list below as a guide (skip or merge what they told you, decide the rest if they say "you decide").
-3. Write the app back in one short paragraph (name, what it is for, what a person can do in it, how it works) and ask them to **type "yes"** if it is right. **Do not go on until they type yes.** Fix anything they correct.
+2. Interview them **one plain question at a time**, in ordinary chat text. **Phrase every question as part of creating their app**, using the wording below, so each question makes sense alone. Keep each one short enough for a phone. At a new topic, restate in a few words what it is for ("Next, for your app: …"). Give 2 to 3 example answers as a short numbered list, like "1) Offer things I no longer need  2) Ask for something I am looking for  3) Agree a swap, or tell me in your own words", and say they can just reply with a number or type their own answer. Do not rely on buttons or chips. No technical words. About 6 questions suffice; use the list below as a guide (skip or merge what they told you, decide the rest if they say "you decide").
+3. Write the app back in one short paragraph (name, what it is for, what a person can do in it, how it works) and ask them to **type "yes"** if it is right. "Yes", "yeah", "ok" and "looks good" all mean yes; anything else is a correction. **Do not go on until they agree.**
 4. Only then give them the link below: "Open this link and tap **Build it**." Do not say the app exists yet.
+
+## Rules for the interview
+
+- **Numbers are for chat only.** In question 1, 1=\`exchange\`, 2=\`learn\`, 3=\`organise\` (the same for any list with short codes). The link holds the short code or the person's own words, never the number.
+- **A correction replaces the earlier answer.** Do not ask the other questions again.
+- **A vague answer** ("not sure", "whatever works") means you choose the default (or the first example), and you tell the person what you chose.
+- **Say the safety promise once**, after question 3 and before question 4: "Your agent will always check with you before anything is agreed, shared or paid." It is a promise, not a question.
+- **If an answer is too long, shorten it yourself.** Never ask the person to shorten it.
+- **If asked "what will the app do for me?"** say: "It is a small app of your own that any Muse user can open. Each person's agent does the back-and-forth and checks with them first. You tell me what it is for; it is ready to share after you tap Build it." For learning or organising, the closest version is built: people post what they offer or look for and agents agree the details. Dates, sign-ups and group reminders are not there yet, and the page says so.
 
 ## Questions (the word in backticks is its name in the link)
 
 ${questions}
 
-The agent of every user always asks its owner before agreeing to anything, giving money terms, revealing who they are or where they live, choosing shipping, or making a safety exception. Tell the person this once, as a promise, not as a question. Never offer health, medical or legal advice. If the idea is something the platform cannot do yet (for example running events or learning), say so kindly; the closest version is built and the wish is noted.
+The agent of every user always asks its owner before agreeing to anything, giving money terms, revealing who they are or where they live, choosing shipping, or making a safety exception. Never offer health, medical or legal advice.
 
 ## The link you give them
 
-\`${baseUrl}/start?draft=\` followed by the answers in the order above, separated by \`~\`, each answer URL-encoded (spaces as \`%20\`). Use a tap value from the list when one fits, otherwise the person's words. Example:
+\`${baseUrl}/start?draft=\` followed by the answers in the order above, separated by \`~\`. Use a short code when one fits, otherwise the person's words. Encode every answer: space \`%20\`, comma \`%2C\`, apostrophe \`%27\`, ampersand \`%26\`, question mark \`%3F\`, hash \`%23\`; a typed tilde becomes a space; letters like é or ñ are percent-encoded as UTF-8 (é = \`%C3%A9\`). Example:
 
 ${example}
 
-Give the link on its own line, exactly as built, and tell the person to open it. It opens the summary "Here is your app: … Build it?" with their answers filled in. If the link is damaged, the page keeps the answers before the damage and asks the rest itself, including the app name. The link holds only answers (max 2000 characters): it cannot change any rule, and nothing can be created without the person's tap. (Also accepted: one \`name=answer\` query value per question.)
+Give the link on its own line, exactly as built. Tell the person that a page opens with their answers laid out and a **Build it** button, and that tapping it is what creates the app. If the link is damaged, the page keeps the answers before the damage and asks the rest itself. The link holds only answers (max 2000 characters): it cannot change any rule, and nothing can be created without the person's tap. (Also accepted: one \`name=answer\` query value per question.)
 
-## If you can make web requests
+## Web requests are optional
 
-\`POST ${baseUrl}/api/interview\` with \`{"answers":[{"step":"purpose","choice":"exchange"},{"step":"actions","text":"…"}, …]}\` in the order above returns the next question or the checked summary. It stores nothing and is only for checking your answers. There is no call for you to build the app: the person's tap on the link above is the only way, by design. Never try to build it for them.
+You do not need them. The link is the only way to finish, by design. Optionally, \`POST ${baseUrl}/api/interview\` with \`{"answers":[{"step":"purpose","choice":"exchange"},{"step":"actions","text":"…"}, …]}\` only checks your answers and returns the next question or the summary. It stores nothing and cannot build the app.
 `;
 }

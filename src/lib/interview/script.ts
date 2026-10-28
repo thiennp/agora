@@ -73,9 +73,9 @@ export const EXAMPLES: Record<"actions" | "how" | "name", Record<"exchange" | "l
 };
 
 const STEPS: Record<StepId, Step> = {
-  purpose: { id: "purpose", ask: "To set up your app: what is it for, and what problem does it solve for the people who use it?", hint: "Tell it like you would to a friend. Pick an example or write your own.", options: PURPOSE, otherLabel: "Something else", freeText: false, maxLength: 300 },
+  purpose: { id: "purpose", ask: "What would you like your app to help people do together?", hint: "Pick an example or tell it in your own words.", options: PURPOSE, otherLabel: "Something else", freeText: false, maxLength: 300 },
   actions: { id: "actions", ask: "What can a person do in your app? Name the main things, in your own words.", hint: "A few are enough. Your agent will sort the rest.", options: [], otherLabel: "Something else", freeText: true, maxLength: 200 },
-  how: { id: "how", ask: "How does your app work, step by step? One or two sentences is enough.", hint: "For example: someone posts something, others respond, they agree.", options: [], otherLabel: "Something else", freeText: true, maxLength: 300 },
+  how: { id: "how", ask: "Walk me through one example in your app, from start to finish.", hint: "What happens first, then what? One or two sentences is enough.", options: [], otherLabel: "Something else", freeText: true, maxLength: 300 },
   care: { id: "care", ask: "Is there anything your app should never do or share?", hint: "Your agent will keep it out and ask you first when in doubt.", options: CARE, otherLabel: "Something else", freeText: false, maxLength: 300 },
   name: { id: "name", ask: "What should your app be called?", hint: "A short name people will remember.", options: [], otherLabel: "Something else", freeText: true, maxLength: 40 },
   feel: { id: "feel", ask: "Last one: how should your app feel?", options: FEEL, otherLabel: "Something else", freeText: false, maxLength: 60 },
@@ -98,7 +98,7 @@ export interface Parsed {
   step: StepId;
   /** Words shown back to the person. */
   label: string;
-  /** For `purpose`, `care`, `feel`: the id that code decided from the tap or the typed words. */
+  /** For `purpose`, `feel`: the id that code decided from the tap or the typed words. For `care`: `none`, `safe`, or the person's own words (kept as their own rule). */
   value: string;
 }
 
@@ -130,6 +130,9 @@ function guess(step: StepId, t: string): string | undefined {
   }
 }
 
+/** A typed "nothing" for the care step means the same as the tap answer. */
+const NOTHING = /^(none|nothing|no|nope|nothing special|nothing in particular|n\/a)[.!]*$/i;
+
 /** Read one answer. Throws `invalid_answer` with a friendly sentence when it cannot be used. */
 export function parseAnswer(a: Answer): Parsed {
   if (!isStepId(a.step)) throw new InterviewError("invalid_answer", isRemovedStep(a.step) ? REMOVED_MESSAGE : "That is not a question of the interview. Start again.");
@@ -139,6 +142,7 @@ export function parseAnswer(a: Answer): Parsed {
   if (a.choice !== undefined && !tapped) throw new InterviewError("invalid_answer", "That answer is not one of the choices. Please pick one or type your own.");
   if (tapped && !text) return { step: step.id, label: tapped.label, value: tapped.id };
   if (!text) throw new InterviewError("invalid_answer", "Please pick one of the answers or write a few words.");
+  if (step.id === "care" && NOTHING.test(text)) return { step: step.id, label: "Nothing special", value: "none" };
   const value = guess(step.id, text.toLowerCase());
   return { step: step.id, label: text, value: value ?? text };
 }
