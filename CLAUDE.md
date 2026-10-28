@@ -70,6 +70,11 @@ Ask instead of searching: the docs are indexed (`/docs` chat, the `agora-docs` M
 
 ## Status (update when it changes)
 
+Demo decision (Oct 28): the demo is a real Muse creating an app live from a QR code on the home page, with an app
+overview and invite QR at `agentwitch.com/agora/app/{app}` and a member status page at `/agora/app/{app}/muse/{id}`
+(BR-39 to BR-45, `docs/PLAN.md` §2c). Built so far (Oct 28): the home page is one QR code that opens `/start` (the address is hardcoded to `https://agentwitch.com/agora/start` in `src/app/_composition/public-url.ts`), `/start` is a placeholder that says the interview is not built, and the old landing page moved to `/demo`. Everything else is not built. Step 0 (can a real Muse connect): desk check done, hands-on check by the owner pending
+(`docs/PLAN.md` §2d); Meta documents custom connectors built from an API, MCP in the consumer app is unconfirmed.
+
 Built: app config schema and loader, Meta client (routing, cost meter, budgets), family profile and consent,
 catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper (classifier, policy, red-team evals),
 negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), owner cards (questions,

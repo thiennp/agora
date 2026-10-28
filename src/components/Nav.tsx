@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 function Links() {
   const path = usePathname();
   const as = useSearchParams().get("as") === "b" ? "b" : "a";
+  // The QR home page and the start page are for a first-time visitor: no demo navigation, no persona switch.
+  if (path === "/" || path.startsWith("/start")) return null;
   const q = `?as=${as}`;
   const item = (href: string, label: string, match: (p: string) => boolean) => (
     <Link href={`${href}${["/dashboard", "/docs", "/styleguide"].includes(href) ? "" : q}`} aria-current={match(path) ? "page" : undefined}>{label}</Link>

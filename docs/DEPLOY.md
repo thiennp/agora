@@ -31,7 +31,7 @@ after a redeploy).
 `railway.json` sets the build, start command, a single replica and a health check.
 
 1. New Railway project from this repo (branch to deploy: your choice). Keep one replica.
-2. Variables: `AGORA_MODE=mock`, and `AGORA_BASE_PATH=/agora` only if mounted under a sub-path. Railway passes the
+2. Variables: `AGORA_MODE=mock` and `AGORA_BASE_PATH=/agora` only if mounted under a sub-path. Railway passes the
    variables to the build too, which is what the base path needs.
 3. With a sub-path, set `healthcheckPath` in `railway.json` to `/agora` (the health check requests that exact path).
 4. Generate a Railway domain and open `<domain>/<base path>`; check the home page, "Be Mia", the deal room and the

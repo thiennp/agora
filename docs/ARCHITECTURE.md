@@ -96,6 +96,12 @@ default to ask; the relay channel, trust screening, relevance filtering and priv
 `APP=<id>` selects the active app; apps are registered in `load-app.ts`. Creating a new app is covered in
 `docs/CREATE-AN-APP.md`.
 
+Planned for the Muse-first demo (decided Oct 28, not built; `docs/PLAN.md` §2c, BR-39 to BR-45): apps also become data. A
+config created by the interview is stored by the platform, validated by the same `schema.ts` at load, and served at
+`/agora/app/{app}`; several apps run in one process with their stores scoped per app, and repository apps stay
+registered as today. A person's own Muse is a client (read-only MCP, if it can connect), never the deciding agent: agents
+stay platform-hosted and the gatekeeper stays in code.
+
 ## 2c. Community communication, circles and logs (designed, not built)
 
 **Community posting.** A member never posts or chats directly. The flow is: member asks their agent to post, the agent

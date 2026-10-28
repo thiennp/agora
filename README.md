@@ -50,7 +50,7 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Open the home page, pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
+Open `/demo` (the home page `/` is a QR code that opens `/start`, the create-an-app entry, which is a placeholder until the interview is built; the code always points at `https://agentwitch.com/agora/start`, so it only opens once that is deployed), pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
 judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
 in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
 `npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo needs no Meta key: translation

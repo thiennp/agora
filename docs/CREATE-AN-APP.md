@@ -16,6 +16,8 @@ logs, owner approval, matching, time, and so on); you choose and combine them fo
   choose a technical option. If you need a technical value, **decide it yourself** from what they told you.
 - Offer 2–3 example answers with each question so they can just pick or tweak one.
 - If an answer is vague, ask a gentle follow-up ("Can you give me an example?"). If they say "you decide", decide.
+- In the phone interview (planned for the demo, `docs/PLAN.md` §2c) every question is a card with tap answers: your 2–3
+  suggestions plus "something else" for typing or voice, so the person rarely has to type.
 - Keep going until you could explain the app back to them in one short paragraph and they say yes. Usually 5–8
   questions. Do not start building before that yes.
 
