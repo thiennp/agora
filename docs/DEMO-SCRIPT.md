@@ -1,6 +1,6 @@
 # Demo script (3:00) — Muse-first, plan not yet recorded
 
-Follows `docs/PLAN.md` §2c. The demo is a person making a community app live, then a second person joining it and the first
+Follows `docs/PLAN.md` §2c. The demo is a person making a community app live, then a second person using it and the first
 person's own Muse reading what their agent does. Everything shown must run; anything simulated is labelled on screen (list below).
 The kids' gear deal-room demo is the fallback, not the main path.
 
@@ -10,8 +10,8 @@ The kids' gear deal-room demo is the fallback, not the main path.
 |---|---|---|
 | 0:00–0:20 | The home page on a laptop: one QR code, "Scan to make an app". A person points a phone at it. | QR home page (`/`), opens `https://agentwitch.com/agora/start` |
 | 0:20–1:05 | On the phone, Muse says it is creating their app, then interviews them one question at a time, each worded as part of creating the app with tap answers (what the app is for, what a person can do in it, how it works, what it should never do or share, name, feel: six questions, nothing about who joins, place, languages or price). The last card: "Here is your app: … Build it?" They tap yes. | `/start` interview; code sets the rules and validates; the model only offers examples and drafts wording (**simulated offline unless a Meta key is set; never run against real Muse Spark**) |
-| 1:05–1:30 | The app exists: overview with the invite QR, member list, what the app does in plain words and its always-ask promise. | `/app/{app}` as creator; app stored as data, no redeploy |
-| 1:30–1:55 | A friend scans the invite QR, sees the join page (name, purpose, rules), taps Join, sees the recovery-code notice (light identity, not a real account). | `/app/{app}` as stranger, `POST …/join` |
+| 1:05–1:30 | The app exists: private overview with the share QR, list of people using it, what the app does in plain words and its always-ask promise. | `/app/{app}` as creator; app stored as data, no redeploy |
+| 1:30–1:55 | A friend scans the share QR, sees the public page (name, purpose, rules), is set up on first use with no form, sees the recovery-code notice (light identity, not a real account). | `/app/{app}` as stranger, `POST …/join` |
 | 1:55–2:25 | Both members list something and want something; the friend's agent finds the match and opens a deal; the agents negotiate and pause to ask an owner (the card appears on that owner's status page). The friend's status page shows it grouped and charted: waiting on you, deals, items, what the agent did alone. | member parties (ADR 0007), matching, negotiation, owner cards, `/app/{app}/muse/{id}` (**negotiation text is simulated translation; no carrier**) |
 | 2:25–2:50 | The friend opens their own Muse and asks "what is waiting for me in the clothes club?". Muse answers from the read-only connector. Then the person asks Muse to approve the card: Muse cannot; the card waits for their tap in the app. | `GET /api/muse/{app}/status|cards` or MCP (**not yet tried with a real Muse; see the manual checks below**) |
 | 2:50–3:00 | Close: one platform, any community app; kids' gear and garden tools are two more apps on it. Sandbox city and cost numbers on screen. | `/demo`, judge dashboard |

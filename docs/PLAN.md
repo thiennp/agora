@@ -61,9 +61,9 @@ The flow (BR-39 to BR-45):
    at a time, with tap answers: 2–3 suggestions plus "something else" (typed or voice). The last step is one yes:
    "Here is your app: … Build it?"
 3. Muse builds the app: a config checked against the app schema, saved as data. No code change, no redeploy.
-4. The creator sees the app's overview at `agentwitch.com/agora/app/{app}` (`{app}` unique), with an invite QR to share
-   (for example a clothes exchange with friends). Muse can read the same overview and report it to them.
-5. Each person who joins gets their own agent and a status page at `agentwitch.com/agora/app/{app}/muse/{id}`: what
+4. The creator sees the app's private overview at `agentwitch.com/agora/app/{app}` (`{app}` unique), with a share QR and
+   link to the app's public page (see §2c-ter). Muse can read the same overview and report it to them.
+5. Each person who uses the app gets their own agent and a status page at `agentwitch.com/agora/app/{app}/muse/{id}`: what
    their agent works on in that app, grouped and charted (waiting on you, deals, items, what it did alone, lessons,
    standing rules). Their Muse can read it through MCP.
 
@@ -71,8 +71,8 @@ Two adjustments that keep the product rules intact:
 - **The person's own Muse is a window, not the decider.** Agents stay platform-hosted and the gatekeeper stays in code
   (BR-07, BR-12). An external Muse may read status and pass on what its person said; it can never answer an always-ask
   card. Those need the person's own tap in the app.
-- **An app is a space its members see.** The creator gets an admin view, members get a member view, and the invite QR
-  opens a public join page with the app's name, purpose and rules.
+- **An app is for all Muse users, not for a closed group** (owner's decision, Oct 28, see §2c-ter). The creator gets the
+  private overview, and the share link opens a public page with the app's name, purpose and rules for anyone.
 
 Open risk: whether the consumer Muse app can connect to our MCP server, or open a link from a QR code, is unconfirmed
 (step 0). The flow therefore works without it: the phone page runs the interview with platform-hosted Muse Spark, and
@@ -84,7 +84,7 @@ the person's own Muse is an extra layer when it can connect.
 | 1 | Apps as data: app configs stored in the database and validated by `schema.ts` at load; routes under `/agora/app/{app}`; stores scoped per app; repo apps (kids-gear, garden-tools) keep working. | 1–1.5 days | built (Oct 28): app store with Postgres, file and memory backends (migration 0012), `POST /api/apps`, `GET /api/apps/{app}`, public page `/app/{app}`, one platform per app (`?app=` on every route). Members of stored apps became parties of the platform in step 7 (docs/adr/0007-stored-app-members-are-parties.md) |
 | 2 | Light identity: a membership and session created on scan, unguessable member ids, per-request authorization by app and member, a recovery path. Not real accounts; disclosed. | 1 day | built (Oct 28): `src/lib/identity` (membership, session, recovery code), cookie-only sessions per app, `POST /api/apps` makes the creator, `join`, `me`, `members` (creator only), `recover`, `signout` routes, every route of a stored app needs a session. Not built: an invite secret on the join page (not in step 4 either; the link is the app's address), the per-member Muse key (built in step 6; `via: "muse"` is refused for writes) |
 | 3 | Home page is one QR code → `/agora/start`. The interview runs `docs/CREATE-AN-APP.md` as structured question cards with tap answers; the model drafts the config, code validates it; summary and "Build it?". | 1–1.5 days | built (Oct 28): QR home page; `/start` runs the interview (`src/lib/interview`, `POST /api/interview`, `POST /api/interview/build`, docs/ARCHITECTURE.md §11d): scripted question cards with 2–3 tap answers plus typed, stateless, the model offers examples and drafts the wording, code sets all rules and validates against the schema, one yes stores the app and makes the caller its creator. Works offline in mock mode. Not built: voice answers, an edit screen, a run against real Muse Spark (stubs only) |
-| 4 | App overview at `/agora/app/{app}` with an invite QR, and a public join page. | ½–1 day | built (Oct 28): one address, three views by session (stranger = join page, member, creator = overview with invite QR, share button, member list); the invite link is the app's address with no secret; `describeApp` writes purpose, features and rules in plain words from the config. Not built: a rotatable invite secret, removing a member, the member status link (step 5) |
+| 4 | App overview at `/agora/app/{app}` with a share QR, and a public page (reframed in §2c-ter). | ½–1 day | built (Oct 28), reframed Oct 28: one address, three views by session (stranger = public page, user, creator = private overview with share QR, share button, list of people using the app); the share link is the app's address with no secret; `describeApp` writes purpose, features and rules in plain words from the config. Not built: a rotatable invite secret, removing a member, the member status link (step 5) |
 | 5 | Member status at `/agora/app/{app}/muse/{id}`, grouped and charted, built from the existing read views and the audit store (a stub today). | 1 day | built (Oct 28): `/app/{app}/muse/{id}` for the member only (404 for everyone else, the creator included), groups for waiting on you, deals, items, what it did alone (from the member's own deals; audit store still a stub, said on the page), lessons and standing rules, with bar charts and a 7-day line chart, empty states, 375 px; linked from the app page. Members of stored apps are real parties since step 7, so the groups fill with their own items, deals and cards. Not built: answering cards from this page |
 | 6 | Read-only access for a person's own Muse: app overview, my status, my actions, pending cards, as a documented HTTP API that Muse can turn into a custom connector (per-member key), and over MCP if step 0 confirms it. No tool answers a card. | 1 day | built (Oct 28): per-member keys (`src/lib/identity/muse-keys.ts`, `agmk_` + 256 bits, hashed, shown once, revocable, max 3), `GET /api/muse/{app}/overview\|status\|actions\|cards` (Bearer key, GET only), `/api/muse/openapi.json`, the same four reads over stateless MCP at `/api/muse/{app}/mcp`, a "Connect your own Muse" card on the status page, `docs/MUSE-CONNECTOR.md`. Not confirmed with a real Muse (step 0 hands-on check still pending); no OAuth; actions come from the member's own deals until the audit log exists |
 | 7 | Docs, tests, demo script; members of stored apps as parties (the gap left by step 5). | ½ day | built (Oct 28): members are parties (ADR 0007), `src/app/api/muse-first-flow.test.ts` runs the whole flow in mock mode, `docs/DEMO-SCRIPT.md` rewritten for the Muse-first demo with its fallback and the honest list of what is simulated. Open: the owner's hands-on checks (§2d, and the list in DEMO-SCRIPT), deploying at agentwitch.com/agora |
@@ -101,6 +101,30 @@ markdown at `/start/agent.md` (and for `Accept: text/markdown|text/plain` or `?f
 the person a draft link `/start?purpose=…&…` that opens the summary screen with the answers filled in. The person's own tap
 on "Build it" is the only thing that stores an app. The human tap-card flow is unchanged. **Still unverified with a real Muse**:
 the brief is written for typing only (no buttons, no clicks by Muse; chips were looked for and not found, unverified, owner to confirm in the Muse app). Whether it follows the brief, interviews well and builds a correct link is a hands-on check for the owner (§2d, step 4).
+
+### 2c-ter. The app is for all Muse users (owner's decision, Oct 28)
+
+An app is not for one closed group. It is for every Muse user; the only user of our site is the app's creator, and there is no
+separate "common user" account. Nothing built in steps 1–7 was deleted: apps as data, light identity, per-user records, the status page
+and the Muse read API stay. What changed is the framing and one new page:
+- `/app/{app}` has a **public view** for anyone, including a Muse that opens the link: server HTML plus markdown at
+  `/app/{app}/agent.md` (also for `Accept: text/markdown|text/plain` and `?format=md`). It says what the app is, what a person can do,
+  how it works, what it must never do, and how Muse should use it for the person it is talking to, written for typing only like the
+  `/start` brief (Muse never has to click). It is built from the app's config only: no creator secret, no user, no message text.
+- The invite QR became a **share** QR and link to that public page. "Join" became "use this app": a person who opens the page in a
+  browser gets their light-identity record on first use, with no sign-up form (the same join call, run by the page; a page that is
+  only read, as an assistant does, creates nothing). The recovery code is shown once.
+- Routes, API paths (`/join`, `/members`) and the data model are unchanged, so old invite links keep working. User-facing words moved
+  from join/member/community to use/user.
+
+**Not built, said plainly:** an end user who has only Muse (no browser step) cannot yet do anything through it. Muse can read the public
+page, explain the app and hand over the link; the person then uses the app in a browser, and their own Muse may read their status
+through the read-only API (step 6). Neither has been tried with a real Muse.
+
+**Open decision, not settled here (the owner's real-Muse test must settle it):** how a user confirms commitments, price, identity,
+location, shipping or a safety exception when Muse is their only interface. Option A: the person types "yes" to Muse and Muse relays
+it, which relaxes the rule that only the owner's own tap confirms (BR-07, BR-44). Option B: Muse gives a link, the person opens it and
+taps in our app. Until decided, the current rule stands (own tap in our app) and the Muse API stays read-only.
 
 ## 2d. Step 0: can a real Muse connect?
 
@@ -134,7 +158,8 @@ Hands-on check for the owner (about 10 minutes, in the Muse app):
 3. Point the phone camera at any QR code with a link: does it offer to open the link in the Muse app, or only in the
 4. **Muse reads `/start`:** scan the home page QR with the phone camera, or paste `https://agentwitch.com/agora/start` into Muse. Does it interview you from the brief and give a link? Open the link: the summary must show your answers and nothing may be built before you tap "Build it". Note what Muse did, or ask it to read `/start/agent.md` if it did not.
    browser?
-Record the three answers here. Step 6 waits for them; steps 1–5 do not.
+5. **Muse reads an app page:** after building an app, paste `https://agentwitch.com/agora/app/{app}` into Muse. Does it explain the app from the page and hand over the link? Then the decision in §2c-ter: if Muse is your only interface, do you want to type "yes" to Muse (A) or open a link and tap (B)? Note what felt right.
+Record the answers here. Step 6 waits for them; steps 1–5 do not.
 
 ## 3. Scope
 

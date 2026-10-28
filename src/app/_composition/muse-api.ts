@@ -104,7 +104,7 @@ export function createMuseMcpServer(who: Principal & { name: string }): McpServe
   const server = new McpServer({ name: "agora-muse", version: "0.1.0" });
   const readOnly = { readOnlyHint: true, idempotentHint: true, destructiveHint: false, openWorldHint: false } as const;
   const text = (v: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(v, null, 2) }] });
-  server.registerTool("get_app_overview", { title: "App overview", description: "What this community app is for, who joins, its features and rules. Read only.", inputSchema: {}, annotations: readOnly }, async () => text(await reads.overview()));
+  server.registerTool("get_app_overview", { title: "App overview", description: "What this app is for, its features and rules. Read only.", inputSchema: {}, annotations: readOnly }, async () => text(await reads.overview()));
   server.registerTool("get_my_status", { title: "My status in this app", description: "What my agent works on here, grouped: waiting on me, deals, items, what it did alone, lessons, standing rules. Read only.", inputSchema: {}, annotations: readOnly }, async () => text(await reads.status()));
   server.registerTool(
     "get_my_recent_actions",

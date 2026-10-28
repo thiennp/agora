@@ -3,10 +3,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Banner, Card } from "@/components/Card";
 import { CopyLink } from "@/components/CopyLink";
-import { JoinForm } from "@/components/JoinForm";
+import { UseAppForm } from "@/components/UseAppForm";
 import { QrCode } from "@/components/QrCode";
 import { appPageView, type AppPageView } from "@/app/_composition/app-views";
-import { appUrl } from "@/app/_composition/public-url";
+import { PUBLIC_BASE_URL, appUrl } from "@/app/_composition/public-url";
+import { appAgentBrief } from "@/lib/app-config";
+
+export async function generateMetadata({ params }: { params: Promise<{ app: string }> }) {
+  const id = (await params).app;
+  return { alternates: { types: { "text/markdown": `${PUBLIC_BASE_URL}/app/${id}/agent.md` } } };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +24,7 @@ function About({ view }: { view: Described }) {
     <>
       <Card title="What it is for">
         <p>{description.purpose}</p>
-        <p className="muted">For {app.participant}s around {app.region}.</p>
+        <p className="muted">Made for {app.participant}s, set up for {app.region}. Anyone with Muse can use it.</p>
       </Card>
       <Card title="What you can do">
         <ul className="list">{description.features.map((f) => <li key={f}>{f}</li>)}</ul>
@@ -30,10 +36,23 @@ function About({ view }: { view: Described }) {
   );
 }
 
+function ForAssistant({ view }: { view: Described }) {
+  return (
+    <section aria-labelledby="assistant-title" className="stack">
+      <h2 id="assistant-title" className="small">For an AI assistant (Muse) reading this page</h2>
+      <p className="small muted">
+        This page, as plain markdown: <a href={`${PUBLIC_BASE_URL}/app/${view.app.id}/agent.md`}>{PUBLIC_BASE_URL}/app/{view.app.id}/agent.md</a>.
+      </p>
+      <pre className="small" style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{appAgentBrief(view.app, view.description, PUBLIC_BASE_URL)}</pre>
+    </section>
+  );
+}
+
 /**
- * `/app/{app}` (served at `/agora/app/{app}`), docs/PLAN.md §2c step 4, BR-42. One address for everyone, three views by session:
- * a stranger gets the join page, a member the member view, the creator the overview with the invite QR. The invite link is this
- * address, so it carries no secret. Each member's status page is `/muse/{id}` (step 5).
+ * `/app/{app}` (served at `/agora/app/{app}`), docs/PLAN.md §2c step 4 and §2c-ter, BR-42. One address, public by default: anyone, including
+ * an assistant (Muse) that opens the link, sees the same public page (name, purpose, what it does, rules) in server HTML, also as markdown
+ * at `/app/{app}/agent.md`. A person who opens it in a browser is set up on first use (no form). The creator, with their session, gets the
+ * private overview with the share link. The share link is this address, so it carries no secret. A person's status page is `/muse/{id}`.
  */
 export default async function AppPage({ params }: { params: Promise<{ app: string }> }) {
   const id = (await params).app;
@@ -45,11 +64,12 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
     return (
       <div className="stack-lg">
         <div>
-          <p className="small muted">You are invited to</p>
+          <p className="small muted">An app for anyone with Muse</p>
           <h1>{app.name}</h1>
         </div>
         <About view={view} />
-        <JoinForm appId={app.id} appName={app.name} noun={app.participant} />
+        <UseAppForm appId={app.id} appName={app.name} />
+        <ForAssistant view={view} />
       </div>
     );
   }
@@ -62,23 +82,23 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <p className="small muted">Your app</p>
           <h1>{app.name}</h1>
         </div>
-        <Card title="Invite people" prominent>
-          <p>Show this code or send the link. Anyone who opens it sees the app&apos;s purpose and rules and can join.</p>
+        <Card title="Share your app" prominent>
+          <p>Show this code or send the link. Anyone who opens it, and any Muse that reads it, sees what the app is for and its rules, and can use it.</p>
           <div className="qr-home">
             <div className="qr-frame"><QrCode text={url} label={`QR code that opens ${url}`} /></div>
           </div>
           <p className="small qr-url"><a href={url}>{url}</a></p>
-          <CopyLink url={url} title={`Join ${app.name}`} />
-          <p className="small muted">The link holds no password. Anyone who has it can join, so share it only with the people you mean.</p>
+          <CopyLink url={url} title={`Use ${app.name}`} />
+          <p className="small muted">The link holds no password and opens a public page. Anyone who has it can use the app.</p>
         </Card>
-        <p><Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing</Link></p>
-        <Card title={`Members (${view.members.length})`}>
+        <p><Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you in this app</Link></p>
+        <Card title={`People using your app (${view.members.length})`}>
           {view.members.length === 0 ? (
-            <p className="muted">Nobody has joined yet. Share the invite to get started.</p>
+            <p className="muted">Nobody is using it yet. Share the link to get started.</p>
           ) : (
             <ul className="list">
               {view.members.map((m) => (
-                <li key={m.memberId}>{m.name || "No name given"} <span className="small muted">· {m.role === "creator" ? "creator" : "member"} · joined {m.joinedAt.slice(0, 10)}</span></li>
+                <li key={m.memberId}>{m.name || "No name given"} <span className="small muted">· {m.role === "creator" ? "you, the creator" : "user"} · since {m.joinedAt.slice(0, 10)}</span></li>
               ))}
             </ul>
           )}
@@ -92,11 +112,12 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
     return (
       <div className="stack-lg">
         <div>
-          <p className="small muted">You are a member of</p>
+          <p className="small muted">You are using</p>
           <h1>{app.name}</h1>
         </div>
-        <p><Link className="btn primary" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing</Link></p>
+        <p><Link className="btn primary" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you in this app</Link></p>
         <About view={view} />
+        <ForAssistant view={view} />
       </div>
     );
   }
@@ -106,9 +127,10 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
       <div>
         <h1>{app.name}</h1>
       </div>
-      <Banner tone="info">This is a demo app that runs on two built-in example people, so it has no members and no invite.</Banner>
+      <Banner tone="info">This is a demo app that runs on two built-in example people, so it has no users of its own and no share link.</Banner>
       <About view={view} />
       <p><Link className="btn primary" href="/demo">Open the demo</Link></p>
+      <ForAssistant view={view} />
     </div>
   );
 }

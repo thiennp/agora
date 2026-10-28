@@ -1,6 +1,6 @@
 # Connect your own Muse (read only)
 
-For the owner of a member account. About ten minutes. **Read this first: what is and is not confirmed.**
+For a person who uses an app (a user account). About ten minutes. **Read this first: what is and is not confirmed.**
 
 ## What this does, in plain words
 
@@ -12,7 +12,7 @@ cards waiting for you.
 
 - It cannot answer, confirm or decline a card, and cannot change a price, a place, an address, shipping or a safety
   decision. Those need **your own tap in the app** (BR-07, BR-44). There is no such button anywhere in this connection.
-- It sees only **you** in **one app**. Not other members, not the messages between agents, not addresses.
+- It sees only **you** in **one app**. Not other users, not the messages between agents, not addresses.
 - A key can be revoked at any time, and stops working at once.
 
 ## What is not confirmed (honest part)
@@ -41,7 +41,7 @@ The description lists four read-only calls, all `GET`, each with `Authorization:
 
 | Call | Answers |
 |---|---|
-| `/api/muse/{app}/overview` | what the app is for, who joins, features and rules |
+| `/api/muse/{app}/overview` | what the app is for, its features and rules |
 | `/api/muse/{app}/status` | your status, grouped |
 | `/api/muse/{app}/actions?limit=20` | your agent's recent actions, newest first |
 | `/api/muse/{app}/cards` | cards waiting for you (read only) |

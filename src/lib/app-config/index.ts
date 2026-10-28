@@ -5,3 +5,4 @@ export { AppStoreError, MAX_STORED_APPS, createAppStore, createMemoryBackend, re
 export { inStage, findForbiddenItem } from "./helpers";
 export { participantsSchema, personasSchema, validateSandbox } from "./sandbox";
 export { describeApp, type AppDescription } from "./describe";
+export { appAgentBrief, type AgentPageApp } from "./agent-page";
