@@ -25,6 +25,10 @@ export interface Step {
   maxLength: number;
 }
 
+/** The one sentence that says what is happening; shown on the page and told first by an assistant (docs/CREATE-AN-APP.md). */
+export const INTERVIEW_PURPOSE =
+  "I'm going to ask you a few quick questions to create your own app, for example a group to swap things, learn together or help each other. It takes about two minutes, and nothing is built until you say yes.";
+
 export const PURPOSE: Option[] = [
   { id: "exchange", label: "Swap, lend or give away things we no longer need" },
   { id: "learn", label: "Learn something together as a group" },
@@ -80,17 +84,17 @@ export const EXAMPLES: Record<"things" | "people" | "name", Record<string, strin
 };
 
 const STEPS: Record<StepId, Step> = {
-  purpose: { id: "purpose", ask: "What will the people in your community do together?", hint: "Tell it like you would to a friend. Pick one or write your own.", options: PURPOSE, otherLabel: "Something else", freeText: false, maxLength: 300 },
-  people: { id: "people", ask: "Who are the people who will join?", hint: "What do they have in common?", options: [], otherLabel: "Something else", freeText: true, maxLength: 120 },
-  things: { id: "things", ask: "What will people share or offer each other?", hint: "A few examples are enough. Your agent will sort the rest.", options: [], otherLabel: "Something else", freeText: true, maxLength: 200 },
-  place: { id: "place", ask: "Where are you based? Do people need to be near each other?", options: PLACE, otherLabel: "Something else", freeText: false, maxLength: 120 },
-  placeName: { id: "placeName", ask: "What is the place called?", hint: "For example the name of your neighbourhood or town.", options: [], otherLabel: "Type the name", freeText: true, maxLength: 80 },
-  languages: { id: "languages", ask: "Which languages do your people speak?", hint: "Your agent will translate between them.", options: [{ id: "en", label: "English" }, { id: "en-es", label: "English and Spanish" }, { id: "en-de", label: "English and German" }], otherLabel: "Something else", freeText: false, maxLength: 120 },
-  handover: { id: "handover", ask: "How do things usually change hands?", options: HANDOVER, otherLabel: "Something else", freeText: false, maxLength: 120 },
-  pricing: { id: "pricing", ask: "Is it free, a swap, or can people agree something in return?", options: PRICING, otherLabel: "Something else", freeText: false, maxLength: 120 },
-  care: { id: "care", ask: "Is there anything people should be careful about, or that should never be shared here?", hint: "Your agent will keep it out and ask you first when in doubt.", options: CARE, otherLabel: "Something else", freeText: false, maxLength: 300 },
+  purpose: { id: "purpose", ask: "To set up your app: what will the people in your community do together?", hint: "Tell it like you would to a friend. Pick one or write your own.", options: PURPOSE, otherLabel: "Something else", freeText: false, maxLength: 300 },
+  people: { id: "people", ask: "Who should be able to join your app?", hint: "What do they have in common?", options: [], otherLabel: "Something else", freeText: true, maxLength: 120 },
+  things: { id: "things", ask: "What will people share or offer each other in your app?", hint: "A few examples are enough. Your agent will sort the rest.", options: [], otherLabel: "Something else", freeText: true, maxLength: 200 },
+  place: { id: "place", ask: "Where will your app's community be based? Do people need to be near each other?", options: PLACE, otherLabel: "Something else", freeText: false, maxLength: 120 },
+  placeName: { id: "placeName", ask: "What is the place your app is for called?", hint: "For example the name of your neighbourhood or town.", options: [], otherLabel: "Type the name", freeText: true, maxLength: 80 },
+  languages: { id: "languages", ask: "Which languages should your app work in?", hint: "Your agent will translate between them.", options: [{ id: "en", label: "English" }, { id: "en-es", label: "English and Spanish" }, { id: "en-de", label: "English and German" }], otherLabel: "Something else", freeText: false, maxLength: 120 },
+  handover: { id: "handover", ask: "In your app, how will things usually change hands?", options: HANDOVER, otherLabel: "Something else", freeText: false, maxLength: 120 },
+  pricing: { id: "pricing", ask: "In your app, should things be free, a swap, or can people agree something in return?", options: PRICING, otherLabel: "Something else", freeText: false, maxLength: 120 },
+  care: { id: "care", ask: "Is there anything people should be careful about, or that should never be shared in your app?", hint: "Your agent will keep it out and ask you first when in doubt.", options: CARE, otherLabel: "Something else", freeText: false, maxLength: 300 },
   name: { id: "name", ask: "What should your app be called?", hint: "A short name people will remember.", options: [], otherLabel: "Something else", freeText: true, maxLength: 40 },
-  feel: { id: "feel", ask: "How should it feel?", options: FEEL, otherLabel: "Something else", freeText: false, maxLength: 60 },
+  feel: { id: "feel", ask: "Last one: how should your app feel?", options: FEEL, otherLabel: "Something else", freeText: false, maxLength: 60 },
 };
 
 export const STEP_ORDER: StepId[] = ["purpose", "people", "things", "place", "placeName", "languages", "handover", "pricing", "care", "name", "feel"];

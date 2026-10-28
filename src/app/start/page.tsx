@@ -1,10 +1,10 @@
 import { Banner } from "@/components/Card";
 import { Interview } from "@/components/Interview";
 import { PUBLIC_BASE_URL } from "@/app/_composition/public-url";
-import { agentBrief, answersFromQuery } from "@/lib/interview";
+import { agentBrief, answersFromQuery, INTERVIEW_PURPOSE } from "@/lib/interview";
 
 export const metadata = {
-  title: "Make an app · Agora",
+  title: "Create your app · Agora",
   alternates: { types: { "text/markdown": `${PUBLIC_BASE_URL}/start/agent.md` } },
 };
 
@@ -18,8 +18,8 @@ export default async function Start({ searchParams }: { searchParams: Promise<Re
   return (
     <div className="stack-lg">
       <div>
-        <h1>Make an app for your community</h1>
-        <p className="muted">Muse asks a few questions, one at a time. You only tap your answers, or write your own. Nothing is built until you say yes.</p>
+        <h1>Let&apos;s create your app</h1>
+        <p className="muted">{INTERVIEW_PURPOSE} You only tap your answers, or write your own.</p>
       </div>
       {problem ? <Banner tone="warn">{problem} Please answer the questions below instead.</Banner> : null}
       <noscript>

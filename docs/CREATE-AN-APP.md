@@ -23,7 +23,7 @@ logs, owner approval, matching, time, and so on); you choose and combine them fo
 
 ## What to find out (in this spirit, not as a script)
 
-0. **What do people do together?** "Tell me about the group: who they are and what they do together or for each other,
+0. **What do people do together?** (Always say it is for their app: "To set up your app: what will the people in your community do together?") "Tell me about the group: who they are and what they do together or for each other,
    like you'd tell a friend." Listen for: trading or lending things, meeting or training at set times, forming teams or
    buddy pairs, asking each other for help, deciding things together. This tells you which building blocks to use.
 1. **The idea:** if things change hands: "What would you like people to swap, share or trade?"
@@ -63,7 +63,7 @@ script. The page therefore carries a brief in its HTML, and the same text is pla
 for `Accept: text/markdown` or `text/plain`, or `/start?format=md`). It is generated from the interview script
 (`src/lib/interview/brief.ts`), so the questions, tap answers and order are the ones in this document and cannot drift.
 
-In short: you are Muse; interview the person yourself **by typing in chat** (Muse is not known to have tappable chips or
+In short: you are Muse; **open with one sentence that says what is happening** ("I'm going to ask you a few quick questions to create your own app, for example a group to swap things, learn together or help each other; it takes about two minutes, and nothing is built until you say yes."), **phrase every question as part of creating their app** ("To set up your app: what will the people in your community do together?", "Who should be able to join your app?") and say again in a few words what a new topic is for; interview the person yourself **by typing in chat** (Muse is not known to have tappable chips or
 quick replies; the owner's real-Muse test found none, unverified, to be confirmed in the Muse app, so the brief never relies on
 buttons and never asks Muse to click or submit anything on our page): one plain question at a time in their language, the 2 to 3
 examples as a numbered list ("1) … 2) … 3) …, or tell me in your own words") so the person can reply with a number or their own

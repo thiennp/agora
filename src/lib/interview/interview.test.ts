@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { advance, InterviewError, parseLanguages, validateDraft, type Answer, type InterviewModel } from ".";
+import { advance, InterviewError, STEP_ORDER, stepOf, parseLanguages, validateDraft, type Answer, type InterviewModel } from ".";
 import { cleanText, slugify } from "./text";
 
 const none: InterviewModel = {
@@ -24,6 +24,12 @@ const full: Answer[] = [
   { step: "name", text: "School Swap" },
   { step: "feel", choice: "playful" },
 ];
+
+describe("interview wording (every question is part of creating the app)", () => {
+  it("names the app in every question", () => {
+    for (const id of STEP_ORDER) expect(stepOf(id).ask, id).toMatch(/\bapp\b/i);
+  });
+});
 
 describe("interview question flow (BR-40)", () => {
   it("starts with one plain question and tap answers, no technical words", async () => {
