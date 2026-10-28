@@ -403,6 +403,7 @@ Not built yet: the expiry timer, and a relational Postgres repository (the in-me
 
 | Agent | Job | Model | Why |
 |---|---|---|---|
+| Interviewer | Offer example answers and draft the app (tagline, what to call a member, categories, forbidden things, wishes) during the create-an-app interview; code decides everything else | Muse Spark API | Plain-language drafting; see §11d |
 | Intake | Separate items in a photo, label category/size/condition | SAM 3.1 + Muse Spark (vision) | Segmentation + reading |
 | Forecaster | Outgrown / next-needed from stage table + sizes | Spark Open | Cheap, structured |
 | Matcher | Score offers vs wants | Deterministic function, Spark Open for tie-breaks | Predictable, cheap |
@@ -671,6 +672,19 @@ The first run is what found the leak: the labeling call flagged the person in 6 
 Limits that matter: the photos are generated, not taken; the judge is Muse Spark, the same family as the checker, so 0 of 87 means no obvious leak survived, not that none can; 24 photos is far below the 100 in INT-03; item matching is by keywords in the draft name; the person photos use adults only, so children's faces are untested; photos with the person only at the edge are few. Items still without an outline (10 of 75 pile drafts) are things SAM does not find under any word we tried ("baby quilt", "play gym").
 
 Known limits of the pipeline: crops are rectangles, not masks (masks are base85 rasters whose decoding is not documented on the pages read), so background stays in; SAM calls are not in the cost meter.
+
+## 11d. Create-an-app interview (BR-40)
+
+`/start` runs the interview behind the home page QR code (docs/PLAN.md §2c step 3). **Code decides, the model drafts.**
+
+- **Script in code** (`src/lib/interview/script.ts`): eleven steps (the place name only for a local group): purpose, people, things, place, place name, languages, handover, pricing, care points, name, feel. Wording, order and the 2–3 tap answers are fixed; the model may only offer example answers for people, things and name (static examples when it fails). Typed words for a step with fixed answers (purpose, place, handover, pricing, feel, languages) are read by code into the nearest value; a language code cannot be guessed, so unknown languages are asked again.
+- **Stateless**: `POST /api/interview` takes the answers so far; code checks each one against the expected step in order (bad, empty or out-of-order answers get a plain 400 `invalid_answer`), then returns the next question card or, after the last answer, the review. Nothing is stored before the yes. The phone keeps the answers in `sessionStorage` so a reload resumes.
+- **Draft**: the model returns a small sketch (`tagline`, `participantNoun`, `categories`, `forbidden`, `wishes`) validated by `sketchSchema`; `assemble` builds the whole config from the answers and the sketch. Pricing, handover, languages, region, theme and every topic rule (the six always-ask topics are written `ask` in code, never read from the model) come from code; the result then goes through `appConfigSchema` (`validateDraft`). If the model fails, answers badly, or its draft is rejected, a code-made draft from the answers is used (`source: "code"`), so mock mode and tests run fully offline and the person never sees a rejected draft.
+- **Untrusted text**: answers are cleaned (control characters removed, length capped), sent to the model as JSON data under a system rule to ignore instructions inside them, and rendered only as text.
+- **One yes**: the review lists name, purpose, people, things, place, languages, handover, pricing and care points in plain words, plus notes where the idea needs features that do not exist yet (BR-40; the closest version is built, per `docs/CREATE-AN-APP.md`), and the always-ask promise. `POST /api/interview/build` takes the draft, validates it again with the app schema (a hand-made body cannot relax a rule), stores it as a stored app (step 1; a taken or reserved id gets `-2`, `-3`, …, atomically) and makes the caller its creator with a session cookie and a one-time recovery code (step 2, BR-45).
+- Rate limits are tighter than other routes (60 interview calls and 10 builds per minute per address); each interview call costs at most one model call (the examples) and the review one (the draft). Cost goes through the Meta client's meter under role `interviewer`.
+
+Not built: voice answers ("something else" is typed), the real-model quality of the draft and examples (only tested with stubs, never run against Muse Spark), an edit screen (the person goes back one question), and a draft for the other primitives (circles, voting, scheduling: they are noted as wishes).
 
 ## 12. Deployment
 

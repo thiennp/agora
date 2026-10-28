@@ -268,3 +268,12 @@ img, svg { vertical-align: middle; }
 .qr-home .qr-frame { background: #fff; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); line-height: 0; }
 .qr-home .qr-frame svg { width: min(72vw, 320px); height: auto; display: block; }
 .qr-home .qr-url { word-break: break-all; }
+
+/* Create-an-app interview (/start): big tap answers, readable on a phone. */
+.options { display: grid; gap: 8px; margin: 12px 0; }
+.btn.option { justify-content: flex-start; text-align: left; min-height: 52px; height: auto; white-space: normal; }
+.steps { width: 100%; height: 6px; accent-color: var(--accent); }
+.summary { display: grid; gap: 10px; margin: 8px 0 12px; }
+.summary dd { margin: 0; overflow-wrap: anywhere; }
+.said { padding: 0 4px; }
+.recovery { font-size: 1.1rem; word-break: break-all; user-select: all; }

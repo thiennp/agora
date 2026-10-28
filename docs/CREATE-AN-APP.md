@@ -46,6 +46,16 @@ agreeing to anything, giving money terms, revealing who they are or where they l
 safety exception. Tell them this once, in one friendly sentence, as a promise ("your agent will always check with
 you before it agrees to anything"), not as a question.
 
+## The phone interview (the demo path)
+
+The QR code on the home page opens `/start`, where the platform runs this same interview itself as question cards with tap
+answers (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what people do
+together, who they are, what they share, where, languages, handover, giving or swapping, care points, name, feel. Code asks;
+the model only offers example answers and drafts the wording (tagline, what to call a member, categories, forbidden things);
+code sets every rule, validates the config against the schema, and shows the plain-words summary with one yes. On yes the app
+is stored as data and the person becomes its creator. If a person's idea is learning, helping or another thing the config
+cannot express yet, the summary says so and the closest version is built.
+
 ## What the platform can build today
 
 Today the app config can express the **exchange** use case fully (items, matching, negotiation, owner approval, geo,

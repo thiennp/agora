@@ -1,15 +1,16 @@
-import { Banner, Card } from "@/components/Card";
+import { Interview } from "@/components/Interview";
 
 export const metadata = { title: "Make an app · Agora" };
 
-/** Where the home page QR code lands. The interview itself (docs/PLAN.md §2c, step 3) is not built yet. */
+/** Where the home page QR code lands: the create-an-app interview (docs/PLAN.md §2c, step 3). */
 export default function Start() {
   return (
     <div className="stack-lg">
-      <Card title="Make an app for your community">
-        <p>Muse will ask you a few questions: what the app is called, what it is for, who joins and how things work. You only tap your answers.</p>
-        <Banner tone="info">The interview is not built yet, so nothing can be created from this page today.</Banner>
-      </Card>
+      <div>
+        <h1>Make an app for your community</h1>
+        <p className="muted">Muse asks a few questions, one at a time. You only tap your answers, or write your own. Nothing is built until you say yes.</p>
+      </div>
+      <Interview />
     </div>
   );
 }
