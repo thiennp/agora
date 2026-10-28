@@ -61,18 +61,23 @@ function readAnswers(answers: Answer[]): { parsed: Parsed[]; map: AnswerMap } {
 
 const valueLabel = (p: Parsed | undefined, fallback = "-") => (p ? p.label : fallback);
 
+/** Your own words first (verbatim), then the kinds of thing the app refuses; "nothing" only when there is neither. */
+const careLine = (c: AppConfig) => {
+  const parts = [...c.policies.ownerRules, ...c.policies.forbiddenItems.map((f) => f.label)];
+  return parts.length ? parts.join("; ") : "Nothing in particular";
+};
+
 /** The plain-words summary shown before the yes. Built from the checked config, not from the model's words. */
 export function summarize(a: AnswerMap, config: AppConfig): SummaryLine[] {
   const d = defaultsFor(a);
-  const pricing = { free_only: "free", swap_only: "swaps only", free_or_agreement: "free, or people agree something in return" } as const;
   return [
     { label: "Name", value: config.name },
     { label: "What it is for", value: valueLabel(a.purpose) },
     { label: "What people can do", value: valueLabel(a.actions) },
     { label: "How it works", value: valueLabel(a.how) },
-    { label: "Careful about", value: config.policies.forbiddenItems.length ? config.policies.forbiddenItems.map((f) => f.label).join(", ") : "Nothing in particular" },
+    { label: "Careful about", value: careLine(config) },
     // What was not asked, said honestly (docs/CREATE-AN-APP.md "What the platform sets for you").
-    { label: "Set for you", value: `Open to any Muse user, online. Muse handles languages. Money terms: ${pricing[d.pricing]}. ${(d.handoffModes as readonly string[]).includes("shipping") ? "Things can be met up for or posted." : "Meeting up in person."}` },
+    { label: "Set for you", value: `Open to any Muse user, online. Muse handles languages.${d.says ? ` ${d.says}` : ""}` },
   ];
 }
 

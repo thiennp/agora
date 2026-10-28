@@ -103,6 +103,8 @@ the person a draft link `/start?purpose=…&…` that opens the summary screen w
 on "Build it" is the only thing that stores an app. The human tap-card flow is unchanged. **Still unverified with a real Muse**:
 the brief is written for typing only (no buttons, no clicks by Muse; chips were looked for and not found, unverified, owner to confirm in the Muse app). Whether it follows the brief, interviews well and builds a correct link is a hands-on check for the owner (§2d, step 4).
 
+**Simulated-Muse test (Oct 28) and its fixes.** A subagent that saw only the live `/start/agent.md` played Muse and a made-up walking-group coordinator, produced a draft link, and the link was opened on the live site. The flow worked end to end; it exposed three bugs, now fixed and tested: the person's own care words were dropped (now kept verbatim as `policies.ownerRules`); the page called learn and organise "not available yet" while offering them (now a plain "what your app will do / does not do yet" note); "Set for you" listed money and meet-up defaults for every app (now only for swap or lend apps). The brief gained the rules the test found missing (see `docs/CREATE-AN-APP.md`) and question 1 and 3 were reworded. A real Muse has still not been tried.
+
 ### 2c-ter. The app is for all Muse users (owner's decision, Oct 28)
 
 An app is not for one closed group. It is for every Muse user; the only user of our site is the app's creator, and there is no

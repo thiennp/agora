@@ -45,6 +45,7 @@ export function describeApp(app: AppConfig): AppDescription {
       ];
   const rules = [
     ...(board ? [] : [PRICING[p.pricing.mode]]),
+    ...p.ownerRules,
     ...(p.forbiddenItems.length ? [`Not allowed: ${p.forbiddenItems.map((f) => f.label.toLowerCase()).join(", ")}.`] : []),
     `Your agent always asks you first before ${ALWAYS_ASK_TOPICS.map((t) => TOPIC[t]).join(", ")}.`,
     ...(app.region.name !== "Anywhere" ? [`Only your ${p.locationGranularity} is stored until both sides agree to share more.`] : []),

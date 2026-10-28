@@ -27,15 +27,15 @@ combine them for the person.
 
 Ask only what an app creator can answer and the platform needs. Every question says it is about their app. About six:
 
-1. **What the app is for:** "To set up your app: what is it for, and what problem does it solve for the people who use it?"
+1. **What the app is for:** "What would you like your app to help people do together?" (one clear question)
    Examples across different kinds of apps: swap or lend things, learn a skill, organise a run or a volunteer shift.
    (Code reads the kind of app from the answer; it decides the defaults below.)
 2. **What a person can do in it:** "What can a person do in your app? Name the main things, in your own words."
    (becomes the catalog categories, the main things people find or offer)
-3. **How it works:** "How does your app work, step by step? One or two sentences is enough." (shown in the summary and given
+3. **How it works:** "Walk me through one example in your app, from start to finish." (an example, so it does not repeat question 2; shown in the summary and given
    to the model to draft the wording)
 4. **What it should never do or share:** "Is there anything your app should never do or share?" Example: nothing dangerous or
-   illegal. (becomes forbidden items: a label, keywords and a plain reason; keep advisory, never health, medical or legal advice)
+   illegal. A tap answer becomes a forbidden-items entry (a label, keywords and a plain reason). **The person's own words are kept verbatim**: shown back as "Careful about" and carried into the config as `policies.ownerRules`, a rule the agents keep to and ask the owner about when in doubt; it can only tighten, never relax an always-ask topic. Keep it advisory, never health, medical or legal advice.
 5. **The name:** "What should your app be called?"
 6. **How it should feel:** "How should your app feel: friendly, serious, playful?" (theme)
 
@@ -44,8 +44,7 @@ the app is open to any Muse user, Muse handles languages, and the rest follows f
 
 **What the platform sets for you** (code, shown in the summary as "Set for you", never asked): open to any Muse user and online
 (region "Anywhere", city-level location at most); languages handled by Muse (the config keeps `en` as its platform default); money
-terms and handover from the kind of app: a swap or lend app allows "free, or people agree something in return" and meeting up or
-post, any other app is free with meeting up in person. The platform never holds money in any case.
+terms and handover only for a swap or lend app ("free, or people agree something in return"; meeting up or post). For learning and organising apps nothing about money or handover is listed (the config is free with pick-up only, silently). The summary lists only defaults that apply. The platform never holds money in any case.
 
 What the person does **not** get to decide, and you should never ask about: the agent always asks its owner before
 agreeing to anything, giving money terms, revealing who they are or where they live, choosing shipping, or making a
@@ -59,8 +58,10 @@ answers (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list
 what a person can do in it, how it works, what it should never do or share, name, feel (six questions). Code asks;
 the model only offers example answers and drafts the wording (tagline, what to call a user, categories, forbidden things);
 code sets every rule, validates the config against the schema, and shows the plain-words summary with one yes. On yes the app
-is stored as data and the person becomes its creator. If a person's idea is learning, organising events or another thing the config
-cannot express yet, the summary says so and the closest version is built.
+is stored as data and the person becomes its creator. For learning and organising apps the platform builds the closest fit and says so
+without calling the choice unsupported: people post what they offer or look for (a place on a walk, a lesson, a helping hand), agents
+match them and agree details with each person deciding; dates and times, sign-ups for an event and group reminders are not there yet
+(`CLOSEST_FIT` in `src/lib/interview/draft.ts`).
 
 ## If you are an assistant that opened `/start` (the QR path)
 
@@ -69,13 +70,13 @@ script. The page therefore carries a brief in its HTML, and the same text is pla
 for `Accept: text/markdown` or `text/plain`, or `/start?format=md`). It is generated from the interview script
 (`src/lib/interview/brief.ts`), so the questions, tap answers and order are the ones in this document and cannot drift.
 
-In short: you are Muse; **open with one sentence that says what is happening** ("I'm going to ask you a few quick questions to create your own app, for example an app to swap things, learn a skill or organise a run; it takes about two minutes, and nothing is built until you say yes."), **phrase every question as part of creating their app** ("To set up your app: what is it for, and what problem does it solve for the people who use it?", "What can a person do in your app?"), starting a new topic with "Next, for your app: …" and say again in a few words what a new topic is for; interview the person yourself **by typing in chat** (Muse is not known to have tappable chips or
+In short: you are Muse; **open with one sentence that says what is happening** ("I'm going to ask you a few quick questions to create your own app, for example an app to swap things, learn a skill or organise a run; it takes about two minutes, and nothing is built until you say yes."), **phrase every question as part of creating their app** ("What would you like your app to help people do together?", "What can a person do in your app?"), starting a new topic with "Next, for your app: …" and say again in a few words what a new topic is for; interview the person yourself **by typing in chat** (Muse is not known to have tappable chips or
 quick replies; the owner's real-Muse test found none, unverified, to be confirmed in the Muse app, so the brief never relies on
 buttons and never asks Muse to click or submit anything on our page): one plain question at a time in their language, the 2 to 3
 examples as a numbered list ("1) … 2) … 3) …, or tell me in your own words") so the person can reply with a number or their own
-words, about 6 questions, no technical words; write the summary paragraph and ask the person to type "yes"; only then give them
+words, about 6 questions, no technical words; write the summary paragraph and ask the person to agree ("yes", "yeah", "ok", "looks good"; anything else is a correction); only then give them
 **a draft link**, `/start?draft=exchange~Offer%20clothes~People%20post%2C%20others%20ask~none~My%20App~friendly` (answers in interview order
-joined by `~`, URL-encoded; one value per step as `?purpose=…&actions=…`, or `?draft=<JSON object>`, also work). If Muse damages
+joined by `~`, each answer URL-encoded: space `%20`, comma `%2C`, apostrophe `%27`, ampersand `%26`, question mark `%3F`, hash `%23`, a typed tilde becomes a space, other characters percent-encoded as UTF-8; one value per step as `?purpose=…&actions=…`, or `?draft=<JSON object>`, also work). If Muse damages
 the link, the page keeps the answers before the damage and asks the rest itself, including the app name. The link opens
 the summary "Here is your app: … Build it?" with the answers filled in; **the person's own tap on "Build it" is what stores the app
 and makes them its creator in their browser.** The link holds answers only (max 2000 characters), read by the same code as a tap
@@ -84,6 +85,8 @@ instruction, and unusable parts are dropped with a plain sentence while the page
 make web requests may `POST /api/interview` to check its answers (stateless, stores nothing); it must not call `/api/interview/build`,
 which is the page's own call after the tap. The server cannot tell a person's browser from a script on that route; the guarantee
 today is the documented path, not enforcement (a signed confirmation is a possible hardening). Not yet tried with a real Muse.
+
+Rules the brief adds after a simulated-Muse test (a subagent that saw only the live brief interviewed a made-up walking-group coordinator and opened the link): in question 1, 1=`exchange`, 2=`learn`, 3=`organise`, but the link holds the short code or the person's words, never the number; a correction replaces the earlier answer without re-asking the others; a vague answer means the default is chosen and said; give the safety promise once, after question 3; shorten an over-long answer yourself; tell the person a page with a **Build it** button opens; a short non-technical answer to "what will the app do for me?"; web requests are optional and the link is the only way to finish. The decoder also reads a double-encoded answer (`%2527`) and ignores a damaged escape (`encodeAnswer` and `buildDraftLink` in `draft-link.ts` are the reference encoder).
 
 ## What the platform can build today
 
