@@ -1,4 +1,4 @@
-import { EXAMPLES, STEP_ORDER, stepOf, type StepId } from "./script";
+import { EXAMPLES, INTERVIEW_PURPOSE, STEP_ORDER, stepOf, type StepId } from "./script";
 
 /**
  * The brief for an AI assistant that opens `/start` (docs/CREATE-AN-APP.md "If you are an assistant"). The questions, the tap answers
@@ -25,9 +25,10 @@ A person scanned a QR code because they want to create an app for their communit
 
 ## What to do
 
-1. Tell the person in one sentence what you will do. Interview them **in their language, one plain question at a time**, in ordinary chat text. Give 2 to 3 example answers as a short numbered list, like "1) Clothes and shoes  2) Books and games  3) Tools, or tell me in your own words", and say they can just reply with a number or type their own answer. Do not rely on buttons or chips. Use no technical words. Usually 5 to 8 questions are enough; use the list below as your guide (skip or merge what they already told you, decide the rest yourself if they say "you decide").
-2. Write the app back in one short paragraph (name, who it is for, what people share, how it works) and ask them to **type "yes"** if it is right. **Do not go on until they type yes.** Fix anything they correct.
-3. Only then give them the link below: "Open this link and tap **Build it**." Do not say the app exists yet.
+1. **Open with one clear sentence** that says what is happening, in the person's language. Say it in these words or very close: "${INTERVIEW_PURPOSE}"
+2. Interview them **one plain question at a time**, in ordinary chat text. **Phrase every question as part of creating their app**, using the wording below, so each question makes sense alone. At a new topic, restate in a few words what it is for ("Next, for your app: …"). Give 2 to 3 example answers as a short numbered list, like "1) Clothes and shoes  2) Books and games  3) Tools, or tell me in your own words", and say they can just reply with a number or type their own answer. Do not rely on buttons or chips. No technical words. Usually 5 to 8 questions suffice; use the list below as a guide (skip or merge what they told you, decide the rest if they say "you decide").
+3. Write the app back in one short paragraph (name, who it is for, what people share, how it works) and ask them to **type "yes"** if it is right. **Do not go on until they type yes.** Fix anything they correct.
+4. Only then give them the link below: "Open this link and tap **Build it**." Do not say the app exists yet.
 
 ## Questions (the word in backticks is its name in the link)
 

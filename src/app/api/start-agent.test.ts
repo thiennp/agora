@@ -5,7 +5,7 @@ import { resetRateLimit } from "@/app/_composition/api";
 import { useAppStore } from "@/app/_composition/apps";
 import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
 import { createAppStore, createMemoryBackend, repoAppIds } from "@/lib/app-config";
-import { answersFromQuery } from "@/lib/interview";
+import { answersFromQuery, INTERVIEW_PURPOSE } from "@/lib/interview";
 import { GET as agentMd } from "../start/agent.md/route";
 import Start from "../start/page";
 import { POST as interview } from "./interview/route";
@@ -42,6 +42,16 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(html).toContain("/start/agent.md");
     expect(html).toContain("Build it");
     expect(html).toContain("<noscript>");
+  });
+
+  it("tells the person plainly that this is about creating their app (human page and brief)", async () => {
+    const html = renderToStaticMarkup(await Start({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("create your app");
+    expect(html).toContain("a few quick questions to create your own app");
+    const t = await agentMd().text();
+    expect(t).toContain(INTERVIEW_PURPOSE);
+    expect(t).toContain("Phrase every question as part of creating their app");
+    expect(t).toContain("numbered list");
   });
 
   it("says plainly when the link could not be used", async () => {
