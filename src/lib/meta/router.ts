@@ -7,6 +7,7 @@ export interface Route {
 
 /** Default table; reasoning-heavy roles use the API model, cheap structured roles use the open model. */
 export const DEFAULT_ROUTES: Record<Role, ModelId> = {
+  interviewer: "muse-spark",
   intake: "muse-spark",
   forecaster: "muse-spark-open",
   matcher: "muse-spark-open",

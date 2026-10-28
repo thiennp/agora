@@ -1,5 +1,5 @@
 /** Agent roles that call a model (docs/ARCHITECTURE.md section 6). */
-export const ROLES = ["intake", "forecaster", "matcher", "negotiator", "translator", "lessons", "logistics", "trust"] as const;
+export const ROLES = ["interviewer", "intake", "forecaster", "matcher", "negotiator", "translator", "lessons", "logistics", "trust"] as const;
 export type Role = (typeof ROLES)[number];
 
 /** Meta models only (LIB-META-01). */
