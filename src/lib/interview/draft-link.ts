@@ -19,6 +19,29 @@ export interface DraftLink {
   problem?: string;
 }
 
+/**
+ * One answer as it goes into a link: a typed `~` becomes a space (it separates answers), then everything but letters, digits and
+ * `-_.!*()` is percent-encoded as UTF-8: space `%20`, comma `%2C`, apostrophe `%27`, ampersand `%26`, question mark `%3F`, hash `%23`.
+ */
+export const encodeAnswer = (text: string): string =>
+  encodeURIComponent(text.replace(/~/g, " ").replace(/\s+/g, " ").trim()).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+
+/** The whole link for answers in interview order. */
+export const buildDraftLink = (baseUrl: string, answers: string[]): string => `${baseUrl}/start?draft=${answers.map(encodeAnswer).join("~")}`;
+
+/**
+ * The page's query reader has already decoded the link once. An assistant that encodes twice leaves `%20`, `%27` … in the words:
+ * decode those once more when the whole value is valid UTF-8 percent-encoding, otherwise leave the words as they are.
+ */
+const tidy = (v: string): string => {
+  if (!/%[0-9a-f]{2}/i.test(v)) return v;
+  try {
+    return decodeURIComponent(v);
+  } catch {
+    return v;
+  }
+};
+
 type Query = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
@@ -30,7 +53,7 @@ function collect(query: Query): { values: Partial<Record<StepId, string>>; posit
   if (raw !== undefined) {
     if (raw.length > MAX_DRAFT_CHARS) return { values, problem: "That link holds too much text to use." };
     if (!raw.trimStart().startsWith("{")) {
-      const positional = raw.split("~").map((x) => x.trim());
+      const positional = raw.split("~").map((x) => tidy(x).trim());
       // Links of the older, longer interview have more parts than there are questions now: they cannot be read in the new order.
       return positional.length > STEP_ORDER.length ? { values, problem: OLD_LINK } : { values, positional };
     }
@@ -43,7 +66,7 @@ function collect(query: Query): { values: Partial<Record<StepId, string>>; posit
     if (!obj || typeof obj !== "object" || Array.isArray(obj)) return { values, problem: "I could not read the answers in that link." };
     for (const [k, v] of Object.entries(obj)) {
       if (isRemovedStep(k)) old = true;
-      else if (isStepId(k) && typeof v === "string") values[k] = v;
+      else if (isStepId(k) && typeof v === "string") values[k] = tidy(v);
     }
   }
   let total = 0;
@@ -53,7 +76,7 @@ function collect(query: Query): { values: Partial<Record<StepId, string>>; posit
     if (v === undefined) continue;
     total += v.length;
     if (total > MAX_DRAFT_CHARS) return { values, problem: "That link holds too much text to use." };
-    values[id] = v;
+    values[id] = tidy(v);
   }
   return old ? { values, old } : { values };
 }

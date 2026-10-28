@@ -27,15 +27,27 @@ const FEELS: Record<string, { accent: string; radius: "sharp" | "soft" | "round"
 };
 
 /**
- * What the interview does not ask (an app is open to any Muse user): set from the kind of app the person described, and shown in the
- * summary as "Set for you". Swapping apps may ask for something in return and hand things over; the others are free and have no handover.
+ * What the interview does not ask (an app is open to any Muse user): set from the kind of app the person described. Only a swapping
+ * app has money terms and a handover; the others are free with pick-up only, and the summary says nothing about either
+ * (`says` is what "Set for you" lists, so it only names defaults that apply).
  */
 const DEFAULTS = {
-  exchange: { pricing: "free_or_agreement", handoffModes: ["pickup", "shipping"] },
-  other: { pricing: "free_only", handoffModes: ["pickup"] },
+  exchange: { pricing: "free_or_agreement", handoffModes: ["pickup", "shipping"], says: "Money terms: free, or people agree something in return. Things can be met up for or posted." },
+  other: { pricing: "free_only", handoffModes: ["pickup"], says: "" },
 } as const;
-export const defaultsFor = (a: AnswerMap) => (a.purpose?.value === "learn" || a.purpose?.value === "organise" ? DEFAULTS.other : DEFAULTS.exchange);
-const NOT_YET = "Learning together, running events and organising shifts are designed but not available yet. Your app does swapping, lending and giving today; your wish is noted for the team.";
+export const defaultsFor = (a: AnswerMap) => (a.purpose?.value === "exchange" ? DEFAULTS.exchange : DEFAULTS.other);
+
+/**
+ * What an app for learning or organising does today, said plainly instead of "not available" (the platform has one engine: people post
+ * what they offer or look for, agents match and agree details, every owner decides). Shown as a note on the summary.
+ */
+export const CLOSEST_FIT = "What your app will do: people post what they offer or look for (for example a place on a walk, a lesson or a helping hand), and their agents match them and agree the details, with every person deciding. What it does not do yet: set dates and times, sign people up for an event, or send reminders to a group. Your wish for those is noted for the team.";
+
+/** The person's own care words, when they wrote their own: `none` and `safe` are the tap answers, anything else is theirs, kept verbatim. */
+export const ownRule = (a: AnswerMap): string | undefined => {
+  const v = a.care?.value;
+  return v && v !== "none" && v !== "safe" ? cleanText(a.care?.label, 300) : undefined;
+};
 
 /** Plain-words sketch made by code alone: used when the model is unavailable or its draft is rejected. Valid by construction. */
 export function fallbackSketch(a: AnswerMap): Sketch {
@@ -80,7 +92,8 @@ export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
   const feel = FEELS[a.feel?.value ?? "friendly"] ?? FEELS.friendly!;
   const notes = [...sketch.wishes.map((w) => cleanText(w, 160))];
   const purpose = a.purpose?.value;
-  if (purpose === "learn" || purpose === "organise") notes.push(NOT_YET);
+  if (purpose === "learn" || purpose === "organise") notes.push(CLOSEST_FIT);
+  const mine = ownRule(a);
   const raw = {
     id: idBase.length >= 3 ? idBase : `${idBase}-app`,
     name,
@@ -96,6 +109,7 @@ export function assemble(a: AnswerMap, sketch: Sketch): Assembled {
     },
     policies: {
       pricing: { mode: defaults.pricing },
+      ownerRules: mine && mine.length >= 2 ? [mine] : [],
       forbiddenItems: forbidden.map((f, i) => ({ id: forbiddenIds[i]!, label: f.label, keywords: f.keywords, reason: f.reason })),
       maxNegotiationRounds: 3,
       handoffModes: [...defaults.handoffModes],

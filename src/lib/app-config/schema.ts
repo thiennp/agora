@@ -90,6 +90,11 @@ export const appConfigSchema = z
       pricing: z.object({ mode: z.enum(["free_only", "swap_only", "free_or_agreement"]).default("free_or_agreement") }).default({}),
       /** Items that may never be listed or accepted in this app. */
       forbiddenItems: z.array(forbiddenItem).default([]),
+      /**
+       * The creator's own words about what the app must never do or share ("No sharing of phone numbers"). Agents keep to them and ask
+       * the owner first when in doubt. They can only tighten behaviour: they never relax an always-ask topic (those are checked below).
+       */
+      ownerRules: z.array(z.string().min(2).max(300)).max(5).default([]),
       maxNegotiationRounds: z.number().int().min(1).max(10),
       handoffModes: z.array(z.enum(["pickup", "locker", "parcel_shop", "shipping"])).min(1),
       /** Gatekeeper outcome per topic. Always-ask topics must be "ask". */

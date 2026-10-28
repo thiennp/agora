@@ -149,7 +149,7 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
               </div>
             ))}
           </dl>
-          {turn.notes.map((n) => <Banner key={n} tone="warn">{n}</Banner>)}
+          {turn.notes.map((n) => <Banner key={n} tone="info">{n}</Banner>)}
           <Banner tone="info">{turn.promise}</Banner>
           {error ? <div className="error-text" role="alert">{error}</div> : null}
           <div className="row">
