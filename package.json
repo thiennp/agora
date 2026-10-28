@@ -11,23 +11,29 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test --config e2e/playwright.config.ts",
-    "evals": "tsx evals/run-evals.ts",
-    "simulate": "tsx evals/run-simulation.ts"
+    "evals": "vitest run evals",
+    "db:check": "sh db/check-apply.sh",
+    "simulate": "tsx evals/run-simulation.ts",
+    "bench:matching": "tsx evals/bench-matching.ts",
+    "mcp:docs": "tsx tools/docs-mcp.ts",
+    "capacity": "tsx evals/capacity-model.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@tailwindcss/postcss": "^4.3.3",
     "next": "^15.0.0",
+    "pg": "^8.23.1",
     "postcss": "^8.5.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",

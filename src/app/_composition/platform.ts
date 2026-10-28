@@ -1,9 +1,10 @@
 import { loadApp, type AppConfig } from "@/lib/app-config";
 import { loadEnv } from "@/lib/env";
-import { CostMeter, createMetaClient, createMockAdapter, createRouter } from "@/lib/meta";
+import { CostMeter, createMetaApiAdapter, createMetaClient, createMockAdapter, createRouter, createSamClient } from "@/lib/meta";
 import { createDealEventBus, type DealEventBus } from "@/hubs/DealEvents/command";
 import { createCatalogService } from "@/features/catalog/public-api/infrastructure";
 import { createGatekeeper } from "@/features/gatekeeper/public-api/infrastructure";
+import { createIntake, createMetaPorts, createSimulatedPorts } from "@/features/intake/public-api/infrastructure";
 import { createLanguageService } from "@/features/language/public-api/infrastructure";
 import { createLearning } from "@/features/learning/public-api/infrastructure";
 import { createLogistics, createSimulatedCarrier } from "@/features/logistics/public-api/infrastructure";
@@ -12,6 +13,8 @@ import { createLocalProvider } from "@/features/memory/public-api/infrastructure
 import { createNegotiationService, createRelay } from "@/features/negotiation/public-api/infrastructure";
 import { createMandateBook, createMandateStore, createOwnerCards, eligibleStandingTopics } from "@/features/owner-cards/public-api/infrastructure";
 import { createTrust } from "@/features/trust/public-api/infrastructure";
+import { createStateScope, enterScope, tracked } from "@/lib/state";
+import { backendFromEnv, type StateBackend } from "./persistence";
 
 /**
  * Composition root of the demo: the one place that wires the slices together and seeds a scenario. It lives in the entry layer so
@@ -53,7 +56,7 @@ function personas(): Record<PersonaKey, Persona> {
   };
 }
 
-async function build() {
+async function build(opts: { fresh?: boolean } = {}) {
   const env = loadEnv();
   if (env.MODE === "live") throw new Error("the demo console is not available in live mode: there are no accounts yet");
   const app: AppConfig = await loadApp(env.APP);
@@ -62,8 +65,12 @@ async function build() {
   const byId = new Map(Object.values(who).map((p) => [p.id, p]));
   const lang = (f: string) => byId.get(f)?.language ?? "en";
 
-  const feed: FeedItem[] = [];
-  const audit: Audit = { gatekeeper: {}, screening: {}, relay: {}, cards: {} };
+  // Everything the stores create from here until the seeding step is tracked, so it can be saved and restored (src/lib/state.ts).
+  const scope = createStateScope();
+  const leave = enterScope(scope);
+  const feed = tracked("platform.feed", [] as FeedItem[]);
+  const audit = tracked("platform.audit", { gatekeeper: {}, screening: {}, relay: {}, cards: {} } as Audit);
+  const meta = tracked("platform.meta", {} as { dealId?: string; createdAt?: string });
   const bump = (m: Record<string, number>, k: string) => void (m[k] = (m[k] ?? 0) + 1);
   const say = (text: string) => void feed.unshift({ at: new Date().toISOString(), text });
   const nameOf = (f: string) => byId.get(f)?.name ?? "someone";
@@ -121,6 +128,37 @@ async function build() {
     constraintsOf: (f) => ({ districtCode: byId.get(f)!.districtCode, availability: byId.get(f)!.availability }),
   });
   const matcher = createMatchService({ app, limitsOf: (f) => book.limitsOf(f) });
+  // Photo intake: simulated and offline unless AGORA_INTAKE=meta, which uses Muse Spark vision and SAM 3.1 with META_API_KEY. Only this
+  // step calls the real Meta API in the demo; everything else keeps the mock client above. Crops are not part of the saved state.
+  const intake = createIntake({
+    catalog: app.catalog,
+    ports:
+      env.AGORA_INTAKE === "meta"
+        ? createMetaPorts({
+            catalog: app.catalog,
+            sam: createSamClient({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }),
+            client: createMetaClient({
+              app,
+              adapters: { "meta-api": createMetaApiAdapter({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }) },
+              router: createRouter({ providers: { "muse-spark": "meta-api", "muse-spark-open": "meta-api" } }),
+              meter: new CostMeter({ perParticipantUsd: 1, globalUsd: 50 }),
+            }),
+          })
+        : createSimulatedPorts(app.catalog),
+  });
+  leave();
+
+  const backend: StateBackend | null = backendFromEnv(env);
+  const saved = opts.fresh ? null : await backend?.load();
+  let dealId: string;
+  if (saved) {
+    scope.restore(saved);
+    dealId = meta.dealId!;
+    // The scenario's windows are "tomorrow" on the day it was first built; a demo restored a day later gets fresh windows.
+    if (Date.now() - Date.parse(meta.createdAt ?? "") > 12 * 3_600_000) {
+      for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: ["free"] });
+    }
+  } else {
 
   // The scenario: Mia offers a winter jacket, Jonas needs one. The match, the offer and the agents' first moves are all real.
   const mia = who.a;
@@ -136,10 +174,28 @@ async function build() {
   const deal = await negotiation.start({ offerItemId: offer.id, wantItemId: want.id, offerFamilyId: mia.id, wantFamilyId: jonas.id });
   await negotiation.run(deal.id);
   await cards.settled();
+  dealId = deal.id;
+  meta.dealId = deal.id;
+  meta.createdAt = new Date().toISOString();
+  }
+
+  // Saves are queued so two requests never write at once; a failed save is logged by name and does not fail the request.
+  let tail: Promise<void> = Promise.resolve();
+  const persist = (): Promise<void> => {
+    if (!backend) return Promise.resolve();
+    tail = tail.then(() => backend.save(scope.snapshot())).catch((e) => void console.error("state save failed", e instanceof Error ? e.name : typeof e));
+    return tail;
+  };
+  await persist();
 
   return {
-    app, personas: who, byId, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, dealId: deal.id,
-    createdAt: new Date().toISOString(),
+    app, personas: who, byId, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake, dealId,
+    createdAt: meta.createdAt!, persistence: (backend?.kind ?? "memory") as "memory" | "file" | "postgres", persist, restored: Boolean(saved),
+    async wipe() {
+      await tail;
+      await backend?.clear();
+      await backend?.close();
+    },
   };
 }
 
@@ -155,8 +211,13 @@ export function getPlatform(): Promise<Platform> {
   }));
 }
 
-/** Start the scenario again from the beginning (everything in memory is replaced). */
-export function resetPlatform(): Promise<Platform> {
-  g.__agoraPlatform = undefined;
-  return getPlatform();
+/** Start the scenario again from the beginning (saved state is deleted and everything is replaced). */
+export async function resetPlatform(): Promise<Platform> {
+  const old = g.__agoraPlatform;
+  if (old) await old.then((p) => p.wipe()).catch(() => undefined);
+  g.__agoraPlatform = build({ fresh: true }).catch((e) => {
+    g.__agoraPlatform = undefined;
+    throw e;
+  });
+  return g.__agoraPlatform;
 }

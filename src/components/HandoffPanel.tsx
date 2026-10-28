@@ -18,14 +18,18 @@ type Card =
       place?: string;
       dropPoint?: { id: string; name: string };
       outcome?: { ok: boolean; reason?: string };
+      addressGiven?: boolean;
+      shipment?: { status?: string; appointment?: { where: string; window: { from: string; to: string } }; trackingRef?: string; feeSplit?: { senderPct: number; recipientPct: number; note?: string }; labelText?: string };
     };
 
 const MODE: Record<string, string> = { pickup: "Meet in person", locker: "Parcel locker", parcel_shop: "Parcel shop", shipping: "Shipping" };
 const fmt = (w?: { from: string; to: string }) => (w ? `${new Date(w.from).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} to ${new Date(w.to).toLocaleTimeString([], { timeStyle: "short" })}` : null);
 
 /** How the item changes hands. Empty until both owners confirm; the exact meeting place appears only after both agree. */
-export function HandoffPanel({ dealId, as, card, role, dropPoints }: { dealId: string; as: "a" | "b"; card: Card; role: string; dropPoints: { id: string; name: string }[] }) {
+export function HandoffPanel({ dealId, as, card, role, dropPoints, modes }: { dealId: string; as: "a" | "b"; card: Card; role: string; dropPoints: { id: string; name: string }[]; modes: string[] }) {
   const [place, setPlace] = useState("");
+  const [address, setAddress] = useState("");
+  const [other, setOther] = useState("");
   const [why, setWhy] = useState("no_show");
   const url = `/api/deals/${dealId}/handoff`;
   if (card.empty) return <p className="muted">The handover plan opens when both families have confirmed the deal.</p>;
@@ -61,7 +65,49 @@ export function HandoffPanel({ dealId, as, card, role, dropPoints }: { dealId: s
               {dropPoints.map((d) => <ActionButton key={d.id} url={url} body={{ as, action: "drop", value: d.id }}>{`Use ${d.name}`}</ActionButton>)}
             </div>
           ) : null}
+          {modes.length > 1 ? (
+            <div className="row">
+              <select aria-label="Another way to hand over" value={other} onChange={(e) => setOther(e.target.value)} style={{ maxWidth: 240 }}>
+                <option value="">Another way to hand over…</option>
+                {modes.filter((m) => m !== card.mode).map((m) => <option key={m} value={m}>{MODE[m] ?? m}</option>)}
+              </select>
+              {other ? <ActionButton url={url} body={{ as, action: "propose", mode: other }} done={() => setOther("")}>Suggest this instead</ActionButton> : null}
+            </div>
+          ) : null}
           {!card.approvedByYou ? <ActionButton url={url} body={{ as, action: "approve" }} variant="primary">Agree to this way of handing over</ActionButton> : null}
+        </div>
+      ) : null}
+      {card.state === "approved" && card.mode === "shipping" ? (
+        <div className="stack">
+          <h3>Shipping</h3>
+          <p className="muted small">Simulated carrier: labels are watermarked and cost nothing. The platform never handles money; the split below is only what you two agreed.</p>
+          {role === "receiving" && !card.addressGiven ? (
+            <div className="stack">
+              <label htmlFor="addr">Your delivery address (only the sender&apos;s label shows it)</label>
+              <input id="addr" type="text" value={address} onChange={(e) => setAddress(e.target.value)} />
+              <ActionButton url={url} body={{ as, action: "address", value: address }} done={() => setAddress("")}>Save my address</ActionButton>
+            </div>
+          ) : null}
+          {card.addressGiven ? <p className="small">{role === "receiving" ? "Your address is saved and encrypted." : "The recipient gave an address."}</p> : null}
+          {card.shipment?.feeSplit ? (
+            <p className="small">Postage split: sender {card.shipment.feeSplit.senderPct}%, recipient {card.shipment.feeSplit.recipientPct}%.</p>
+          ) : (
+            <div className="row">
+              <span className="small">Who pays postage?</span>
+              <ActionButton url={url} body={{ as, action: "fee", senderPct: 100 }}>Sender</ActionButton>
+              <ActionButton url={url} body={{ as, action: "fee", senderPct: 50 }}>Half and half</ActionButton>
+              <ActionButton url={url} body={{ as, action: "fee", senderPct: 0 }}>Recipient</ActionButton>
+            </div>
+          )}
+          {role === "giving" && !card.shipment?.labelText ? <ActionButton url={url} body={{ as, action: "label" }} variant="primary">Make the label and book the drop-off</ActionButton> : null}
+          {card.shipment?.appointment ? <p className="small"><strong>Drop-off:</strong> {card.shipment.appointment.where}, {fmt(card.shipment.appointment.window)}</p> : null}
+          {card.shipment?.labelText ? <pre className="small" style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{card.shipment.labelText}</pre> : null}
+          {card.shipment?.trackingRef ? (
+            <div className="row">
+              <Badge tone="info">{(card.shipment.status ?? "").replace(/_/g, " ")}</Badge>
+              <ActionButton url={url} body={{ as, action: "track" }}>Check the carrier</ActionButton>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {card.state === "approved" ? (

@@ -39,11 +39,11 @@ export async function ownerView(p: Platform, key: PersonaKey) {
 
 export async function dealList(p: Platform, key: PersonaKey) {
   const me = personaOf(p, key);
-  const deals = [await p.negotiation.get(p.dealId)].filter((d) => d !== null && (d.offerFamilyId === me.id || d.wantFamilyId === me.id));
+  const deals = await p.negotiation.listForFamily(me.id);
   return Promise.all(
     deals.map(async (d) => ({
-      id: d!.id, state: d!.state, role: d!.offerFamilyId === me.id ? "giving" : "receiving", item: await itemText(p, d!.offerItemId),
-      summary: await p.negotiation.summary(d!.id), updatedAt: d!.updatedAt,
+      id: d.id, state: d.state, role: d.offerFamilyId === me.id ? "giving" : "receiving", item: await itemText(p, d.offerItemId),
+      summary: await p.negotiation.summary(d.id), updatedAt: d.updatedAt,
     })),
   );
 }
@@ -65,10 +65,47 @@ export async function dealView(p: Platform, dealId: string, key: PersonaKey) {
     history: d.history
       .filter((h, i, all) => i === 0 || all[i - 1]!.to !== h.to)
       .map((h) => ({ to: h.to, text: TRANSITION[h.to] ?? h.to, at: h.at })),
-    offers, conversation, handoff: await p.logistics.handoffCard(dealId, me.id), dropPoints: simulatedDropPoints(p.personas.a.districtCode).map(({ id, name }) => ({ id, name })), signals,
+    offers, conversation, handoff: await p.logistics.handoffCard(dealId, me.id), modes: p.app.policies.handoffModes, dropPoints: simulatedDropPoints(p.personas.a.districtCode).map(({ id, name }) => ({ id, name })), signals,
   };
 }
 
 export type OwnerView = Awaited<ReturnType<typeof ownerView>>;
 export type DealView = NonNullable<Awaited<ReturnType<typeof dealView>>>;
 export type DealListItem = Awaited<ReturnType<typeof dealList>>[number];
+
+/** An item as the matcher indexes it. */
+export function indexedItem(p: Platform, i: { id: string; familyId: string; kind: "offer" | "want"; category: string; size?: string; condition?: string; createdAt: string }) {
+  return { id: i.id, appId: p.app.id, createdAt: i.createdAt, familyId: i.familyId, kind: i.kind, category: i.category, size: i.size, condition: i.condition, districtCode: p.byId.get(i.familyId)!.districtCode };
+}
+
+const itemLabel = (p: Platform, i: { category: string; size?: string; description: string }) =>
+  [i.description || (p.app.catalog.categories.find((c) => c.id === i.category)?.label ?? i.category), i.size ? `size ${i.size}` : null].filter(Boolean).join(" · ");
+
+/** The owner's items, and for each listed want the offers the matcher finds (never anything but listed items of others). */
+export async function itemsView(p: Platform, key: PersonaKey) {
+  const me = personaOf(p, key);
+  const mine = (await p.catalog.items.listForFamily(me.id)).filter((i) => i.status !== "withdrawn" && i.status !== "done");
+  const items = await Promise.all(
+    mine.map(async (i) => {
+      let matches: { offerItemId: string; text: string; reason: string }[] = [];
+      let emptyReason: string | undefined;
+      if (i.kind === "want" && i.status === "listed") {
+        const r = p.matcher.candidatesFor(indexedItem(p, i));
+        emptyReason = r.emptyReason;
+        matches = await Promise.all(
+          r.matches.map(async (m) => {
+            const o = await p.catalog.items.get(m.offerItemId);
+            return { offerItemId: m.offerItemId, text: o ? itemLabel(p, o) : "an item", reason: m.reason };
+          }),
+        );
+      }
+      return { id: i.id, kind: i.kind, text: itemLabel(p, i), category: i.category, condition: i.condition ?? null, status: i.status, flags: i.safetyFlags.map((f) => f.advice), matches, emptyReason, crop: p.intake.crops.forItem(i.id) ?? null };
+    }),
+  );
+  const cfg = p.app.catalog;
+  return {
+    persona: me,
+    items,
+    options: { categories: cfg.categories.map((c) => ({ id: c.id, label: c.label })), sizes: cfg.sizeSystems, conditions: cfg.conditions },
+  };
+}

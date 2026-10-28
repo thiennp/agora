@@ -20,6 +20,8 @@ Intake pipeline; owner.
 | INT-CRP-03 | Let the owner view and replace a crop. | Should | Replacement updates the listing. |
 | INT-CRP-04 | Run a face and address check on every crop. | Must | A crop failing the check is rejected and the owner is told why. |
 
+Status (Oct 28): INT-CRP-02 built and tested (`withOriginal` zeroes the bytes; the pipeline also zeroes its shrunk copy). INT-CRP-01 and INT-CRP-04 partly: crops are boxes with the background left in, and the person and address check is the vision model's flag, not a separate detector. INT-CRP-03: the owner can delete a draft but cannot replace a crop yet.
+
 ## Out of scope
 
 - Editing or retouching images.

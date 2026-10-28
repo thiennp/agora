@@ -77,7 +77,7 @@ export default async function DealRoom({ params, searchParams }: { params: Promi
 
         <div className="stack">
           <Card title="How the item changes hands">
-            <HandoffPanel dealId={dealId} as={as} card={view.handoff as never} role={view.deal.role} dropPoints={view.dropPoints} />
+            <HandoffPanel dealId={dealId} as={as} card={view.handoff as never} role={view.deal.role} dropPoints={view.dropPoints} modes={view.modes} />
           </Card>
           <Card title="What the agents did">
             <ol className="timeline">

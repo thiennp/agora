@@ -43,8 +43,10 @@ safety extras, languages. Tier 1 is never cut.
 
 **Tier gate (BR-37).** Tier 2 code does not start until tier 1 can be shown end to end: the simulation and benchmark
 produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
-(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room) and judge dashboard (learning curves from the CSV) exist, but persistent
-storage and photo intake do not, so the next work is tier 1, not the `community` config section. Build status is tracked in `CLAUDE.md`. The demo UI now follows the shared design tokens (Tailwind 4) and has a public `/styleguide`.
+(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room, items with photo intake) and judge dashboard (learning curves from the CSV) exist, and demo state is saved to Postgres or a file (restart-tested), but relational repositories
+do not exist, so the next work is tier 1, not the `community` config section.
+**Photo intake: BUILD (decided Oct 28, after probing the live API).** A Meta key exists and the vision call is confirmed: Muse Spark names the items in a photo, SAM 3.1 returns a box per item (concept prompt, one call per item, in parallel), and crops are cut from the boxes; the pipeline took about 6 s on a test photo (details in docs/ARCHITECTURE.md §13). **Built Oct 28:** upload on `/items`, vision, SAM boxes, box crops, original overwritten and never stored, owner reviews each draft; offline simulation by default, real models with `AGORA_INTAKE=meta`. Not done: masked (background-removed) crops, a separate face detector, the 100-photo leak test (INT-03; today the model flags people and readable text), the 6-item accuracy test (INT-01), and a try of the real path on more than one generated photo. The cut rule is no longer needed.
+**Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; demo state now survives restarts (one saved document, Postgres or file); relational repositories and photo intake are the open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`. The demo UI follows Agora's own design tokens (Tailwind 4) and has a public `/styleguide`.
 
 ## 3. Scope
 

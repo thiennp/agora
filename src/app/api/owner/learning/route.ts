@@ -16,7 +16,9 @@ export const POST = route({ schema }, async ({ platform, input }) => {
   const me = personaOf(platform, input.as).id;
   if (input.action === "forget") return { ok: await platform.learning.forget(me, input.id) };
   if (input.action === "revoke") platform.book.revoke(me, input.id);
-  else if (input.action === "proposal") input.accept ? platform.learning.acceptProposal(me, input.id) : platform.learning.dismissProposal(me, input.id);
-  else platform.learning.answerStretch(me, input.id, input.answer);
+  else if (input.action === "proposal") {
+    if (input.accept) platform.learning.acceptProposal(me, input.id);
+    else platform.learning.dismissProposal(me, input.id);
+  } else platform.learning.answerStretch(me, input.id, input.answer);
   return { ok: true };
 });

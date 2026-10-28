@@ -166,3 +166,15 @@ describe("demo API", () => {
     expect((await dashboard(get("/api/dashboard?scenario=nope"), ctx({}))).status).toBe(400);
   }, 60000);
 });
+
+describe("safety checks", () => {
+  it("runs the repository's red-team and screening sets and reports none missed", async () => {
+    const { runSafetyChecks } = await import("@/app/_composition/safety-checks");
+    const checks = await runSafetyChecks();
+    expect(checks.map((c) => c.id)).toEqual(["injection", "pressure", "scams", "topics", "leaks", "benign", "scam-signals"]);
+    for (const c of checks) {
+      expect(c.cases, c.id).toBeGreaterThan(0);
+      expect(c.failures, c.id).toEqual([]);
+    }
+  });
+});

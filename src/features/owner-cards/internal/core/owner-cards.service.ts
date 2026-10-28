@@ -9,6 +9,7 @@ import type { MandateBook } from "../../features/mandates/public-api/types";
 import { isEligible } from "../../features/mandates/public-api/infrastructure";
 import { createQuestionStore, hasPack, questionContent } from "../../features/questions/public-api/infrastructure";
 import type { OwnerQuestion, QuestionStore, TermsFact } from "../../features/questions/public-api/types";
+import { tracked } from "@/lib/state";
 
 /** What owner cards need from negotiation; its service satisfies this. */
 export interface DealOps {
@@ -65,7 +66,7 @@ export function createOwnerCards(deps: {
   const log = (e: Omit<CardAudit, "kind" | "at">) => deps.audit?.({ kind: "owner_card", at: now().toISOString(), ...e });
 
   // Pending deal reads are async but listeners are sync: cards are created from event data plus a deal snapshot taken by the event's producer.
-  const dealSnapshots = new Map<string, Deal>();
+  const dealSnapshots = tracked("cards.dealSnapshots", new Map<string, Deal>());
   const refresh = async (dealId: string) => {
     const d = await deps.negotiation.get(dealId);
     if (d) dealSnapshots.set(dealId, d);

@@ -10,14 +10,15 @@ export interface HttpAdapterOptions {
 }
 
 /**
- * Chat-completions style adapter shared by the Meta API and partner hosts.
- * ASSUMPTION: the endpoint accepts `POST {baseUrl}/chat/completions`; confirm against Meta's docs and adjust here only.
+ * Chat-completions style adapter for partner hosts.
+ * Used for partner hosts (Baseten, Modal); the Meta API itself uses its own Responses adapter (meta-api.ts).
  */
 export function createHttpAdapter(opts: HttpAdapterOptions): ModelAdapter {
   const doFetch = opts.fetchImpl ?? fetch;
   return {
     provider: opts.provider,
     async complete(req: ModelRequest) {
+      if (req.images?.length) throw new Error(`${opts.provider} does not read images`);
       const res = await doFetch(`${opts.baseUrl.replace(/\/$/, "")}/chat/completions`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${opts.apiKey}` },

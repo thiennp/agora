@@ -1,3 +1,4 @@
+import { tracked } from "@/lib/state";
 export interface MandateRecord {
   id: string;
   familyId: string;
@@ -17,8 +18,8 @@ export interface OwnerLimits {
 
 /** Synchronous in-memory stores: card creation reacts to events in the same tick. A database version moves that to a worker. */
 export function createMandateStore() {
-  const mandates = new Map<string, MandateRecord>();
-  const limits = new Map<string, OwnerLimits>();
+  const mandates = tracked("cards.mandates", new Map<string, MandateRecord>());
+  const limits = tracked("cards.limits", new Map<string, OwnerLimits>());
   return {
     mandates,
     limits,

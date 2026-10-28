@@ -3,7 +3,7 @@
 What the platform stores, and what it does not.
 
 - **Location:** only a coarse district code (about 5 km) until both owners confirm; exact places live only in the handoff.
-- **Photos:** originals are discarded; only item crops are kept (intake, not yet built).
+- **Photos:** originals are discarded; only item crops are kept. The photo is read in memory, shrunk and stripped of camera metadata, sent to Meta only when `AGORA_INTAKE=meta`, and its bytes overwritten before the request ends. Crops are small JPEGs held in memory (drafts for 30 minutes, listed items until withdrawn or restart) and are not in the saved state. If a person or readable text is in an item's area no picture is kept for it; that check is the vision model's own flag, not a separate face detector, and there is no 100-photo leak test yet.
 - **Chat messages (relay):** the database keeps each message's screened text, its translation, its SHA-256 hash and screening
   flags. The raw text an owner typed is never written to the database; it exists only in memory for that owner's own view.
 - **Screening and gatekeeper logs:** topics, kinds of findings and outcomes only, never message text.
@@ -19,6 +19,8 @@ What the platform stores, and what it does not.
 - **Erasure:** an owner can erase their family and everything that depends on it; relay messages, cards, rules and trust status go with it.
 
 ## Retention and erasure
+
+The demo's saved state (see docs/ARCHITECTURE.md §11b) is one document that holds the screened relay text, its translation and hash, but never the raw text an owner typed and never a plaintext address. Its encrypted fields use the demo's hard-coded key, so it is demo data only: the reset deletes it and no retention job covers it yet.
 
 Values marked (decided) were set by the project owner; values marked (proposed) are defaults to confirm. Retention jobs are
 not built yet; until they exist these are the rules the code must meet, not behaviour it has.

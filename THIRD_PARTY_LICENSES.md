@@ -19,6 +19,9 @@ tokens and icons are original to this repository.
 | @tailwindcss/postcss | 4.3.3 | MIT |
 | postcss | 8.5.32 | MIT |
 | tailwind-merge | 3.7.0 | MIT |
+| @modelcontextprotocol/sdk | 1.32.2 | MIT |
+| pg | 8.23.1 | MIT |
+| sharp | 0.35.5 | Apache-2.0 |
 
 ## Direct dev dependencies (`devDependencies`, build, test and lint only)
 

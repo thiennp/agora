@@ -1,6 +1,6 @@
 # ADR 0004 — Tier gate, optional exchange section, retention and relevance safety valves
 
-Status: accepted (Oct 27, 2026). Docs only; the config reshaping and renaming are planned code changes.
+Status: accepted (Oct 27, 2026). Docs only; the config reshaping and the `family` to `members` rename are planned code changes and have not happened: the code, tables (`0001_family.sql`) and events still use `family` and `familyId`.
 
 ## Context
 After ADR 0003 made Agora a platform of primitives for community apps, a review of the requirements found gaps: tier 1 was not

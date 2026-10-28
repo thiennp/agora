@@ -12,7 +12,11 @@ const schema = z.object({
   OPEN_MODEL_KEY: z.string().optional(),
   FIELD_ENCRYPTION_SECRET: z.string().min(16).optional(),
   REPORT_EXPORT_SECRET: z.string().min(16).optional(),
+  /** Photo intake in the demo: `simulated` (offline, no model looks at the photo) or `meta` (Muse Spark vision and SAM 3.1; needs META_API_KEY). */
+  AGORA_INTAKE: z.enum(["simulated", "meta"]).default("simulated"),
   APP: z.string().default("kids-gear"),
+  /** Demo state is saved here between restarts when DATABASE_URL is empty. */
+  AGORA_STATE_FILE: z.string().optional(),
 });
 
 type Parsed = z.infer<typeof schema>;
@@ -22,6 +26,9 @@ export type Env = Omit<Parsed, "AGORA_MODE"> & { MODE: Parsed["AGORA_MODE"] };
 export function loadEnv(source: Record<string, string | undefined> = process.env): Env {
   const { AGORA_MODE, ...rest } = schema.parse(source);
   const env: Env = { ...rest, MODE: AGORA_MODE };
+  if (env.AGORA_INTAKE === "meta" && !env.META_API_KEY) {
+    throw new Error("AGORA_INTAKE=meta requires META_API_KEY");
+  }
   if (env.MODE === "live" && !env.META_API_KEY) {
     throw new Error("AGORA_MODE=live requires META_API_KEY");
   }
