@@ -15,6 +15,7 @@ import { createNegotiationService, createRelay } from "@/features/negotiation/pu
 import { createMandateBook, createMandateStore, createOwnerCards, eligibleStandingTopics } from "@/features/owner-cards/public-api/infrastructure";
 import { createTrust } from "@/features/trust/public-api/infrastructure";
 import { createStateScope, enterScope, tracked } from "@/lib/state";
+import { getIdentityStore, isStoredApp } from "./identity";
 import { backendFromEnv, type StateBackend } from "./persistence";
 
 /**
@@ -69,7 +70,10 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   const who = personas();
   // What the app lets owners offer: free where deals can be free, else swaps only.
   const terms = app.policies.pricing.mode === "swap_only" ? "swap" : "free";
-  const byId = new Map(Object.values(who).map((p) => [p.id, p]));
+  // Parties of this platform. The demo apps run on the two built-in personas. A stored app starts with nobody: its members are added
+  // as they join (`addMember`), so a party is always a real membership of this app and never another app's (docs/adr/0007).
+  const stored = isStoredApp(appId);
+  const byId = new Map<string, Persona>(stored ? [] : Object.values(who).map((p) => [p.id, p]));
   const lang = (f: string) => byId.get(f)?.language ?? "en";
 
   // Everything the stores create from here until the seeding step is tracked, so it can be saved and restored (src/lib/state.ts).
@@ -81,7 +85,7 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   if (!meta.createdAt) meta.createdAt = new Date().toISOString();
   const bump = (m: Record<string, number>, k: string) => void (m[k] = (m[k] ?? 0) + 1);
   const say = (text: string) => void feed.unshift({ at: new Date().toISOString(), text });
-  const nameOf = (f: string) => byId.get(f)?.name ?? "someone";
+  const nameOf = (f: string) => byId.get(f)?.name || "someone";
 
   const bus: DealEventBus = createDealEventBus();
   bus.subscribe("OwnerQuestionOpened", (e) => say(`The agent paused and asked ${nameOf(e.familyId)} about ${TOPIC_WORDS[e.topic] ?? e.topic}.`));
@@ -136,6 +140,20 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
     constraintsOf: (f) => ({ districtCode: byId.get(f)!.districtCode, availability: byId.get(f)!.availability }),
   });
   const matcher = createMatchService({ app, limitsOf: (f) => book.limitsOf(f) });
+  // A member of a stored app becomes a party: the same agent wiring as the personas, with the app's first language, the one coarse
+  // district every member shares until a location step exists, and a default pickup window (tomorrow) that owners can change.
+  const addMember = (m: { id: string; name: string }): Persona => {
+    const known = byId.get(m.id);
+    if (known) return known;
+    const day = new Date();
+    day.setUTCDate(day.getUTCDate() + 1);
+    const at = (h: number) => new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h)).toISOString();
+    const persona: Persona = { key: "a", id: m.id, name: m.name, language: app.policies.languages[0] ?? "en", districtCode: "g:0.00:0.00", availability: [{ from: at(10), to: at(16) }] };
+    byId.set(m.id, persona);
+    const have = book.getLimits(m.id);
+    if (!have.availability.some((w) => Date.parse(w.to) > Date.now())) book.setLimits(m.id, { ...have, availability: persona.availability, allowedTerms: [terms] });
+    return persona;
+  };
   // Photo intake: simulated and offline unless AGORA_INTAKE=meta, which uses Muse Spark vision and SAM 3.1 with META_API_KEY. Only this
   // step calls the real Meta API in the demo; everything else keeps the mock client above. Crops are not part of the saved state.
   const intake = createIntake({
@@ -197,7 +215,7 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   await persist();
 
   return {
-    app, personas: who, byId, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake, dealId,
+    app, personas: who, byId, addMember, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake, dealId,
     createdAt: meta.createdAt!, persistence: (backend?.kind ?? "memory") as "memory" | "file" | "postgres", persist, restored: Boolean(saved),
     async wipe() {
       await tail;
@@ -226,6 +244,12 @@ export function getPlatform(appId: string = demoAppId()): Promise<Platform> {
     });
     all.set(appId, p);
   }
+  return isStoredApp(appId) ? p.then(syncMembers) : p;
+}
+
+/** Every membership of a stored app is a party of its platform (also after a restart, when only the identity store remembers them). */
+async function syncMembers(p: Platform): Promise<Platform> {
+  for (const m of await getIdentityStore().members(p.app.id)) p.addMember({ id: m.memberId, name: m.name });
   return p;
 }
 
