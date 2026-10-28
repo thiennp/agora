@@ -16,7 +16,11 @@ Every member has an agent that acts for them in their language, while the member
 matters. Buying, selling and swapping is one use case; a learning group, a marathon association, an office app and a
 neighbourhood help board are equally in scope.
 
-The first example app, and the hackathon demo, is a **kids' gear exchange**: parents buy a lot of baby and kids gear that
+The hackathon demo (decided Oct 28) is a real Muse creating an app live: a person scans a QR code, answers Muse's
+questions with taps, gets their app with an invite QR, and every member sees what their agent is doing (BR-39 to BR-45,
+docs/PLAN.md §2c).
+
+The first example app is a **kids' gear exchange**: parents buy a lot of baby and kids gear that
 is outgrown in months, and each parent's Muse agent trades it for free or by agreement with nearby parents. A second
 example, garden tools, and planned examples (running club, office app, learning group) show the platform is general.
 
@@ -82,7 +86,14 @@ example, garden tools, and planned examples (running club, office app, learning 
 | BR-34 | Relevance filtering has safety valves: system notices (a cancelled deal, a safety warning, a change to my deals) are not posts and always reach the people they concern; each member can see how many posts were filtered for them and review them, and tune their own thresholds; filtered decisions are audited as counts without text; each post is scored once (cached similarity compared with member interests) after a deterministic prefilter, never one model call per member per post; per-community post caps apply. | Must | platform | 2 | community, lib/meta, lib/audit |
 | BR-35 | Minimal moderation comes with community posting: a member can report a post, an admin can hide a post or remove a member, and trust screening applies to posts as it does to 1:1 messages. Roles are admin and member. | Must | platform | 2 | community, trust, members |
 | BR-36 | Retention and erasure are explicit for every kind of stored data (docs/PRIVACY.md). Erasing a member unlinks their audit entries (the decision counts remain) instead of deleting the append-only log, and removes their own data everywhere else. | Must | platform | 1 | lib/audit, db, family, trust |
-| BR-37 | Tier 2 code does not start until tier 1 is demonstrable end to end: simulation and benchmark with the learning curve, the demo UI and dashboard, persistent storage, and photo intake (or its explicit, documented cut). | Info | platform | 1 | docs/PLAN.md |
+| BR-37 | Tier 2 code does not start until tier 1 is demonstrable end to end: simulation and benchmark with the learning curve, the demo UI and dashboard, persistent storage, and photo intake (or its explicit, documented cut). Exception decided Oct 28: the Muse-first demo (BR-39 to BR-45) is tier 1. | Info | platform | 1 | docs/PLAN.md |
+| BR-39 | The demo starts from a QR code: the home page shows only a QR code that opens the create-an-app interview on the person's phone. | Must | platform | 1 | src/app, docs/PLAN.md §2c |
+| BR-40 | The create-an-app interview asks one plain question at a time with tap answers (2–3 suggestions plus "something else", typed or voice) and ends with one yes before anything is built; the model drafts the app config and code validates it. | Must | platform | 1 | docs/CREATE-AN-APP.md, src/app |
+| BR-41 | Apps are data: a created app is a validated config stored by the platform and served at `/agora/app/{app}` with a unique id, without a code change or redeploy; several apps run at once with their data kept apart; repository apps keep working. | Must | platform | 1 | lib/app-config, src/app, db |
+| BR-42 | Each app has a creator (admin) view with an overview and an invite QR, a member view, and a public join page showing name, purpose and rules. Only the app's creator and members, and their own Muse, see more than the join page. | Must | platform | 1 | src/app |
+| BR-43 | Each member has a status page at `/agora/app/{app}/muse/{id}` showing what their agent works on in that app, grouped (waiting on you, deals, items, what it did alone, lessons, standing rules) and charted. It follows BR-30: decisions and counts, never other members' message text or addresses. Only that member and their own Muse can see it. | Must | platform | 1 | src/app, lib/audit |
+| BR-44 | A person's own Muse may connect read-only (app overview, my status, my actions, pending cards) with a per-member key: through a documented HTTP API that Muse can turn into a custom connector, and over MCP if a real Muse is shown to support it (docs/PLAN.md §2d). No tool answers an owner card; always-ask decisions need the person's own tap (BR-07). | Should | platform | 1 | src/app/api |
+| BR-45 | Light identity for the demo: scanning creates a membership and session per app; member ids are unguessable; every request is authorized by app and member; no secret is carried in a shareable URL. Not real accounts, and disclosed as such. | Must | platform | 1 | src/app, lib |
 | BR-38 | Exchange-specific settings (catalog, handover modes, pricing, negotiation rounds, forecast stages) move into an optional `exchange` section of the app config, with `community` and `circles` as siblings, so apps that are not exchanges are valid. Safety settings (always-ask topics) stay top-level. This is a planned code change, not yet done. | Should | platform | 2 | lib/app-config, apps |
 
 ## 5. Non-functional requirements

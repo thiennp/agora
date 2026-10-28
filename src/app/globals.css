@@ -263,3 +263,8 @@ ol { list-style: decimal; }
 .list { padding: 0; }
 img, svg { vertical-align: middle; }
 }
+.qr-home { display: grid; justify-items: center; gap: 16px; text-align: center; padding: 24px 0; }
+.qr-home h1 { font-size: 1.75rem; }
+.qr-home .qr-frame { background: #fff; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); line-height: 0; }
+.qr-home .qr-frame svg { width: min(72vw, 320px); height: auto; display: block; }
+.qr-home .qr-url { word-break: break-all; }

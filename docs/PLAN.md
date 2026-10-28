@@ -46,7 +46,84 @@ produce the learning curve, the demo UI and dashboard cover the demo flow, stora
 (or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room, items with photo intake) and judge dashboard (learning curves from the CSV) exist, and demo state is saved to Postgres or a file (restart-tested), but relational repositories
 do not exist, so the next work is tier 1, not the `community` config section.
 **Photo intake: BUILD (decided Oct 28, after probing the live API).** A Meta key exists and the vision call is confirmed: Muse Spark names the items in a photo, SAM 3.1 returns a box per item (concept prompt, one call per item, in parallel), and crops are cut from the boxes; the pipeline took about 6 s on a test photo (details in docs/ARCHITECTURE.md §13). **Built Oct 28:** upload on `/items`, vision, SAM boxes, box crops, original overwritten and never stored, owner reviews each draft; offline simulation by default, real models with `AGORA_INTAKE=meta`. **Measured Oct 28** (24 generated photos, live models, `npm run evals:intake`, on the dashboard; docs/ARCHITECTURE.md §11c): 11 of 12 six-item piles gave exactly six drafts, 97.2% of items found and named, 0 of 87 kept crops judged to show a person or readable text (6 of 80 before the per-crop check was added). Not done: masked (background-removed) crops, a face detector (the checks are Muse Spark calls), a leak test on 100 photos or on real or children's photos. The cut rule is no longer needed.
+**Superseded in part on Oct 28 (§2c):** the Muse-first demo pulls the create-an-app flow, apps as data and member status into tier 1. The rest of tier 2 (community posting, circles, the `community` config section) stays gated.
 **Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; demo state now survives restarts (one saved document, Postgres or file); relational repositories and photo intake are the open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`. The demo UI follows Agora's own design tokens (Tailwind 4) and has a public `/styleguide`.
+
+## 2c. Muse-first demo (decided Oct 28)
+
+**Decision (Oct 28):** the demo is a real Muse creating an app live, not the kids' gear deal room. This changes the tier
+gate above: the create-an-app flow, apps as data and member status move into tier 1 for the demo. Kids' gear stays as a
+worked example and fallback. Photo intake is not cancelled, but it comes after the steps below; its Nov 2 cut rule stands.
+
+The flow (BR-39 to BR-45):
+1. The home page shows only a QR code. Scanning it opens `agentwitch.com/agora/start` on the phone.
+2. Muse interviews the person about the app they want (name, what it is for, who joins, how things work), one question
+   at a time, with tap answers: 2–3 suggestions plus "something else" (typed or voice). The last step is one yes:
+   "Here is your app: … Build it?"
+3. Muse builds the app: a config checked against the app schema, saved as data. No code change, no redeploy.
+4. The creator sees the app's overview at `agentwitch.com/agora/app/{app}` (`{app}` unique), with an invite QR to share
+   (for example a clothes exchange with friends). Muse can read the same overview and report it to them.
+5. Each person who joins gets their own agent and a status page at `agentwitch.com/agora/app/{app}/muse/{id}`: what
+   their agent works on in that app, grouped and charted (waiting on you, deals, items, what it did alone, lessons,
+   standing rules). Their Muse can read it through MCP.
+
+Two adjustments that keep the product rules intact:
+- **The person's own Muse is a window, not the decider.** Agents stay platform-hosted and the gatekeeper stays in code
+  (BR-07, BR-12). An external Muse may read status and pass on what its person said; it can never answer an always-ask
+  card. Those need the person's own tap in the app.
+- **An app is a space its members see.** The creator gets an admin view, members get a member view, and the invite QR
+  opens a public join page with the app's name, purpose and rules.
+
+Open risk: whether the consumer Muse app can connect to our MCP server, or open a link from a QR code, is unconfirmed
+(step 0). The flow therefore works without it: the phone page runs the interview with platform-hosted Muse Spark, and
+the person's own Muse is an extra layer when it can connect.
+
+| Step | Work | Size | Status |
+|---|---|---|---|
+| 0 | Check real Muse: can it add a remote MCP connector (streamable HTTP, OAuth), and can it open a link from a QR code? Decides step 6. | ½ day | desk check done; hands-on check by the owner pending (§2d) |
+| 1 | Apps as data: app configs stored in the database and validated by `schema.ts` at load; routes under `/agora/app/{app}`; stores scoped per app; repo apps (kids-gear, garden-tools) keep working. | 1–1.5 days | not started |
+| 2 | Light identity: a membership and session created on scan, unguessable member ids, per-request authorization by app and member, a recovery path. Not real accounts; disclosed. | 1 day | not started |
+| 3 | Home page is one QR code → `/agora/start`. The interview runs `docs/CREATE-AN-APP.md` as structured question cards with tap answers; the model drafts the config, code validates it; summary and "Build it?". | 1–1.5 days | QR home page and a `/start` placeholder built (Oct 28; the old landing is at `/demo`); the interview is not started |
+| 4 | App overview at `/agora/app/{app}` with an invite QR, and a public join page. | ½–1 day | not started |
+| 5 | Member status at `/agora/app/{app}/muse/{id}`, grouped and charted, built from the existing read views and the audit store (a stub today). | 1 day | not started |
+| 6 | Read-only access for a person's own Muse: app overview, my status, my actions, pending cards, as a documented HTTP API that Muse can turn into a custom connector (per-member key), and over MCP if step 0 confirms it. No tool answers a card. | 1 day | not started |
+| 7 | Docs, tests, demo script. | ½ day | not started |
+
+About 6–8 days of work against 5 days to the G3 freeze. Cut order if late: step 6, then the charts in step 5 (keep the
+grouped lists), then the recovery path in step 2 (disclosed). Steps 1, 3 and 4 are never cut.
+
+## 2d. Step 0: can a real Muse connect?
+
+Desk check done Oct 28; a hands-on check with a real Muse account is still needed (only the owner can do it).
+
+What the sources say:
+- **Meta's own Help Center** ("How Muse works with Connectors", meta.com/help/artificial-intelligence/1687253048996149)
+  describes **custom connectors** for services that are not in Meta's list: you ask Muse, it guides you, reads the
+  service's API information and keeps the credentials in its own secure credentials store. Meta does not review custom
+  connectors. The page does **not** mention MCP.
+- **Third-party guides disagree on MCP.** One (anythingmcp.com, checked by its author on Sep 25) says Settings →
+  Connectors → Add custom connector takes a remote MCP URL (streamable HTTP, public HTTPS, OAuth sign-in), on web, iOS,
+  Android and WhatsApp. Another (skillsplayground.com, undated) says the consumer app has no custom MCP setting yet
+  and only Muse Code reads MCP servers (`mcp_servers` in its settings file).
+- **QR codes:** nothing says the Muse app scans QR codes. The phone's own camera opens the link in the browser, which is
+  the documented route on iPhone and Android.
+- Availability: one guide says Muse is offered in the US and Canada only; not confirmed by Meta's page.
+
+What this means for the plan:
+- The QR opens our own web page (path B in §2c). That works with any phone and is the main path.
+- For a person's own Muse (step 6), the officially described route is a **custom connector built from our documented
+  API**, with a per-member key kept in Muse's credentials store. MCP is the second route, if the hands-on check shows the
+  setting. Step 6 therefore builds a small read-only HTTP API with a plain description (and the same tools over MCP only
+  if confirmed). Neither route can answer an owner card (BR-44).
+
+Hands-on check for the owner (about 10 minutes, in the Muse app):
+1. Settings → Connectors: is there an "Add custom connector" button that takes a URL? Try a public MCP server that needs
+   no sign-in, for example `https://mcp.deepwiki.com/mcp`, and ask a question that uses it.
+2. In a chat, ask Muse to create a custom connector for a public API with no key (for example
+   `https://api.open-meteo.com`), then ask it the weather. This tests the officially described route.
+3. Point the phone camera at any QR code with a link: does it offer to open the link in the Muse app, or only in the
+   browser?
+Record the three answers here. Step 6 waits for them; steps 1–5 do not.
 
 ## 3. Scope
 
@@ -147,6 +224,10 @@ If working alone, follow the schedule order. If a teammate joins (max 4):
 - AgentWitch private change stays with the AgentWitch owner.
 
 ## 9. Demo video (3:00)
+
+> Superseded on Oct 28 by the Muse-first demo (§2c): the video opens with a person scanning the QR code and creating an
+> app with Muse. The new script goes in `docs/DEMO-SCRIPT.md` at step 7; the table below is the old kids' gear script,
+> kept as the fallback.
 
 | Time | Content |
 |---|---|

@@ -14,6 +14,8 @@ const schema = z.object({
   REPORT_EXPORT_SECRET: z.string().min(16).optional(),
   /** Photo intake in the demo: `simulated` (offline, no model looks at the photo) or `meta` (Muse Spark vision and SAM 3.1; needs META_API_KEY). */
   AGORA_INTAKE: z.enum(["simulated", "meta"]).default("simulated"),
+  /** Public address of this deployment (e.g. https://agentwitch.com/agora); the home page QR code opens `<this>/start`. Falls back to the request's host. */
+  AGORA_PUBLIC_URL: z.string().url().optional(),
   APP: z.string().default("kids-gear"),
   /** Demo state is saved here between restarts when DATABASE_URL is empty. */
   AGORA_STATE_FILE: z.string().optional(),

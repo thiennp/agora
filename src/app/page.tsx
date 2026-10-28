@@ -1,58 +1,29 @@
+import { headers } from "next/headers";
 import Link from "next/link";
-import { ActionButton } from "@/components/ActionButton";
-import { Banner, Card } from "@/components/Card";
+import { QrCode } from "@/components/QrCode";
+import { publicBaseUrl } from "./_composition/public-url";
 
-export default function Home() {
+// The address depends on the request (or AGORA_PUBLIC_URL), so this page is rendered per request.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const h = await headers();
+  const base = publicBaseUrl({
+    configured: process.env.AGORA_PUBLIC_URL,
+    host: h.get("x-forwarded-host") ?? h.get("host"),
+    forwardedProto: h.get("x-forwarded-proto"),
+    basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  });
+  const startUrl = `${base}/start`;
   return (
-    <div className="stack-lg">
-      <section className="hero">
-        <h1>Agora</h1>
-        <p className="lead">A platform for community apps. Every member has an agent that acts for them in their language, and the member decides everything that matters. The demo app is a kids&apos; gear exchange.</p>
-      </section>
-      <div className="grid grid-3">
-        <Card title="Try it as an owner">
-          <p className="muted">Two families: Mia (English) offers a winter jacket; Jonas (German) needs one. Their agents have already met. Pick who you are.</p>
-          <div className="row">
-            <Link className="btn primary" href="/cards?as=a">Be Mia</Link>
-            <Link className="btn" href="/cards?as=b">Be Jonas</Link>
-          </div>
-        </Card>
-        <Card title="See the evidence">
-          <p className="muted">Does learning help? The simulation measures it on held-out scenarios, with the failures left in.</p>
-          <div className="row">
-            <Link className="btn" href="/dashboard">Open the dashboard</Link>
-            <Link className="btn ghost" href="/styleguide">Design system</Link>
-          </div>
-        </Card>
-        <Card title="Start again">
-          <p className="muted">Reset the scenario to the moment the agents first met.</p>
-          <ActionButton url="/api/demo/reset" body={{}}>Restart the scenario</ActionButton>
-        </Card>
+    <section className="qr-home" aria-labelledby="scan-title">
+      <h1 id="scan-title">Scan to make an app</h1>
+      <p className="lead muted">Point your phone at the code. Muse will ask a few questions about what your community does together, and you only tap your answers.</p>
+      <div className="qr-frame">
+        <QrCode text={startUrl} label={`QR code that opens ${startUrl}`} />
       </div>
-      <Card title="What is real in this demo, and what is not">
-        <div className="grid grid-2">
-          <div>
-            <h3>Real</h3>
-            <ul>
-              <li>Matching, the agents&apos; negotiation and the round limit</li>
-              <li>The agent pausing to ask its owner, and nothing final until both owners confirm</li>
-              <li>The chat relay: contact details removed, addresses and payment requests blocked</li>
-              <li>The handover plan, with the meeting place kept private until both agree</li>
-              <li>What the agent learns from a decline, which you can delete</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Simulated</h3>
-            <ul>
-              <li>Translation (there is no model key here, so it is marked <em>simulated</em>)</li>
-              <li>The carrier and drop points</li>
-              <li>The families behind the dashboard&apos;s numbers</li>
-              <li>Accounts: the two personas are not real sign-ins</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-      <Banner tone="info">Owners never message each other directly. Everything goes through their own agent.</Banner>
-    </div>
+      <p className="small muted qr-url">Or open <a href={startUrl}>{startUrl}</a></p>
+      <p className="small muted"><Link href="/demo">Try the kids&apos; gear demo instead</Link></p>
+    </section>
   );
 }
