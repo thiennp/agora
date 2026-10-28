@@ -21,8 +21,8 @@ export type AppPageView =
   | { kind: "unknown" }
   | { kind: "demo"; app: AppSummary; description: AppDescription }
   | { kind: "stranger"; app: AppSummary; description: AppDescription }
-  | { kind: "member"; app: AppSummary; description: AppDescription }
-  | { kind: "creator"; app: AppSummary; description: AppDescription; members: { memberId: string; role: Role; name: string; joinedAt: string }[] };
+  | { kind: "member"; app: AppSummary; description: AppDescription; memberId: string }
+  | { kind: "creator"; app: AppSummary; description: AppDescription; memberId: string; members: { memberId: string; role: Role; name: string; joinedAt: string }[] };
 
 export type AppSummary = NonNullable<Awaited<ReturnType<typeof appSummaryById>>>;
 
@@ -45,6 +45,6 @@ export async function appPageView(appId: string, cookieHeader: string | null): P
   const headers: Record<string, string> = cookieHeader ? { cookie: cookieHeader } : {};
   const who = await getIdentityStore().authenticate(appId, sessionTokenOf(new Request("http://localhost/", { headers }), appId));
   if (!who) return { kind: "stranger", app, description };
-  if (who.role === "creator") return { kind: "creator", app, description, members: await getIdentityStore().members(appId) };
-  return { kind: "member", app, description };
+  if (who.role === "creator") return { kind: "creator", app, description, memberId: who.memberId, members: await getIdentityStore().members(appId) };
+  return { kind: "member", app, description, memberId: who.memberId };
 }
