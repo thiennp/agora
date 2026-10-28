@@ -21,7 +21,7 @@ Parent owner.
 | INT-04 | Let the owner correct label, size and condition before publishing. | Should | Edits are saved to the draft. |
 | INT-05 | Ask for another photo when the image is poor instead of guessing. | Must | Blurred or dark inputs trigger a retake prompt. |
 
-Status: not built (scaffold only). It needs a real vision call; the demo's items form (`/items`) stands in until a Meta key confirms it.
+Status: not built (scaffold only), decided to build on Oct 28. The calls are confirmed live (docs/ARCHITECTURE.md §13): Muse Spark names the items from the photo, SAM 3.1 returns a box per item from a one-noun concept prompt, crops are cut from the boxes. INT-03 as written ("background removed") is met by box crops only in part: masks are base85 rasters whose decoding is not yet read, so background removal is a stretch and the person/face check must run on the crop. The demo's items form (`/items`) stands in until intake lands.
 
 ## Out of scope
 

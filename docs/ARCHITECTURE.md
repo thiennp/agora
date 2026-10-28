@@ -379,7 +379,7 @@ Routing is table-driven in `src/lib/meta`; the benchmark can swap models per rol
 
 ## 7. Privacy and safety design
 
-- **Stateless intake.** The original photo lives in memory for the request only. SAM 3.1 masks produce item crops with background removed. Only crops are stored. Honest claim: *originals are discarded, not stored*; on-device processing is a stretch goal, not a promise.
+- **Stateless intake.** The original photo lives in memory for the request only. Muse Spark names the items, SAM 3.1 finds each one, and the item crops are cut from the boxes (background removal from the masks is a stretch). Only crops are stored. Honest claim: *originals are discarded, not stored*; on-device processing is a stretch goal, not a promise.
 - **Coarse location.** Matching uses `district_code`. Exact pickup details appear only after both confirmations.
 - **Leak tests (`src/features/intake` and `src/features/trust`, suites in `evals/`).** Face detector and address/phone regex over crops, listings and messages; run on 100 test photos; results shown on the dashboard.
 - **Safety rules (`src/features/safety`).** Car seats require a crash-history declaration; cribs, strollers, high chairs show an official recall-check link; consumables and medicines are blocked. Advisory only, no medical guidance anywhere.
@@ -700,9 +700,13 @@ external pen test. The README should say so plainly.
 
 ## 13. Open questions to settle early
 
-1. Meta Model API shape: read Oct 27. It is `POST https://api.meta.ai/v1/responses` with `{model, input}`, Bearer key, models `muse-spark-1.3`/`muse-spark-1.1` (the adapter in `src/lib/meta/adapters/meta-api.ts`, unit-tested with a fake fetch). Checked live on Oct 28 with a real key: `instructions`, `reasoning.effort` (we send `low`; the default `high` burns hundreds of tokens on short answers), `store: false` (no provider-side retention) and `text.format: json_object` are accepted, and the reply is read from the `message` output item. Still open: the vision (SAM 3.1, image input) and voice request formats, which the quickstart does not show.
+1. Meta Model API shape: read Oct 27. It is `POST https://api.meta.ai/v1/responses` with `{model, input}`, Bearer key, models `muse-spark-1.3`/`muse-spark-1.1` (the adapter in `src/lib/meta/adapters/meta-api.ts`, unit-tested with a fake fetch). Checked live on Oct 28 with a real key: `instructions`, `reasoning.effort` (we send `low`; the default `high` burns hundreds of tokens on short answers), `store: false` (no provider-side retention) and `text.format: json_object` are accepted, and the reply is read from the `message` output item. Also checked live on Oct 28: image input and SAM 3.1 (item 3). Still open: the voice request format (`/docs/speech-to-text`, `/docs/api-reference/voice/transcribe`; model `muse-voice-transcribe-1.0`).
 2. Exact model IDs per role; use `meta-models/muse-spark-open-1026` on Baseten, not the name in the docs.
-3. SAM 3.1 access path: through Meta Model API or self-hosted.
+3. SAM 3.1 access path: **settled, through the Meta Model API** (`GET /v1/models` lists `sam-3.1`, `muse-image-1.0`, `muse-voice-transcribe-1.0`, `muse-spark-1.1/1.2/1.3`, `muse-wonder-1.0`). Probed on Oct 28 with a generated test photo (four separate items on a floor):
+   - Image input to Muse Spark: `input` is an array of one `message` (role `user`) whose `content` holds `{type:"input_text"}` and `{type:"input_image", image_url:"data:image/jpeg;base64,…"}` (or a URL or `file_id`; at most 50 images, 50 MB inline; jpeg, png, gif, webp). It named all four items with category and colour as JSON in 3.7 s (about 3.2k input tokens for a 1920×1280 photo).
+   - SAM 3.1 is the same `POST /v1/responses` with `model: "sam-3.1"`, one concept noun phrase as `input_text` plus the image, one concept per request (non-streaming works; `stream: true` sends one line per frame). The answer is text in `output_text`: `<0f>` then per object `id<|box;x1;y1;x2;y2;w;h|><|mask;x;y;data=H,W,~base85|>`; `metadata.include_confidence: "true"` adds `c`. Result: the jacket, the book and the train each gave one box, the pair of boots gave two boxes (one per boot), a missing concept ("car") gave nothing; confidences 0.89–0.95; the four concept calls ran in parallel in 2.5 s total.
+   - Cropping needs only the boxes (source pixels). The masks are smaller rasters in base85; decoding them for background removal is not documented on the page we read (`/docs/sam/client-libraries` may have it), so crops are by box first and masked crops are a stretch.
+   - Muse Image (`POST /v1/images/generations`, `{model, prompt, n}`) returns `data[0].b64_json` as WebP; used only to make test photos.
 4. Language set (three) after the G0 test.
 5. Face detection approach for the privacy test (library vs model).
 6. Track: Indie or Startups.

@@ -3,7 +3,7 @@
 What the platform stores, and what it does not.
 
 - **Location:** only a coarse district code (about 5 km) until both owners confirm; exact places live only in the handoff.
-- **Photos:** originals are discarded; only item crops are kept (intake, not yet built).
+- **Photos:** originals are discarded; only item crops are kept (intake, decided to build, not yet built).
 - **Chat messages (relay):** the database keeps each message's screened text, its translation, its SHA-256 hash and screening
   flags. The raw text an owner typed is never written to the database; it exists only in memory for that owner's own view.
 - **Screening and gatekeeper logs:** topics, kinds of findings and outcomes only, never message text.
