@@ -91,7 +91,7 @@ example, garden tools, and planned examples (running club, office app, learning 
 |---|---|---|
 | NFR-01 | Scale path to millions of families: agents are rows, not processes; matching is indexed, not scanned; async work with idempotency; per-family budgets and a global spend breaker. | Should (design now, build the basics) |
 | NFR-02 | Isolation: Fractal Slice Architecture; slices talk only through public APIs and a hub; ports and adapters for model, memory and carrier; feature flags. | Must |
-| NFR-03 | Testing: pure and property tests for the state machine and gatekeeper; contract tests for adapters; schema-checked model output with recorded fixtures; golden-set evals; red-team sets; simulation as regression; three end-to-end flows; CI gates. | Must |
+| NFR-03 | Testing: pure and property tests for the state machine and gatekeeper; contract tests for adapters; schema-checked model output with recorded fixtures; golden-set evals; red-team sets; simulation as regression; API journey tests for the main flows (browser end-to-end is not built); CI gates (typecheck, lint, tests, migration check). | Must |
 | NFR-04 | Security: per-request authorization on owner, family and negotiation; models propose, code decides; counterpart text is untrusted data; encryption of addresses; rate limits; secret scanning; audit log. | Must |
 | NFR-05 | Mock mode: everything runs without AgentWitch. | Must |
 | NFR-06 | Judges can run it with only a Meta API key. | Must |

@@ -20,6 +20,8 @@ What the platform stores, and what it does not.
 
 ## Retention and erasure
 
+The demo's saved state (see docs/ARCHITECTURE.md §11b) is one document that holds the screened relay text, its translation and hash, but never the raw text an owner typed and never a plaintext address. Its encrypted fields use the demo's hard-coded key, so it is demo data only: the reset deletes it and no retention job covers it yet.
+
 Values marked (decided) were set by the project owner; values marked (proposed) are defaults to confirm. Retention jobs are
 not built yet; until they exist these are the rules the code must meet, not behaviour it has.
 

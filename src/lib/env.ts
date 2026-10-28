@@ -13,6 +13,8 @@ const schema = z.object({
   FIELD_ENCRYPTION_SECRET: z.string().min(16).optional(),
   REPORT_EXPORT_SECRET: z.string().min(16).optional(),
   APP: z.string().default("kids-gear"),
+  /** Demo state is saved here between restarts when DATABASE_URL is empty. */
+  AGORA_STATE_FILE: z.string().optional(),
 });
 
 type Parsed = z.infer<typeof schema>;

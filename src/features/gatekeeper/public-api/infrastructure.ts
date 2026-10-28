@@ -3,6 +3,7 @@ import { classify } from "../features/classifier/public-api/infrastructure";
 import type { ModelProposal } from "../features/classifier/public-api/types";
 import { assertValidMandate, decideAll } from "../features/policy/public-api/infrastructure";
 import type { Decision, Mandate, Outcome } from "../features/policy/public-api/types";
+import { tracked } from "@/lib/state";
 
 export { MandateError } from "../features/policy/public-api/infrastructure";
 export { classify } from "../features/classifier/public-api/infrastructure";
@@ -36,7 +37,7 @@ export function createGatekeeper(deps: {
   now?: () => Date;
 }) {
   const now = deps.now ?? (() => new Date());
-  const mandates: Mandate[] = [];
+  const mandates = tracked("gatekeeper.mandates", [] as Mandate[]);
 
   return {
     /** Owner sets a standing rule. Throws for any topic that may not be automated (GAT-POL-02). */

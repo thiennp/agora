@@ -1,4 +1,5 @@
 import type { EvidenceBundle } from "../core/evidence-bundle";
+import { tracked } from "@/lib/state";
 
 export const REPORT_REASONS = ["scam", "contact_harvesting", "off_platform_payment", "abusive", "no_show", "other"] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
@@ -19,7 +20,7 @@ export interface Report {
 }
 
 export function createReportStore() {
-  const rows = new Map<string, Report>();
+  const rows = tracked("trust.reports", new Map<string, Report>());
   return { rows, forDeal: (dealId: string) => [...rows.values()].filter((r) => r.dealId === dealId) };
 }
 export type ReportStore = ReturnType<typeof createReportStore>;

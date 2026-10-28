@@ -1,3 +1,4 @@
+import { tracked } from "@/lib/state";
 export const CONSENT_SCOPES = ["share_items", "learning_commons"] as const;
 export type ConsentScope = (typeof CONSENT_SCOPES)[number];
 
@@ -12,7 +13,7 @@ export type AuditSink = (entry: { kind: "consent"; familyId: string; scope: Cons
 
 /** Opt-in, off by default, latest decision wins (FAM-CON-02). Every change is audited (FAM-CON-04). */
 export function createConsentLedger(audit?: AuditSink, now: () => Date = () => new Date()) {
-  const decisions: ConsentDecision[] = [];
+  const decisions = tracked("family.consent", [] as ConsentDecision[]);
 
   function record(familyId: string, scope: ConsentScope, granted: boolean): ConsentDecision {
     if (!CONSENT_SCOPES.includes(scope)) throw new Error(`unknown consent scope ${scope}`);

@@ -1,4 +1,5 @@
 import type { Deal } from "../core/deal-state-machine";
+import { tracked } from "@/lib/state";
 
 export interface DealRepository {
   insert(deal: Deal): Promise<void>;
@@ -9,7 +10,7 @@ export interface DealRepository {
 }
 
 export function createInMemoryDealRepository(): DealRepository {
-  const rows = new Map<string, Deal>();
+  const rows = tracked("negotiation.deals", new Map<string, Deal>());
   const copy = (d: Deal) => structuredClone(d);
   return {
     async insert(d) {

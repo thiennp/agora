@@ -61,7 +61,7 @@ async function serve<S extends z.ZodTypeAny>(
     const code = (e as { code?: unknown }).code;
     if (typeof code === "string" && code in STATUS) return json(STATUS[code]!, { error: { code, message: (e as Error).message } });
     if (typeof code === "string" && e instanceof Error && e.constructor.name !== "Error") return json(400, { error: { code, message: e.message } });
-    console.error("route error", e);
+    console.error("route error", e instanceof Error ? e.name : typeof e);
     return json(500, { error: { code: "internal", message: "Something went wrong." } });
   }
 }
@@ -77,7 +77,9 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       if (process.env.AGORA_MODE === "live") throw new HttpError(501, "auth_not_built", "The demo console is not available in live mode: there are no accounts yet.");
       const platform = await getPlatform();
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
-      return run({ input, platform, params, as });
+      const result = await run({ input, platform, params, as });
+      if (req.method !== "GET") await platform.persist();
+      return result;
     });
 }
 

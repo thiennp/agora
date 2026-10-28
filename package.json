@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "evals": "vitest run evals",
+    "db:check": "sh db/check-apply.sh",
     "simulate": "tsx evals/run-simulation.ts",
     "bench:matching": "tsx evals/bench-matching.ts",
     "mcp:docs": "tsx tools/docs-mcp.ts",
@@ -19,12 +20,14 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
     "next": "^15.0.0",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",

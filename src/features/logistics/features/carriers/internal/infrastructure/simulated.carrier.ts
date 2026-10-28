@@ -1,5 +1,6 @@
 import { sha256Hex } from "@/lib/crypto";
 import type { Appointment, AppointmentRequest, CarrierPort, Label, LabelRequest, TrackResult } from "./carrier.port";
+import { tracked } from "@/lib/state";
 
 export const WATERMARK = "SIMULATED TEST LABEL - NOT VALID FOR SHIPPING - NO COST";
 
@@ -9,8 +10,8 @@ export const WATERMARK = "SIMULATED TEST LABEL - NOT VALID FOR SHIPPING - NO COS
  */
 export function createSimulatedCarrier(deps: { now?: () => Date } = {}): CarrierPort {
   const now = deps.now ?? (() => new Date());
-  const appointments = new Map<string, { start: number; kind: "pickup" | "dropoff" }>();
-  const labelByRef = new Map<string, string>();
+  const appointments = tracked("carrier.appointments", new Map<string, { start: number; kind: "pickup" | "dropoff" }>());
+  const labelByRef = tracked("carrier.labels", new Map<string, string>());
 
   return {
     name: "simulated",

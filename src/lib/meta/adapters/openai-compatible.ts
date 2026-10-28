@@ -10,8 +10,8 @@ export interface HttpAdapterOptions {
 }
 
 /**
- * Chat-completions style adapter shared by the Meta API and partner hosts.
- * ASSUMPTION: the endpoint accepts `POST {baseUrl}/chat/completions`; confirm against Meta's docs and adjust here only.
+ * Chat-completions style adapter for partner hosts.
+ * Used for partner hosts (Baseten, Modal); the Meta API itself uses its own Responses adapter (meta-api.ts).
  */
 export function createHttpAdapter(opts: HttpAdapterOptions): ModelAdapter {
   const doFetch = opts.fetchImpl ?? fetch;

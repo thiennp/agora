@@ -11,11 +11,12 @@ function Links() {
   const item = (href: string, label: string, match: (p: string) => boolean) => (
     <Link href={`${href}${href === "/dashboard" || href === "/docs" ? "" : q}`} aria-current={match(path) ? "page" : undefined}>{label}</Link>
   );
-  const here = path.startsWith("/dashboard") ? "/dashboard" : path.startsWith("/docs") ? "/docs" : path.startsWith("/deals") ? "/deals" : "/cards";
+  const here = path.startsWith("/dashboard") ? "/dashboard" : path.startsWith("/docs") ? "/docs" : path.startsWith("/deals") ? "/deals" : path.startsWith("/items") ? "/items" : "/cards";
   return (
     <>
       <nav className="nav" aria-label="Main">
         {item("/cards", "Cards", (p) => p.startsWith("/cards"))}
+        {item("/items", "Items", (p) => p.startsWith("/items"))}
         {item("/deals", "Deals", (p) => p.startsWith("/deals"))}
         {item("/dashboard", "Dashboard", (p) => p.startsWith("/dashboard"))}
         {item("/docs", "Docs", (p) => p.startsWith("/docs"))}

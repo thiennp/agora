@@ -6,7 +6,9 @@ import { LineChart } from "@/components/LineChart";
 import { RerunButton } from "@/components/RerunButton";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { getPlatform } from "@/app/_composition/platform";
-import { loadDashboard, type Scenario } from "@/app/_composition/reports";
+import { loadCityMap, loadDashboard, type CityMapData, type Scenario } from "@/app/_composition/reports";
+import { CityMap } from "@/components/CityMap";
+import { runSafetyChecks, type SafetyCheck } from "@/app/_composition/safety-checks";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,19 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     live = { feed: p.feed.slice(0, 8), audit: p.audit };
   } catch {
     live = null;
+  }
+
+  let map: CityMapData | null = null;
+  try {
+    map = await loadCityMap(process.env.APP ?? "kids-gear");
+  } catch {
+    map = null;
+  }
+  let checks: SafetyCheck[] | null = null;
+  try {
+    checks = await runSafetyChecks();
+  } catch {
+    checks = null;
   }
 
   const failures = Object.entries(d.failureCounts).map(([k, n]) => {
@@ -132,11 +147,35 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <ul className="list">
             <li><Badge tone="warn">Cost per deal</Badge> <span className="small">Not measured: the simulation uses template notes and no live model.</span></li>
             <li><Badge tone="warn">Model choices</Badge> <span className="small">Spark Open versus Spark API is not compared: it needs live model calls.</span></li>
-            <li><Badge tone="info">Privacy leaks</Badge> <span className="small">Covered by the screening tests, not by this simulation.</span></li>
+            <li><Badge tone="info">Privacy leaks</Badge> <span className="small">Checked by the safety checks above, not by this simulation. Face and address leaks in photos are not tested: there is no photo intake.</span></li>
             <li><Badge tone="info">Real people</Badge> <span className="small">Hidden rules and the preference change are stand-ins.</span></li>
           </ul>
         </Card>
       </div>
+
+      {map ? <Card title="Where the simulated families live"><CityMap data={map} /></Card> : null}
+
+      <Card title="Safety checks, run now">
+        {checks ? (
+          <>
+            <p className="muted small">The repository&apos;s own test sets, run in this page. They are small, hand-written and synthetic: passing means none of these known attacks got through, not that the system is safe.</p>
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>What is checked</th><th className="num">Cases</th><th className="num">Missed</th></tr></thead>
+                <tbody>
+                  {checks.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.title}<div className="muted small">{c.claim}</div></td>
+                      <td className="num">{c.cases}</td>
+                      <td className="num">{c.failures.length === 0 ? <Badge tone="accent">0</Badge> : <Badge tone="bad">{c.failures.length}</Badge>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : <p className="muted">The test sets are not available in this environment.</p>}
+      </Card>
 
       <Card title="Live demo activity" id="live">
         {live ? (

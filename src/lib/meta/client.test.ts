@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { loadApp } from "../app-config";
 import { createMockAdapter } from "./adapters/mock";
+import { createBasetenAdapter } from "./adapters/baseten";
+import { createMetaApiAdapter } from "./adapters/meta-api";
 import { createHttpAdapter } from "./adapters/openai-compatible";
 import { createMetaClient, createMetaClientFromEnv } from "./client";
 import { BudgetExceededError, CostMeter } from "./cost-meter";
@@ -115,5 +117,43 @@ describe("meta client", () => {
     const res = await adapter.complete({ model: "muse-spark", system: "s", prompt: "p" });
     expect(url).toBe("https://example.test/v1/chat/completions");
     expect(res).toEqual({ text: "hi", inputTokens: 3, outputTokens: 2 });
+  });
+
+  it("meta api adapter posts to /responses, reads the message text and usage, and never puts the key in an error", async () => {
+    let call: { url: string; init: RequestInit } | undefined;
+    const ok = createMetaApiAdapter({
+      baseUrl: "https://example.test/v1/",
+      apiKey: "secret-key",
+      fetchImpl: (async (url: string, init: RequestInit) => {
+        call = { url, init };
+        return new Response(JSON.stringify({ output: [{ type: "reasoning" }, { type: "message", content: [{ type: "output_text", text: "hello" }] }], usage: { input_tokens: 7, output_tokens: 2 } }));
+      }) as unknown as typeof fetch,
+    });
+    expect(await ok.complete({ model: "muse-spark", system: "be brief", prompt: "hi", json: true })).toEqual({ text: "hello", inputTokens: 7, outputTokens: 2 });
+    expect(call!.url).toBe("https://example.test/v1/responses");
+    const sent = JSON.parse(call!.init.body as string);
+    expect(sent.model).toBe("muse-spark-1.3");
+    expect(sent).toMatchObject({ input: "hi", store: false, reasoning: { effort: "low" }, text: { format: { type: "json_object" } } });
+    expect(sent.instructions).toContain("be brief");
+    expect(sent.instructions).toContain("JSON");
+    expect((call!.init.headers as Record<string, string>).authorization).toBe("Bearer secret-key");
+
+    const bad = createMetaApiAdapter({ baseUrl: "https://example.test/v1", apiKey: "secret-key", fetchImpl: (async () => new Response("echo: be brief hi", { status: 429 })) as unknown as typeof fetch });
+    const err = await bad.complete({ model: "muse-spark", system: "s", prompt: "p" }).catch((e: Error) => e);
+    expect((err as Error).message).toBe("meta-api error 429");
+  });
+
+  it("baseten uses the hackathon's open-weight model name", async () => {
+    let body: { model?: string } = {};
+    const b = createBasetenAdapter({
+      baseUrl: "https://example.test/v1",
+      apiKey: "k",
+      fetchImpl: (async (_u: string, init: RequestInit) => {
+        body = JSON.parse(init.body as string);
+        return new Response(JSON.stringify({ choices: [{ message: { content: "x" } }] }));
+      }) as unknown as typeof fetch,
+    });
+    await b.complete({ model: "muse-spark-open", system: "s", prompt: "p" });
+    expect(body.model).toBe("meta-models/muse-spark-open-1026");
   });
 });

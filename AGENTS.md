@@ -76,16 +76,18 @@ confirmations, standing rules, hard limits), language (detection, translation, p
 faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), logistics (handoff modes, encrypted
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
 tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
-simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0010,
+simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0011 (0001–0010 one per slice, 0011 the saved demo state; `npm run db:check` applies them to an empty Postgres 16, needs Docker; model_calls, audit and queue tables are not written yet),
 two example apps, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
-dashboard that draws the learning curves from the simulation CSV. It runs in **demo mode only** (`AGORA_MODE=demo`, the
+dashboard that draws the learning curves from the simulation CSV, a synthetic-city map and live safety checks (the red-team and screening sets). It runs in **demo mode only** (`AGORA_MODE=mock`, the
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
-carrier. `AGORA_MODE=live` answers 501 until accounts are built.
-Not built: notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), Postgres-backed memory, intake, voice,
-accounts and real authentication, the map on the dashboard, shipping address and label screens, database access (in-memory stores only), live Meta API calls (endpoint format unconfirmed).
+carrier. Demo state is saved after every change to Postgres (`DATABASE_URL`) or a file (`AGORA_STATE_FILE`) and restored on start (docs/ARCHITECTURE.md §11b); with neither it is memory only. `AGORA_MODE=live` answers 501 until accounts are built (only `live` is refused; there is no separate demo value).
+Scaffold only (empty files, no behaviour yet): the `safety`, `intake` and `voice` slices, the dashboard slice's sub-features (the dashboard's logic lives in `src/app/_composition`), `src/lib/{audit,budget,db,flags,queue}.ts`, `db/seed.sql`, the golden-file evals, and Playwright e2e (the demo journey is covered by `src/app/api/api.test.ts`). Safety rules are enforced today in `schema.ts` (`safetyRules`), `catalog` and `gatekeeper/classifier`.
+Also built in the demo app: shipping in the deal room (propose another way to hand over, recipient's encrypted address, postage split as terms only, simulated label shown to the sender only, tracking), and an items page (add an offer or want from the app's own categories, see the matcher's candidates, ask the agent to propose a deal; several deals at once).
+Not built: photo intake (needs a Meta key for the vision call; the items form stands in), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), relational Postgres repositories (migrations 0001–0010 are unused; demo state is one saved document), Postgres-backed memory, intake, voice,
+accounts and real authentication, live Meta API calls (endpoint format unconfirmed).
 
 ## Working here
 
-- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run evals`, `npm run bench:matching`, `npm run capacity`, `npm run mcp:docs` (the docs knowledge base as an MCP server; see `docs/DOCS-PLATFORM.md`), `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
+- `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run bench:matching`, `npm run capacity`, `npm run mcp:docs` (the docs knowledge base as an MCP server; see `docs/DOCS-PLATFORM.md`), `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

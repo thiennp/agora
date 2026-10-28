@@ -3,6 +3,7 @@ import { createCandidateIndex, districtKeys } from "../../features/candidates/pu
 import type { IndexedItem } from "../../features/candidates/public-api/types";
 import { districtDistanceKm, incompatibility, reasonLine, score } from "../../features/scoring/public-api/infrastructure";
 import type { DistanceBand, Factor } from "../../features/scoring/public-api/types";
+import { tracked } from "@/lib/state";
 
 export interface Match {
   /** "<offerItemId>:<wantItemId>", stable so a dismissal sticks. */
@@ -43,8 +44,8 @@ export function createMatchService(deps: {
   const now = deps.now ?? (() => new Date());
   const topN = deps.topN ?? 3;
   const index = createCandidateIndex();
-  const dismissed = new Map<string, Set<string>>();
-  const declines = new Map<string, number>();
+  const dismissed = tracked("matching.dismissed", new Map<string, Set<string>>());
+  const declines = tracked("matching.declines", new Map<string, number>());
   const patternKey = (category: string, a: string, b: string) => `${category}|${[a, b].sort().join("~")}`;
 
   function empty(item: IndexedItem, why: string): MatchResult {

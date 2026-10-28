@@ -5,7 +5,7 @@ export interface RelayMessage {
   dealId: string;
   fromFamilyId: string;
   toFamilyId: string;
-  /** Exactly what the sender typed. Kept in memory for the sender's own view only; the database keeps its hash and the screened text. */
+  /** Exactly what the sender typed. Kept in memory for the sender's own view only; the database and the saved demo state keep its hash and the screened text (after a restart the sender sees the screened text). */
   original: string;
   originalLang: string;
   /** The original after screening: safe to show the other owner. */

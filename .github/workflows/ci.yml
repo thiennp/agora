@@ -14,3 +14,4 @@ jobs:
       - run: npm run lint
       # Unit, property, contract, red-team and eval suites (evals/ run under vitest too), plus the seeded simulation.
       - run: npm test
+      - run: npm run db:check

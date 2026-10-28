@@ -1,6 +1,6 @@
 # ADR 0001 — Fractal Slice Architecture in a modular monolith
 
-Status: accepted (Oct 26, 2026)
+Status: accepted (Oct 27, 2026)
 
 ## Context
 Agora has many capabilities (matching, negotiation, gatekeeper, relay, trust, logistics, learning, language, simulation)
@@ -52,4 +52,5 @@ nesting works") shows the full tree and the slice map.
 - More boilerplate per slice than a flat layout; the two-level depth limit keeps it bounded.
 - Boundaries make a later extraction (model-heavy workers first, then media, then logistics) mechanical, but nothing is
   extracted today and no performance claim is made for the split.
+- The entry layer (`src/app/_composition`) is the only place that wires slices together; see ADR 0002 for platform versus apps.
 - The hub is in-process today; a durable queue behind the same interface is a documented next step.

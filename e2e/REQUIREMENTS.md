@@ -14,9 +14,9 @@ Developers.
 
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
-| E2E-01 | Cover intake to match. | Must | Spec passes. |
-| E2E-02 | Cover negotiate, owner question and confirm. | Must | Spec passes. |
-| E2E-03 | Cover handoff and shipping. | Must | Spec passes. |
+| E2E-01 | Cover intake to match. | Must | Not built: the specs were empty and were removed. The API journey is covered by `src/app/api/api.test.ts`. |
+| E2E-02 | Cover negotiate, owner question and confirm. | Must | Not built: the specs were empty and were removed. The API journey is covered by `src/app/api/api.test.ts`. |
+| E2E-03 | Cover handoff and shipping. | Must | Not built: the specs were empty and were removed. The API journey is covered by `src/app/api/api.test.ts`. |
 
 ## Out of scope
 

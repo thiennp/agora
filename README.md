@@ -43,6 +43,19 @@ Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents wo
 3. [docs/PLAN.md](docs/PLAN.md) — scope, gates, schedule, risks.
 4. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Fractal Slice Architecture, data model, privacy, scale, testing.
 
+## Run the demo
+
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
+
+Open the home page, pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
+judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
+in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
+`npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo uses no Meta key: translation
+and the carrier are simulated, and photo intake is not built.
+
 ## Create an app
 
 Paste this into Muse, nothing else:

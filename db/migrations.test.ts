@@ -25,4 +25,12 @@ describe("migrations", () => {
       expect(sql, f).not.toMatch(/\b(health|sleep|feeding|diagnosis|medical)\b/i);
     }
   });
+
+  it("has unique, gap-free numbering and no empty files (DB-01)", () => {
+    const files = readdirSync("db/migrations").filter((n) => n.endsWith(".sql")).sort();
+    files.forEach((f, i) => {
+      expect(f.startsWith(String(i + 1).padStart(4, "0") + "_"), f).toBe(true);
+      expect(readFileSync(`db/migrations/${f}`, "utf8").trim().length, f).toBeGreaterThan(0);
+    });
+  });
 });
