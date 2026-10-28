@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   css: { postcss: {} },
+  // Page and component files use the automatic JSX runtime (Next sets it up); tests that render them need the same.
+  esbuild: { jsx: "automatic" },
   resolve: { alias: [
       { find: "@agora/app-config", replacement: fileURLToPath(new URL("./src/lib/app-config/index.ts", import.meta.url)) },
       { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },

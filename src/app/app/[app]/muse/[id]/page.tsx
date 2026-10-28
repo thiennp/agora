@@ -7,6 +7,7 @@ import { Banner, Card } from "@/components/Card";
 import { LineChart } from "@/components/LineChart";
 import { MuseKeyPanel } from "@/components/MuseKeyPanel";
 import { getMuseKeyStore } from "@/app/_composition/identity";
+import { appVocabulary, loadApp } from "@/lib/app-config";
 import { memberStatusView } from "@/app/_composition/member-status";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,8 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
   const waiting = s.waiting.questions.length + s.waiting.confirmations.length + s.waiting.offers.length;
   const keys = await getMuseKeyStore().list(app, id);
   const total = s.deals.length + s.items.length;
+  const w = appVocabulary(await loadApp(app));
+  const board = w.style === "board";
 
   return (
     <div className="stack-lg">
@@ -35,32 +38,33 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
         <p className="small muted">This page is private to you. It shows decisions and counts, never the messages between agents.</p>
       </div>
 
-      {total === 0 && waiting === 0 ? <Banner tone="info">Nothing yet. When you add what you offer or need, your agent starts working and everything it does shows up here.</Banner> : null}
+      {total === 0 && waiting === 0 ? <Banner tone="info">Nothing yet. When you <Link href={`/app/${s.app.id}/items`}>{board ? "post what you offer or need" : "add what you offer or need"}</Link>, your agent starts working and everything it does shows up here.</Banner> : null}
 
       <Card title={<>Waiting on you <Badge tone={waiting ? "warn" : "neutral"}>{waiting}</Badge></>} prominent={waiting > 0}>
         {waiting === 0 ? <p className="muted">Nothing needs you. Your agent only stops to ask when it cannot decide alone.</p> : null}
+        {waiting > 0 ? <p><Link className="btn primary" href={`/app/${s.app.id}/cards`}>Answer them</Link></p> : null}
         <ul className="list">
           {s.waiting.questions.map((q) => <li key={q.id}>{q.text}</li>)}
-          {s.waiting.confirmations.map((c) => <li key={c.id}>Confirm or decline: {c.item} <span className="small muted">· you are {c.role}</span></li>)}
+          {s.waiting.confirmations.map((c) => <li key={c.id}>Confirm or decline: {c.item}{board ? null : <span className="small muted"> · you are {c.role}</span>}</li>)}
           {s.waiting.offers.map((o) => <li key={o.id}>{o.text}</li>)}
         </ul>
       </Card>
 
-      <Card title={<>Deals <Badge>{s.deals.length}</Badge></>}>
-        {s.deals.length === 0 ? <p className="muted">No deals yet.</p> : (
+      <Card title={<>{board ? "Conversations" : "Deals"} <Badge>{s.deals.length}</Badge></>}>
+        {s.deals.length === 0 ? <p className="muted">{board ? "No conversations yet." : "No deals yet."}</p> : (
           <>
             <BarList bars={bars(s.dealsByState)} />
             <ul className="list">
               {s.deals.map((d) => (
-                <li key={d.id}>{d.item} <span className="small muted">· you are {d.role}</span> <Badge tone={d.open ? "info" : "neutral"}>{d.stateLabel}</Badge></li>
+                <li key={d.id}><Link href={`/app/${s.app.id}/deals/${d.id}`}>{d.item}</Link>{board ? null : <span className="small muted"> · you are {d.role}</span>} <Badge tone={d.open ? "info" : "neutral"}>{d.stateLabel}</Badge></li>
               ))}
             </ul>
           </>
         )}
       </Card>
 
-      <Card title={<>Items <Badge>{s.items.length}</Badge></>}>
-        {s.items.length === 0 ? <p className="muted">You have not listed anything yet.</p> : (
+      <Card title={<>{board ? "Posts" : "Items"} <Badge>{s.items.length}</Badge></>}>
+        {s.items.length === 0 ? <p className="muted">{board ? "You have not posted anything yet." : "You have not listed anything yet."}</p> : (
           <>
             <BarList bars={bars(s.itemsByStatus)} />
             <ul className="list">

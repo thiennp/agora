@@ -1,4 +1,5 @@
 import { simulatedDropPoints } from "@/features/logistics/public-api/infrastructure";
+import { appStyle } from "@/lib/app-config";
 import type { Platform, Persona, PersonaKey } from "./platform";
 
 /** View models for the pages: plain data, no slice types leaking into components. */
@@ -17,6 +18,8 @@ const TRANSITION: Record<string, string> = {
 async function itemText(p: Platform, itemId: string): Promise<string> {
   const i = await p.catalog.items.get(itemId);
   if (!i) return "an item";
+  // A board (posts, not goods) has no size or condition to show; its categories are the app's own words.
+  if (appStyle(p.app) === "board") return [i.description, p.app.catalog.categories.find((c) => c.id === i.category)?.label ?? i.category].filter(Boolean).join(" · ");
   return [i.description || i.category, i.category, i.size ? `size ${i.size}` : null, i.condition].filter(Boolean).join(" · ");
 }
 
@@ -95,7 +98,9 @@ export async function itemsView(p: Platform, key: PersonaKey) {
         matches = await Promise.all(
           r.matches.map(async (m) => {
             const o = await p.catalog.items.get(m.offerItemId);
-            return { offerItemId: m.offerItemId, text: o ? itemLabel(p, o) : "an item", reason: m.reason };
+            // A board has no size, condition or district to compare: the reason is only that the topic is the same.
+            const topic = p.app.catalog.categories.find((c) => c.id === i.category)?.label ?? i.category;
+            return { offerItemId: m.offerItemId, text: o ? itemLabel(p, o) : "an item", reason: appStyle(p.app) === "board" ? `same topic: ${topic}` : m.reason };
           }),
         );
       }

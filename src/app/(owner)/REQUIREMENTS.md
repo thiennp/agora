@@ -17,6 +17,7 @@ Parent owners.
 |---|---|---|---|
 | APP-OWN-01 | Cards, items and deals pages (built, demo personas; matches show inline on the items page); onboarding and photo intake are not built (no accounts, no Meta key). | Must | Each built page reachable from the main flow. |
 | APP-OWN-04 | Shipping is handled in the deal room: the recipient gives the address, only the sender sees the label, postage is a recorded split with no money handled. | Must | `src/app/api/shipping.test.ts`. |
+| APP-OWN-05 | The same pages serve a created app: `ItemsBody`, `CardsBody`, `DealsBody` and `DealRoomBody` (`src/app/_pages`) take a scope, so `/app/{app}/items|cards|deals` (APP-14) and `/items|cards|deals` here are one implementation. Demo behaviour is unchanged. | Must | `created-app.test.ts`, `api.test.ts`. |
 | APP-OWN-02 | The main flow from photo to confirmed deal takes few steps. | Must | Counted in rehearsal. |
 | APP-OWN-03 | Pending owner questions are always the most prominent item. | Must | Visible on every owner page. |
 

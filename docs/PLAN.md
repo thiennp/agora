@@ -88,6 +88,7 @@ the person's own Muse is an extra layer when it can connect.
 | 5 | Member status at `/agora/app/{app}/muse/{id}`, grouped and charted, built from the existing read views and the audit store (a stub today). | 1 day | built (Oct 28): `/app/{app}/muse/{id}` for the member only (404 for everyone else, the creator included), groups for waiting on you, deals, items, what it did alone (from the member's own deals; audit store still a stub, said on the page), lessons and standing rules, with bar charts and a 7-day line chart, empty states, 375 px; linked from the app page. Members of stored apps are real parties since step 7, so the groups fill with their own items, deals and cards. Not built: answering cards from this page |
 | 6 | Read-only access for a person's own Muse: app overview, my status, my actions, pending cards, as a documented HTTP API that Muse can turn into a custom connector (per-member key), and over MCP if step 0 confirms it. No tool answers a card. | 1 day | built (Oct 28): per-member keys (`src/lib/identity/muse-keys.ts`, `agmk_` + 256 bits, hashed, shown once, revocable, max 3), `GET /api/muse/{app}/overview\|status\|actions\|cards` (Bearer key, GET only), `/api/muse/openapi.json`, the same four reads over stateless MCP at `/api/muse/{app}/mcp`, a "Connect your own Muse" card on the status page, `docs/MUSE-CONNECTOR.md`. Not confirmed with a real Muse (step 0 hands-on check still pending); no OAuth; actions come from the member's own deals until the audit log exists |
 | 7 | Docs, tests, demo script; members of stored apps as parties (the gap left by step 5). | ½ day | built (Oct 28): members are parties (ADR 0007), `src/app/api/muse-first-flow.test.ts` runs the whole flow in mock mode, `docs/DEMO-SCRIPT.md` rewritten for the Muse-first demo with its fallback and the honest list of what is simulated. Open: the owner's hands-on checks (§2d, and the list in DEMO-SCRIPT), deploying at agentwitch.com/agora |
+| 8 | A created app is usable: the person's own items, cards, deals and deal-room pages under `/app/{app}/...`, the app's own words, honest limits, 404s and demo-nav clean-up (§2c-quater, BR-46). | ½ day | built (Oct 28): shared page bodies and `ScopeContext`, `memberScope`, `appVocabulary`, `src/app/api/created-app.test.ts`; checked at 375 px. Not built: events, RSVPs, group chat, photo intake in created apps, using the app through Muse alone |
 
 About 6–8 days of work against 5 days to the G3 freeze. Cut order if late: step 6, then the charts in step 5 (keep the
 grouped lists), then the recovery path in step 2 (disclosed). Steps 1, 3 and 4 are never cut.
@@ -127,6 +128,25 @@ through the read-only API (step 6). Neither has been tried with a real Muse.
 location, shipping or a safety exception when Muse is their only interface. Option A: the person types "yes" to Muse and Muse relays
 it, which relaxes the rule that only the owner's own tap confirms (BR-07, BR-44). Option B: Muse gives a link, the person opens it and
 taps in our app. Until decided, the current rule stands (own tap in our app) and the Muse API stays read-only.
+
+### 2c-quater. A created app is usable (Oct 28, step 8)
+
+The first end-to-end run showed a created app was a shell: an overview and a status page, with nothing to post, match, answer or discuss.
+Step 8 adds the person's own pages under `/app/{app}/items`, `/cards`, `/deals` and `/deals/{id}` (BR-46). They are the demo's pages,
+parameterised by an app scope instead of copied (`src/app/_pages/*Body.tsx`, `ScopeProvider`), and run on the app's own platform as
+the signed-in light-identity member. The routes already took `?app=` and the session; what was missing was the pages and the words.
+- **Flow:** add what I offer or need, see the matcher's candidates, ask my agent to propose a deal (or to reach out), answer owner cards
+  with my own tap, confirm, use the screened and relayed chat, see it all on the status page. The creator is also a person using the app,
+  with the overview and share link on top. The confirmation rule is unchanged (own tap in our app; the Muse API stays read-only).
+- **Wording** comes from the creator's config. An app that is free and pick-up only has nothing to swap or ship, so it is a **board**:
+  plain posts and replies ("You offer", "You need", "Conversations", "Meeting up"), no condition or size, no swap, free, handover or
+  city words. Exchange apps keep their words (`appStyle`, `appVocabulary` in `src/lib/app-config`).
+- **Honest limits, said on the pages and in `agent.md`** ("What it does not do"): the platform's only matching is exchange-shaped, so an app for
+  a run club, a learning group or an office gets one-to-one posts and conversations. No events, calendar, RSVP or sign-up lists, no group
+  chat or announcements, no photo intake in created apps, translation and shipping labels simulated. A person in a board app who offers
+  something is found by someone who needs it; only the person who needs something can ask their agent to reach out.
+- **Clean-up:** an unknown app is a 404 (page, `agent.md`, API); the demo nav and persona switch and demo footer are hidden inside `/app/...`;
+  the root `loading.tsx` moved into `(owner)`, `(judge)` and `docs` because a Suspense boundary above `/app` made not-found a 200.
 
 ## 2d. Step 0: can a real Muse connect?
 
