@@ -54,7 +54,7 @@ Open the home page, pick Mia or Jonas (two demo personas, not accounts), answer 
 judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
 in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
 `npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo uses no Meta key: translation
-and the carrier are simulated, and photo intake is not built.
+and the carrier are simulated, and photo intake is not built yet (decided to build).
 
 ## Create an app
 
