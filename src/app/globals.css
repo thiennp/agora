@@ -1,59 +1,156 @@
+@import "tailwindcss";
+
+/* Dark mode is the .dark class on <html> (set by the ThemeToggle and the inline script in layout.tsx). */
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Agora design tokens. Original to this project, built on Tailwind's default palette (slate, green, amber, red, sky)
+  plus one brand scale defined here (a violet-purple). Fonts are the system stacks; no font files are shipped.
+*/
+@theme {
+  --font-*: initial;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Type scale (size / line height) */
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.75rem;
+  --text-heading: 1.0625rem;
+  --text-heading--line-height: 1.5rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.25rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+
+  /* Brand scale */
+  --color-brand-50: #f5f1fe;
+  --color-brand-100: #ebe3fd;
+  --color-brand-200: #d9c9fa;
+  --color-brand-300: #bda2f4;
+  --color-brand-400: #9d77ea;
+  --color-brand-500: #7f50dc;
+  --color-brand-600: #6a3bc4;
+  --color-brand-700: #5730a1;
+  --color-brand-800: #46287f;
+  --color-brand-900: #362062;
+  --color-brand-950: #20123d;
+
+  /* Shape and depth */
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-hero: 1.5rem;
+  --shadow-soft: 0 1px 2px rgb(24 20 48 / 0.08);
+  --shadow-card: 0 1px 3px rgb(24 20 48 / 0.06), 0 6px 16px -8px rgb(24 20 48 / 0.1);
+  --shadow-pop: 0 20px 40px -12px rgb(24 20 48 / 0.35);
+}
+
+/* Semantic colours, light. Pages and components read these; the dark block below swaps them. */
 :root {
-  --bg: #f6f7f4;
+  --bg: #f4f3f8;
   --surface: #ffffff;
-  --surface-2: #eef1ec;
-  --text: #1c2420;
-  --muted: #5b6a62;
-  --border: #d8dfd9;
-  --accent: #1f7a5c;
+  --surface-2: #f9f8fc;
+  --text: #1b1730;
+  --muted: #5a5470;
+  --border: #e5e2ee;
+  --border-strong: #cfcadd;
+  --accent: var(--color-brand-600);
   --accent-ink: #ffffff;
-  --accent-soft: #dcefe6;
-  --warn: #9a5b00;
-  --warn-soft: #fbefd5;
-  --bad: #a4302b;
-  --bad-soft: #f8e1df;
-  --info: #28587a;
-  --info-soft: #dde9f2;
-  --c-learning: #1f7a5c;
+  --accent-soft: var(--color-brand-100);
+  --ok: #0f6b3a;
+  --ok-soft: #dcf5e6;
+  --warn: #8a4b00;
+  --warn-soft: #fdecc8;
+  --bad: #b42318;
+  --bad-soft: #fbe0dd;
+  --info: #0c5a8a;
+  --info-soft: #dff0fb;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #0f0d1a;
+  --surface: #181527;
+  --surface-2: #1f1b33;
+  --text: #efedf7;
+  --muted: #aaa4c2;
+  --border: #2e2948;
+  --border-strong: #413a62;
+  --accent: var(--color-brand-300);
+  --accent-ink: var(--color-brand-950);
+  --accent-soft: #2a1f4d;
+  --ok: #6ee0a8;
+  --ok-soft: #0f3a26;
+  --warn: #f5c867;
+  --warn-soft: #3d2c0a;
+  --bad: #ff9a90;
+  --bad-soft: #43181a;
+  --info: #8fd0f5;
+  --info-soft: #0f2a40;
+}
+
+/* Expose the semantic colours as Tailwind utilities: bg-surface, text-ink, border-line, bg-ok-soft, ... */
+@theme inline {
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+}
+
+/* Page-level names used by Agora's own classes below. */
+:root {
+  --c-learning: var(--color-brand-700);
   --c-off: #7b868f;
   --c-retry: #b25e09;
-  --c-both: #5a4a9a;
-  --c-oracle: #1c2420;
-  --radius: 12px;
-  --shadow: 0 1px 2px rgba(20, 30, 25, 0.06), 0 4px 14px rgba(20, 30, 25, 0.05);
+  --c-both: #0b79b0;
+  --c-oracle: #1b1730;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgb(24 20 48 / 0.06), 0 6px 16px -8px rgb(24 20 48 / 0.1);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #101512;
-    --surface: #182019;
-    --surface-2: #1f2a22;
-    --text: #e7ede9;
-    --muted: #9fb0a6;
-    --border: #2b3a30;
-    --accent: #4cc39a;
-    --accent-ink: #08140e;
-    --accent-soft: #1d3a2e;
-    --warn: #f0b95a;
-    --warn-soft: #3a2d12;
-    --bad: #ff8b84;
-    --bad-soft: #3d1c1a;
-    --info: #8fc2e8;
-    --info-soft: #172a39;
-    --c-learning: #4cc39a;
-    --c-off: #8d99a2;
-    --c-retry: #f0a04b;
-    --c-both: #a899e8;
-    --c-oracle: #e7ede9;
-    --shadow: none;
-  }
+.dark {
+  --c-learning: var(--color-brand-300);
+  --c-off: #8d99a2;
+  --c-retry: #f0a04b;
+  --c-both: #7cc8f0;
+  --c-oracle: #efedf7;
+  --shadow: none;
 }
+
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--border); }
+  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
+}
+
+/*
+  Agora's page classes, kept in the components layer so Tailwind utilities
+  (used by the ui components and the styleguide) always win over them.
+*/
+@layer components {
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.5 var(--font-sans);
 }
 h1, h2, h3 { line-height: 1.25; margin: 0 0 8px; }
 h1 { font-size: 1.6rem; }
@@ -61,8 +158,8 @@ h2 { font-size: 1.2rem; }
 h3 { font-size: 1rem; }
 p { margin: 0 0 12px; }
 a { color: var(--accent); }
-.container { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 16px; }
-main.container { padding-top: 16px; padding-bottom: 48px; }
+.wrap { width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+main.wrap { padding-top: 16px; padding-bottom: 48px; }
 .muted { color: var(--muted); }
 .small { font-size: 0.875rem; }
 .stack { display: grid; gap: 12px; }
@@ -75,7 +172,7 @@ main.container { padding-top: 16px; padding-bottom: 48px; }
 @media (min-width: 720px) { .grid-kpi { grid-template-columns: repeat(4, 1fr); } }
 
 .site-header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
-.site-header .container { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding-top: 10px; padding-bottom: 10px; }
+.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding-top: 10px; padding-bottom: 10px; }
 .brand { font-weight: 700; text-decoration: none; color: var(--text); font-size: 1.1rem; }
 .brand span { color: var(--accent); }
 .nav { display: flex; flex-wrap: wrap; gap: 4px 4px; flex: 1; }
@@ -159,3 +256,10 @@ details > summary { cursor: pointer; font-weight: 600; min-height: 32px; display
 @media (prefers-reduced-motion: no-preference) { .btn { transition: background 0.12s, filter 0.12s; } }
 .skip { position: absolute; left: -999px; top: 8px; z-index: 20; }
 .skip:focus { left: 8px; }
+ul, ol { padding-left: 1.25rem; }
+ul { list-style: disc; }
+ol { list-style: decimal; }
+.list, .timeline { list-style: none; }
+.list { padding: 0; }
+img, svg { vertical-align: middle; }
+}

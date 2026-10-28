@@ -77,7 +77,7 @@ faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
 tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
 simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0010,
-two example apps, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
+two example apps, and a **demo web app** (`src/app`, styled with Agora's own Tailwind 4 design tokens, light and dark, plus a public read-only `/styleguide`): owner cards, deal room with relay chat and handoff card, and a judge
 dashboard that draws the learning curves from the simulation CSV. It runs in **demo mode only** (`AGORA_MODE=demo`, the
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
 carrier. `AGORA_MODE=live` answers 501 until accounts are built.

@@ -2,6 +2,7 @@
   "name": "agora",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Platform for community apps: members' agents act for them, in their language, with the member in control. Create an app by pasting one link into Muse.",
   "scripts": {
     "dev": "next dev",
@@ -15,9 +16,13 @@
     "simulate": "tsx evals/run-simulation.ts"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "next": "^15.0.0",
+    "postcss": "^8.5.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "^4.3.3",
     "zod": "^3.23.0"
   },
   "devDependencies": {

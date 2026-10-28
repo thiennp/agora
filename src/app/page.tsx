@@ -19,7 +19,10 @@ export default function Home() {
         </Card>
         <Card title="See the evidence">
           <p className="muted">Does learning help? The simulation measures it on held-out scenarios, with the failures left in.</p>
-          <Link className="btn" href="/dashboard">Open the dashboard</Link>
+          <div className="row">
+            <Link className="btn" href="/dashboard">Open the dashboard</Link>
+            <Link className="btn ghost" href="/styleguide">Design system</Link>
+          </div>
         </Card>
         <Card title="Start again">
           <p className="muted">Reset the scenario to the moment the agents first met.</p>

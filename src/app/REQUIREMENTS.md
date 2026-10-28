@@ -19,6 +19,8 @@ Parent owners; judges.
 | APP-02 | Every page works at phone width. | Must | No horizontal scrolling at 375 px. |
 | APP-03 | Every page has empty, loading and error states. | Must | States exist for each page. |
 | APP-04 | The app runs in demo mode only until accounts exist; live mode refuses. | Must | `AGORA_MODE=live` returns 501 `auth_not_built`; tested. |
+| APP-06 | Every page uses the shared design tokens and works in light and dark. | Should | Tokens live in `globals.css`; the page classes read them; the theme toggle sets the `dark` class. |
+| APP-07 | A public, read-only `/styleguide` page shows the shared components. | Should | Opens without sign-in, works under `AGORA_BASE_PATH`, holds no demo or owner data. |
 | APP-05 | Personas in the demo are not authentication and say so. | Must | Footer states demo mode; slices still check the acting party. |
 
 ## Out of scope
@@ -31,6 +33,7 @@ NFR-02, NFR-04.
 
 ## Contents
 
+- [Styleguide page](../features/styleguide/REQUIREMENTS.md)
 - [Judge pages]((judge)/REQUIREMENTS.md)
 - [Owner pages]((owner)/REQUIREMENTS.md)
 - [API routes](api/REQUIREMENTS.md)
