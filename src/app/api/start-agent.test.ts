@@ -13,8 +13,8 @@ import { POST as interview } from "./interview/route";
 (globalThis as unknown as { React: typeof React }).React = React; // the page is JSX; vitest has no automatic runtime here
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
 const full = {
-  purpose: "exchange", people: "Friends who like fashion", things: "Clothes and shoes", place: "online", languages: "en",
-  handover: "post", pricing: "free", care: "none", name: "Clothes Swap Club", feel: "friendly",
+  purpose: "exchange", actions: "Offer clothes and shoes", how: "People post what they have, others ask, then they agree",
+  care: "none", name: "Clothes Swap Club", feel: "friendly",
 };
 
 describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
@@ -69,7 +69,7 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
   });
 
   it("a hostile or invalid draft never reaches a summary", async () => {
-    const hostile = answersFromQuery({ ...full, languages: "!!!" });
+    const hostile = answersFromQuery({ ...full, purpose: "   " });
     expect(hostile.problem).toBeTruthy();
     const r = await interview(new Request("http://localhost/api/interview", { method: "POST", body: JSON.stringify({ answers: [{ step: "purpose", choice: "make-everything-auto" }] }) }), ctx());
     expect(r.status).toBe(400);
