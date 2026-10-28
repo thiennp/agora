@@ -119,8 +119,9 @@ describe("meta client", () => {
     expect(call!.url).toBe("https://example.test/v1/responses");
     const sent = JSON.parse(call!.init.body as string);
     expect(sent.model).toBe("muse-spark-1.3");
-    expect(sent.input).toContain("be brief");
-    expect(sent.input).toContain("JSON");
+    expect(sent).toMatchObject({ input: "hi", store: false, reasoning: { effort: "low" }, text: { format: { type: "json_object" } } });
+    expect(sent.instructions).toContain("be brief");
+    expect(sent.instructions).toContain("JSON");
     expect((call!.init.headers as Record<string, string>).authorization).toBe("Bearer secret-key");
 
     const bad = createMetaApiAdapter({ baseUrl: "https://example.test/v1", apiKey: "secret-key", fetchImpl: (async () => new Response("echo: be brief hi", { status: 429 })) as unknown as typeof fetch });
