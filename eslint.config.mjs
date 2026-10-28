@@ -33,7 +33,7 @@ export default tseslint.config(
   },
   {
     // The registry is the single place platform code reaches into apps/. The apps API test imports the route folder api/apps/ (a URL, not an app).
-    files: ["src/lib/app-config/load-app.ts", "src/lib/app-config/*.test.ts", "src/app/api/apps.test.ts", "src/app/api/identity.test.ts", "src/app/api/app-page.test.ts","src/app/api/interview.test.ts"],
+    files: ["src/lib/app-config/load-app.ts", "src/lib/app-config/*.test.ts", "src/app/api/apps.test.ts", "src/app/api/identity.test.ts", "src/app/api/app-page.test.ts", "src/app/api/member-status.test.ts","src/app/api/interview.test.ts"],
     rules: { "no-restricted-imports": ["error", { patterns: [internals] }] },
   },
   {

@@ -33,7 +33,7 @@ function About({ view }: { view: Described }) {
 /**
  * `/app/{app}` (served at `/agora/app/{app}`), docs/PLAN.md §2c step 4, BR-42. One address for everyone, three views by session:
  * a stranger gets the join page, a member the member view, the creator the overview with the invite QR. The invite link is this
- * address, so it carries no secret. The member status page (`/muse/{id}`) is step 5.
+ * address, so it carries no secret. Each member's status page is `/muse/{id}` (step 5).
  */
 export default async function AppPage({ params }: { params: Promise<{ app: string }> }) {
   const id = (await params).app;
@@ -71,6 +71,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <CopyLink url={url} title={`Join ${app.name}`} />
           <p className="small muted">The link holds no password. Anyone who has it can join, so share it only with the people you mean.</p>
         </Card>
+        <p><Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing</Link></p>
         <Card title={`Members (${view.members.length})`}>
           {view.members.length === 0 ? (
             <p className="muted">Nobody has joined yet. Share the invite to get started.</p>
@@ -94,7 +95,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <p className="small muted">You are a member of</p>
           <h1>{app.name}</h1>
         </div>
-        <Banner tone="info">Your agent&apos;s status page is coming soon.</Banner>
+        <p><Link className="btn primary" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing</Link></p>
         <About view={view} />
       </div>
     );
