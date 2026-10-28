@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { loadApp } from "@/lib/app-config";
+import { getAppStore } from "./apps";
 import { getPlatform, type Platform, type PersonaKey } from "./platform";
 
 /** Stable error shape for every route (API-03): { error: { code, message } }. */
@@ -11,8 +13,21 @@ export class HttpError extends Error {
 
 const STATUS: Record<string, number> = {
   not_found: 404, not_owner: 403, not_a_party: 403, restricted: 403, not_host: 403, not_recipient: 403, not_allowed: 403,
-  already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, rate_limited: 429,
+  already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, app_exists: 409, too_many_apps: 409, rate_limited: 429,
 };
+
+/** The platform of an app by id; an id no repository or stored app has is a 404, not a server error. */
+export async function platformFor(appId?: string): Promise<Platform> {
+  if (appId !== undefined) {
+    getAppStore();
+    try {
+      await loadApp(appId);
+    } catch {
+      throw new HttpError(404, "unknown_app", `There is no app "${appId.slice(0, 40)}".`);
+    }
+  }
+  return getPlatform(appId);
+}
 
 const limiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
 export const resetRateLimit = () => limiter.reset();
@@ -75,7 +90,9 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
   return (req: Request, ctx: { params: Promise<Record<string, string>> }): Promise<Response> =>
     serve(req, ctx, opts.schema, async (input, params) => {
       if (process.env.AGORA_MODE === "live") throw new HttpError(501, "auth_not_built", "The demo console is not available in live mode: there are no accounts yet.");
-      const platform = await getPlatform();
+      // Which app this request is about: the `app` path parameter, else `?app=`, else the demo app (BR-41).
+      const appId = params.app ?? new URL(req.url).searchParams.get("app") ?? undefined;
+      const platform = await platformFor(appId);
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
       const result = await run({ input, platform, params, as });
       if (req.method !== "GET") await platform.persist();

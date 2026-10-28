@@ -15,7 +15,7 @@ const post = (body: unknown) => new Request("http://localhost/x", { method: "POS
 const get = (path: string) => new Request(`http://localhost${path}`);
 const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) });
 const j = async (r: Response) => (await r.json()) as any;
-const g = globalThis as unknown as { __agoraPlatform?: Promise<unknown> };
+const g = globalThis as unknown as { __agoraPlatforms?: Map<string, unknown> };
 
 const views = async (id: string) => ({
   a: await j(await getDeal(get(`/api/deals/${id}?as=a`), ctx({ dealId: id }))),
@@ -37,7 +37,7 @@ describe("saved state survives a restart", () => {
   });
   afterAll(async () => {
     delete process.env.AGORA_STATE_FILE;
-    g.__agoraPlatform = undefined;
+    g.__agoraPlatforms?.clear();
     await rm(dir, { recursive: true, force: true });
   });
 
@@ -62,7 +62,7 @@ describe("saved state survives a restart", () => {
     expect(Object.keys(doc)).toEqual(expect.arrayContaining(["negotiation.deals", "cards.questions", "relay.rows", "platform.meta"]));
 
     // Restart: the process forgets the platform; the next request builds it again from the file.
-    g.__agoraPlatform = undefined;
+    g.__agoraPlatforms?.clear();
     p = await getPlatform();
     expect(p.restored).toBe(true);
     expect(p.dealId).toBe(dealId);

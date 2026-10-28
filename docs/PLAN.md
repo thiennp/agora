@@ -81,7 +81,7 @@ the person's own Muse is an extra layer when it can connect.
 | Step | Work | Size | Status |
 |---|---|---|---|
 | 0 | Check real Muse: can it add a remote MCP connector (streamable HTTP, OAuth), and can it open a link from a QR code? Decides step 6. | ½ day | desk check done; hands-on check by the owner pending (§2d) |
-| 1 | Apps as data: app configs stored in the database and validated by `schema.ts` at load; routes under `/agora/app/{app}`; stores scoped per app; repo apps (kids-gear, garden-tools) keep working. | 1–1.5 days | not started |
+| 1 | Apps as data: app configs stored in the database and validated by `schema.ts` at load; routes under `/agora/app/{app}`; stores scoped per app; repo apps (kids-gear, garden-tools) keep working. | 1–1.5 days | built (Oct 28): app store with Postgres, file and memory backends (migration 0012), `POST /api/apps`, `GET /api/apps/{app}`, public page `/app/{app}`, one platform per app (`?app=` on every route). Creating an app is unauthenticated until step 2; stored apps have no members of their own yet |
 | 2 | Light identity: a membership and session created on scan, unguessable member ids, per-request authorization by app and member, a recovery path. Not real accounts; disclosed. | 1 day | not started |
 | 3 | Home page is one QR code → `/agora/start`. The interview runs `docs/CREATE-AN-APP.md` as structured question cards with tap answers; the model drafts the config, code validates it; summary and "Build it?". | 1–1.5 days | QR home page and a `/start` placeholder built (Oct 28; the old landing is at `/demo`); the interview is not started |
 | 4 | App overview at `/agora/app/{app}` with an invite QR, and a public join page. | ½–1 day | not started |
