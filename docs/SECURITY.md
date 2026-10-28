@@ -22,8 +22,15 @@ The saved state holds the screened relay text, agent notes and encrypted handoff
 and never a plaintext address). The fields are encrypted with the demo's hard-coded key, so anyone with the repository and the
 saved state can read them. It is demo data, deleted by the reset, and has no access control beyond the database or file.
 
+## Light identity (stored apps)
+Apps created through the platform have light identity (BR-45, docs/ARCHITECTURE.md §2b): random session tokens held in an HttpOnly
+SameSite=Lax cookie, only their hashes stored; a 100-bit recovery code shown once, hashed, replaced on use, tried at most 8 times per
+15 minutes per address; every route of a stored app needs a session of that app and every write a human session. It is not
+authentication: nothing proves who a person is, and anyone with the session or the code is that member. Secrets are never logged
+and never in URLs. The saved identity document has no access control beyond the database or file.
+
 ## Not built
-Authentication and per-request authorization against real accounts, row-level security, KMS-backed keys, CSRF/CSP hardening,
+Real accounts (proof of who a person is), per-request authorization against them, row-level security, KMS-backed keys, CSRF/CSP hardening,
 upload validation, rate limiting keyed on a trusted client address (today it uses `x-forwarded-for`, which a caller can spoof), and a production queue and database. These must exist before real users.
 
 ## Reporting a vulnerability
