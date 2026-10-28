@@ -111,3 +111,34 @@ export async function memberStatusView(appId: string, memberId: string, cookieHe
   return { kind: "ok", status: await memberStatusFor(await getPlatform(appId), { id: memberId, name: me?.name ?? "", role: who.role }) };
 }
 
+
+const EVENT_LABEL: Record<string, string> = {
+  propose: "Your agent made an offer", counter: "A counter-offer was exchanged", agree: "The agents agreed on terms", open_cards: "Cards were opened for the owners",
+  ask_owner: "Your agent asked its owner", owner_answered: "An owner answered a question", owner_confirm: "An owner confirmed", owner_decline: "An owner declined",
+  agents_decline: "The agents declined", expire: "The deal expired", start_handoff: "The handover started", handoff_done: "The handover finished", report: "A problem was reported",
+};
+
+export interface MemberAction {
+  at: string;
+  dealId: string;
+  item: string;
+  what: string;
+  state: string;
+}
+
+/**
+ * The member's recent actions (BR-44): the state changes of their own deals, newest first. Decisions only, never message text. Like
+ * "what it did alone" this stands in for the audit log, which is not written yet.
+ */
+export async function memberActionsFor(p: Platform, memberId: string, limit = 20): Promise<MemberAction[]> {
+  await p.cards.settled();
+  const out: MemberAction[] = [];
+  for (const d of await p.negotiation.listForFamily(memberId)) {
+    const i = await p.catalog.items.get(d.offerItemId);
+    const item = i ? i.description || i.category : "an item";
+    for (const h of d.history) {
+      out.push({ at: String(h.at), dealId: d.id, item, what: EVENT_LABEL[h.event] ?? "The deal changed", state: STATE_LABEL[h.to] ?? h.to });
+    }
+  }
+  return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(1, Math.min(limit, 50)));
+}

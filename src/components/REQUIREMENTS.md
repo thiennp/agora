@@ -21,6 +21,7 @@ All pages.
 | CMP-02 | Never import a feature internal folder. | Must | Lint enforced. |
 
 | CMP-JOIN | `JoinForm` (join on the invite page, then the recovery code once) and `CopyLink` (share or copy the invite link) hold no secret and call only the join API. | Must | `src/app/api/app-page.test.ts`. |
+| CMP-MUSEKEY | `MuseKeyPanel` makes, shows once and revokes the member's read-only Muse key through the session-only key API; it never stores the key. | Should | `src/app/api/muse.test.ts` (API). |
 
 ## Out of scope
 
