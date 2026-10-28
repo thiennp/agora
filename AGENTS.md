@@ -77,7 +77,7 @@ faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1
 places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
 tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
 simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0011 (0001–0010 one per slice, 0011 the saved demo state; `npm run db:check` applies them to an empty Postgres 16, needs Docker; model_calls, audit and queue tables are not written yet),
-two example apps, and a **demo web app** (`src/app`): owner cards, deal room with relay chat and handoff card, and a judge
+two example apps, and a **demo web app** (`src/app`, styled with Agora's own Tailwind 4 design tokens, light and dark, plus a public read-only `/styleguide`): owner cards, deal room with relay chat and handoff card, and a judge
 dashboard that draws the learning curves from the simulation CSV, a synthetic-city map and live safety checks (the red-team and screening sets). It runs in **demo mode only** (`AGORA_MODE=mock`, the
 default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
 carrier. Demo state is saved after every change to Postgres (`DATABASE_URL`) or a file (`AGORA_STATE_FILE`) and restored on start (docs/ARCHITECTURE.md §11b); with neither it is memory only. `AGORA_MODE=live` answers 501 until accounts are built (only `live` is refused; there is no separate demo value).
