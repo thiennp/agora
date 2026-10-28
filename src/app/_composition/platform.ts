@@ -1,4 +1,5 @@
 import { loadApp, type AppConfig } from "@/lib/app-config";
+import { getAppStore } from "./apps";
 import { loadEnv } from "@/lib/env";
 import { CostMeter, createMetaApiAdapter, createMetaClient, createMockAdapter, createRouter, createSamClient } from "@/lib/meta";
 import { createDealEventBus, type DealEventBus } from "@/hubs/DealEvents/command";
@@ -56,12 +57,18 @@ function personas(): Record<PersonaKey, Persona> {
   };
 }
 
-async function build(opts: { fresh?: boolean } = {}) {
+async function build(appId: string, opts: { fresh?: boolean } = {}) {
   const env = loadEnv();
   if (env.MODE === "live") throw new Error("the demo console is not available in live mode: there are no accounts yet");
-  const app: AppConfig = await loadApp(env.APP);
-  if (app.policies.pricing.mode === "swap_only") throw new Error("the demo needs an app whose deals can be free");
+  getAppStore();
+  const app: AppConfig = await loadApp(appId);
+  // The demo scenario (Mia, Jonas, a winter jacket) is seeded only into the app the demo runs on. Every other app starts empty: its
+  // stores, saved state and audit are its own and never see another app's data (BR-41).
+  const seeded = appId === env.APP;
+  if (seeded && app.policies.pricing.mode === "swap_only") throw new Error("the demo needs an app whose deals can be free");
   const who = personas();
+  // What the app lets owners offer: free where deals can be free, else swaps only.
+  const terms = app.policies.pricing.mode === "swap_only" ? "swap" : "free";
   const byId = new Map(Object.values(who).map((p) => [p.id, p]));
   const lang = (f: string) => byId.get(f)?.language ?? "en";
 
@@ -71,6 +78,7 @@ async function build(opts: { fresh?: boolean } = {}) {
   const feed = tracked("platform.feed", [] as FeedItem[]);
   const audit = tracked("platform.audit", { gatekeeper: {}, screening: {}, relay: {}, cards: {} } as Audit);
   const meta = tracked("platform.meta", {} as { dealId?: string; createdAt?: string });
+  if (!meta.createdAt) meta.createdAt = new Date().toISOString();
   const bump = (m: Record<string, number>, k: string) => void (m[k] = (m[k] ?? 0) + 1);
   const say = (text: string) => void feed.unshift({ at: new Date().toISOString(), text });
   const nameOf = (f: string) => byId.get(f)?.name ?? "someone";
@@ -89,7 +97,7 @@ async function build(opts: { fresh?: boolean } = {}) {
 
   const gatekeeper = createGatekeeper({ app, audit: (e) => bump(audit.gatekeeper, e.outcome) });
   const book = createMandateBook({ app, gatekeeper, store: createMandateStore() });
-  for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: ["free"] });
+  for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: [terms] });
   const catalog = createCatalogService({ app, canShare: (f) => byId.has(f) });
 
   // No model key in the demo: translation is a clearly labelled simulation, so the relay path is real but the words are not.
@@ -148,17 +156,17 @@ async function build(opts: { fresh?: boolean } = {}) {
   });
   leave();
 
-  const backend: StateBackend | null = backendFromEnv(env);
+  const backend: StateBackend | null = backendFromEnv(env, seeded ? undefined : appId);
   const saved = opts.fresh ? null : await backend?.load();
-  let dealId: string;
+  let dealId: string | undefined;
   if (saved) {
     scope.restore(saved);
-    dealId = meta.dealId!;
+    dealId = meta.dealId;
     // The scenario's windows are "tomorrow" on the day it was first built; a demo restored a day later gets fresh windows.
     if (Date.now() - Date.parse(meta.createdAt ?? "") > 12 * 3_600_000) {
-      for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: ["free"] });
+      for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: [terms] });
     }
-  } else {
+  } else if (seeded) {
 
   // The scenario: Mia offers a winter jacket, Jonas needs one. The match, the offer and the agents' first moves are all real.
   const mia = who.a;
@@ -201,23 +209,35 @@ async function build(opts: { fresh?: boolean } = {}) {
 
 export type Platform = Awaited<ReturnType<typeof build>>;
 
-const g = globalThis as unknown as { __agoraPlatform?: Promise<Platform> };
+const g = globalThis as unknown as { __agoraPlatforms?: Map<string, Promise<Platform>> };
+const platforms = () => (g.__agoraPlatforms ??= new Map());
 
-/** The running demo, created on first use and kept for the life of the process. */
-export function getPlatform(): Promise<Platform> {
-  return (g.__agoraPlatform ??= build().catch((e) => {
-    g.__agoraPlatform = undefined;
-    throw e;
-  }));
+/** The app the demo runs on: `APP`, or kids-gear. */
+export const demoAppId = (): string => loadEnv().APP;
+
+/** The running platform of one app (default: the demo app), created on first use and kept for the life of the process. One per app, so stores never share data. */
+export function getPlatform(appId: string = demoAppId()): Promise<Platform> {
+  const all = platforms();
+  let p = all.get(appId);
+  if (!p) {
+    p = build(appId).catch((e) => {
+      all.delete(appId);
+      throw e;
+    });
+    all.set(appId, p);
+  }
+  return p;
 }
 
-/** Start the scenario again from the beginning (saved state is deleted and everything is replaced). */
-export async function resetPlatform(): Promise<Platform> {
-  const old = g.__agoraPlatform;
-  if (old) await old.then((p) => p.wipe()).catch(() => undefined);
-  g.__agoraPlatform = build({ fresh: true }).catch((e) => {
-    g.__agoraPlatform = undefined;
+/** Start one app's scenario again from the beginning (its saved state is deleted and everything is replaced). Other apps are untouched. */
+export async function resetPlatform(appId: string = demoAppId()): Promise<Platform> {
+  const all = platforms();
+  const old = all.get(appId);
+  if (old) await old.then((p: Platform) => p.wipe()).catch(() => undefined);
+  const p = build(appId, { fresh: true }).catch((e) => {
+    all.delete(appId);
     throw e;
   });
-  return g.__agoraPlatform;
+  all.set(appId, p);
+  return p;
 }

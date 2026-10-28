@@ -87,6 +87,21 @@ become sibling sections, so an app that is not an exchange is valid. The safety 
 stay top-level. Existing apps migrate mechanically. Until this lands, only exchange apps are valid and the docs must not imply
 otherwise. The primitive-to-slice map is in `docs/PRIMITIVES.md`.
 
+**Apps as data (BR-41, `docs/PLAN.md` §2c step 1).** An app is either a repository app (`apps/<id>/`, one registry line in
+`load-app.ts`) or a stored config. `src/lib/app-config/app-store.ts` validates a config with `appConfigSchema` before it is
+stored and again when it is read, keeps ids unique (3–40 lowercase letters, digits, dashes; never a repository id or a reserved
+word such as `muse` or `new`), caps the number of stored apps at 200, and refuses a sandbox path that leaves the app. Backends:
+the `apps` table (migration 0012, primary key = id), a JSON file next to `AGORA_STATE_FILE` (`<file>.apps.json`), or memory. The
+entry layer (`src/app/_composition/apps.ts`) creates the store from the environment and registers it, and `loadApp(id)` reads
+repository apps first, then the registered store, so `src/` still never imports `apps/` beyond the registry line.
+`POST /api/apps` creates one, `GET /api/apps/{app}` returns the public summary (name, tagline, region, noun, languages), and
+`/app/{app}` (`/agora/app/{app}` in production) is its page. **Per-app scoping:** `getPlatform(appId)` builds one platform per
+app (own catalog, deals, cards, relay, audit, feed) and every API route takes `?app={id}` (default: the demo app `APP`). Only the
+demo app is seeded with the Mia and Jonas scenario; other apps start empty. Saved state is per app (`app_state` row `platform:<app>`
+or file `<AGORA_STATE_FILE>.<app>`; the demo app keeps its original name). Not yet: who may create an app or act in it (light identity,
+step 2), members and personas of their own (the two demo personas still stand in for owners in every app), the overview and
+invite (steps 4 and 5). Until step 2, creating an app is an unauthenticated write, rate limited and capped, and disclosed as such.
+
 Slice naming: `family`, `catalog` and the deal vocabulary are exchange-flavoured. `family` becomes `members` when the community
 section lands (cheap now, expensive later); `catalog` stays the exchange recipe's records.
 

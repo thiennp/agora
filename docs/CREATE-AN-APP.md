@@ -54,6 +54,14 @@ designed (`docs/PRIMITIVES.md`) but not yet in the config. If the person's commu
 rule below: build the closest version that exists, say plainly what is not available yet, and record the wish in the
 app's `REQUIREMENTS.md`. Never promise features marked designed or later as if they worked.
 
+## Where the app goes
+
+Two ways, same config and same schema checks. A repository app is the folder `apps/<id>/` plus one registry line in
+`src/lib/app-config/load-app.ts` (a code change). A **stored app** is the same config sent to `POST /api/apps`: the platform
+validates it, rejects it with the list of problems if it is wrong, and serves it at `/app/{app}` (`/agora/app/{app}`) with no code
+change or redeploy. The id must be new (3–40 lowercase letters, digits and dashes, starting with a letter). A stored app has no
+sandbox folder, so set `simulation.cityDir` to `sandbox`; it is not used.
+
 ## When the idea does not fit
 
 The platform cannot express everything. If the person wants something the config cannot say:

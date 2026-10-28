@@ -35,9 +35,7 @@ export function createFileBackend(path: string): StateBackend {
   };
 }
 
-const ID = "platform";
-
-export function createPostgresBackend(url: string): StateBackend {
+export function createPostgresBackend(url: string, ID = "platform"): StateBackend {
   const pool = new Pool({ connectionString: url, max: 2 });
   let ready: Promise<unknown> | null = null;
   const ensure = () =>
@@ -66,9 +64,12 @@ export function createPostgresBackend(url: string): StateBackend {
   };
 }
 
-/** DATABASE_URL wins over AGORA_STATE_FILE; with neither, state lives only in memory. */
-export function backendFromEnv(env: { DATABASE_URL?: string; AGORA_STATE_FILE?: string }): StateBackend | null {
-  if (env.DATABASE_URL) return createPostgresBackend(env.DATABASE_URL);
-  if (env.AGORA_STATE_FILE) return createFileBackend(env.AGORA_STATE_FILE);
+/**
+ * DATABASE_URL wins over AGORA_STATE_FILE; with neither, state lives only in memory. Each app has its own saved document (BR-41): the
+ * app the demo runs on (`APP`) keeps the original name, every other app adds its id (`platform:<app>`, `<file>.<app>`).
+ */
+export function backendFromEnv(env: { DATABASE_URL?: string; AGORA_STATE_FILE?: string }, appId?: string): StateBackend | null {
+  if (env.DATABASE_URL) return createPostgresBackend(env.DATABASE_URL, appId ? `platform:${appId}` : "platform");
+  if (env.AGORA_STATE_FILE) return createFileBackend(appId ? `${env.AGORA_STATE_FILE}.${appId}` : env.AGORA_STATE_FILE);
   return null;
 }
