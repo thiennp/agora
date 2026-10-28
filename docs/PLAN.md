@@ -92,6 +92,16 @@ the person's own Muse is an extra layer when it can connect.
 About 6–8 days of work against 5 days to the G3 freeze. Cut order if late: step 6, then the charts in step 5 (keep the
 grouped lists), then the recovery path in step 2 (disclosed). Steps 1, 3 and 4 are never cut.
 
+### 2c-bis. Muse-readable start (Oct 28, after the first real-Muse try)
+
+The owner scanned the QR with a real Muse and it did not understand what to do: `/start` was a client-rendered page for humans
+and the server HTML said only "Getting ready…". Fix, designed for an assistant that can only read a page and hand over a link
+(tools, POST and cookies are unconfirmed): `/start` now carries the brief addressed to the assistant in its HTML, the same text is
+markdown at `/start/agent.md` (and for `Accept: text/markdown|text/plain` or `?format=md`), and the assistant finishes by giving
+the person a draft link `/start?purpose=…&…` that opens the summary screen with the answers filled in. The person's own tap
+on "Build it" is the only thing that stores an app. The human tap-card flow is unchanged. **Still unverified with a real Muse**:
+the brief is written for typing only (no buttons, no clicks by Muse; chips were looked for and not found, unverified, owner to confirm in the Muse app). Whether it follows the brief, interviews well and builds a correct link is a hands-on check for the owner (§2d, step 4).
+
 ## 2d. Step 0: can a real Muse connect?
 
 Desk check done Oct 28; a hands-on check with a real Muse account is still needed (only the owner can do it).
@@ -122,6 +132,7 @@ Hands-on check for the owner (about 10 minutes, in the Muse app):
 2. In a chat, ask Muse to create a custom connector for a public API with no key (for example
    `https://api.open-meteo.com`), then ask it the weather. This tests the officially described route.
 3. Point the phone camera at any QR code with a link: does it offer to open the link in the Muse app, or only in the
+4. **Muse reads `/start`:** scan the home page QR with the phone camera, or paste `https://agentwitch.com/agora/start` into Muse. Does it interview you from the brief and give a link? Open the link: the summary must show your answers and nothing may be built before you tap "Build it". Note what Muse did, or ask it to read `/start/agent.md` if it did not.
    browser?
 Record the three answers here. Step 6 waits for them; steps 1–5 do not.
 

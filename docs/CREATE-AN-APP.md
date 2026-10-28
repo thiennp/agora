@@ -56,6 +56,29 @@ code sets every rule, validates the config against the schema, and shows the pla
 is stored as data and the person becomes its creator. If a person's idea is learning, helping or another thing the config
 cannot express yet, the summary says so and the closest version is built.
 
+## If you are an assistant that opened `/start` (the QR path)
+
+A real Muse that scans the QR code reads `https://agentwitch.com/agora/start` and must know its task without running any
+script. The page therefore carries a brief in its HTML, and the same text is plain markdown at `/start/agent.md` (also served
+for `Accept: text/markdown` or `text/plain`, or `/start?format=md`). It is generated from the interview script
+(`src/lib/interview/brief.ts`), so the questions, tap answers and order are the ones in this document and cannot drift.
+
+In short: you are Muse; interview the person yourself **by typing in chat** (Muse is not known to have tappable chips or
+quick replies; the owner's real-Muse test found none, unverified, to be confirmed in the Muse app, so the brief never relies on
+buttons and never asks Muse to click or submit anything on our page): one plain question at a time in their language, the 2 to 3
+examples as a numbered list ("1) … 2) … 3) …, or tell me in your own words") so the person can reply with a number or their own
+words, 5 to 8 questions, no technical words; write the summary paragraph and ask the person to type "yes"; only then give them
+**a draft link**, `/start?draft=exchange~Friends~Clothes~online~en~post~free~none~My%20App~friendly` (answers in interview order
+joined by `~`, URL-encoded; one value per step as `?purpose=…&people=…`, or `?draft=<JSON object>`, also work). If Muse damages
+the link, the page keeps the answers before the damage and asks the rest itself, including the app name. The link opens
+the summary "Here is your app: … Build it?" with the answers filled in; **the person's own tap on "Build it" is what stores the app
+and makes them its creator in their browser.** The link holds answers only (max 2000 characters), read by the same code as a tap
+(`src/lib/interview/draft-link.ts`) and checked by the app schema: it cannot set a rule, relax an always-ask topic or carry an
+instruction, and unusable parts are dropped with a plain sentence while the page asks those questions itself. An assistant that can
+make web requests may `POST /api/interview` to check its answers (stateless, stores nothing); it must not call `/api/interview/build`,
+which is the page's own call after the tap. The server cannot tell a person's browser from a script on that route; the guarantee
+today is the documented path, not enforcement (a signed confirmation is a possible hardening). Not yet tried with a real Muse.
+
 ## What the platform can build today
 
 Today the app config can express the **exchange** use case fully (items, matching, negotiation, owner approval, geo,

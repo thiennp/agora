@@ -15,6 +15,7 @@ type Turn =
 interface Answer { step: string; choice?: string; text?: string }
 interface Built { path: string; recoveryCode: string; notice: string; app: { name: string } }
 
+const NONE: Answer[] = [];
 const KEY = "agora.interview.answers";
 const read = (): Answer[] => {
   try {
@@ -33,7 +34,7 @@ const save = (a: Answer[]) => {
 };
 
 /** The create-an-app interview on the phone (BR-40): one question card at a time with tap answers, then one yes. */
-export function Interview() {
+export function Interview({ initial = NONE }: { initial?: Answer[] }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [turn, setTurn] = useState<Turn | null>(null);
   const [busy, setBusy] = useState(true);
@@ -64,13 +65,14 @@ export function Interview() {
   useEffect(() => {
     // Resume where the person left off; if the saved answers no longer fit, start from the first question.
     void (async () => {
-      const saved = read();
+      // A draft link from an assistant wins over saved answers; both only fill in answers, nothing is built before the tap.
+      const saved = initial.length ? initial : read();
       if (!(await go(saved)) && saved.length) {
         setError(null);
         await go([]);
       }
     })();
-  }, [go]);
+  }, [go, initial]);
 
   const answer = (a: Omit<Answer, "step">) => turn?.kind === "ask" && go([...answers, { step: turn.question.step, ...a }]);
 
@@ -103,7 +105,7 @@ export function Interview() {
   return (
     <div className="stack-lg">
       <div ref={top} tabIndex={-1} />
-      {!turn ? <Card>{busy ? <p role="status">Getting ready…</p> : <Banner tone="bad">{error ?? "Could not start."}</Banner>}</Card> : null}
+      {!turn ? <Card>{busy ? <p role="status">Opening the questions… (If nothing appears, JavaScript is off in this browser.)</p> : <Banner tone="bad">{error ?? "Could not start."}</Banner>}</Card> : null}
       {turn?.kind === "ask" ? (
         <Card prominent as="article">
           <p className="small muted" role="status">Question {turn.question.n} of {turn.question.of}</p>
