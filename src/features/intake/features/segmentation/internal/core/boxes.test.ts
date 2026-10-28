@@ -16,11 +16,15 @@ describe("refineBoxes", () => {
     const out = refineBoxes([sam(0, 0, 400, 400, 0.3), sam(0, 0, 10, 10, 0.9), sam(100, 100, 400, 400, 0.9), sam(105, 105, 402, 398, 0.9)], size);
     expect(out).toEqual([{ x1: 100, y1: 100, x2: 400, y2: 400 }]);
   });
-  it("makes one box of a pair, and one per thing when the count matches", () => {
-    const two = [sam(100, 100, 300, 300, 0.9), sam(500, 100, 700, 300, 0.9)];
-    expect(refineBoxes(two, size, 1)).toEqual([{ x1: 100, y1: 100, x2: 700, y2: 300 }]);
+  it("makes one box of a pair side by side, and one per thing when the count matches", () => {
+    const two = [sam(100, 100, 300, 300, 0.9), sam(350, 100, 550, 300, 0.9)];
+    expect(refineBoxes(two, size, 1)).toEqual([{ x1: 100, y1: 100, x2: 550, y2: 300 }]);
     expect(refineBoxes(two, size, 2)).toHaveLength(2);
     expect(refineBoxes(two, size, 3)).toHaveLength(1);
+  });
+  it("does not merge boxes that are far apart into one huge crop: it keeps the most confident one", () => {
+    const apart = [sam(50, 50, 250, 250, 0.7), sam(700, 500, 900, 700, 0.95), sam(50, 500, 250, 700, 0.8)];
+    expect(refineBoxes(apart, size, 1)).toEqual([{ x1: 700, y1: 500, x2: 900, y2: 700 }]);
   });
   it("finds nothing when SAM found nothing", () => {
     expect(refineBoxes([], size)).toEqual([]);

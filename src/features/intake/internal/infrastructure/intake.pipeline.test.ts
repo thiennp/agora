@@ -21,6 +21,7 @@ const ports = (items: ReturnType<typeof item>[], boxes: ReturnType<typeof box>[]
     simulated: false,
     asked,
     label: async () => ({ photo: "ok", items }),
+    checkCrop: async () => ({ person: false, text: false }),
     locate: async (_i, concepts) => {
       asked.push(...concepts);
       return concepts.map((_c, n) => ({ boxes: boxes[n] ?? [], failed: false }));
@@ -71,6 +72,34 @@ describe("photo intake pipeline", () => {
     if (r.status !== "ok") throw new Error("expected ok");
     expect(r.drafts.map((d) => [d.noCropReason ?? "crop", d.needsCheck])).toEqual([["person", true], ["text", true], ["crop", false]]);
     expect(p.asked).toEqual(["", "", "hat"]);
+  });
+
+  it("looks at every finished crop once more on its own, and keeps nothing a person or text shows in", async () => {
+    const seen: string[] = [];
+    const p = ports([item({ name: "hat", concept: "hat" }), item({ name: "doll", concept: "doll" }), item({ name: "box", concept: "box" })], [[box(10, 10, 300, 300)], [box(400, 10, 700, 300)], [box(10, 400, 300, 700)]], {
+      checkCrop: async (img) => {
+        seen.push(img.slice(0, 22));
+        return { person: seen.length === 2, text: seen.length === 3 };
+      },
+    });
+    const intake = createIntake({ catalog, ports: p });
+    const r = await intake.analyze("mia", await photo());
+    if (r.status !== "ok") throw new Error("expected ok");
+    expect(seen).toHaveLength(3);
+    expect(seen.every((x) => x === "data:image/jpeg;base64")).toBe(true);
+    expect(r.drafts.map((d) => d.noCropReason ?? "crop").sort()).toEqual(["crop", "person", "text"]);
+    expect(r.drafts.filter((d) => !d.crop).every((d) => d.needsCheck)).toBe(true);
+    expect(intake.crops.counts().drafts).toBe(1);
+  });
+
+  it("keeps no picture when the crop check cannot run: fails closed", async () => {
+    const p = ports([item()], [[box(10, 10, 300, 300)]], { checkCrop: async () => { throw new Error("meta-api error 500"); } });
+    const intake = createIntake({ catalog, ports: p });
+    const r = await intake.analyze("mia", await photo());
+    if (r.status !== "ok") throw new Error("expected ok");
+    expect(r.drafts[0]).toMatchObject({ noCropReason: "unchecked", needsCheck: true });
+    expect(r.drafts[0]!.crop).toBeUndefined();
+    expect(intake.crops.counts().drafts).toBe(0);
   });
 
   it("marks guesses for checking instead of trusting them: unknown category, missing size, low confidence", async () => {

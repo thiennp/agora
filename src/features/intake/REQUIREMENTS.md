@@ -22,7 +22,8 @@ Parent owner.
 | INT-05 | Ask for another photo when the image is poor instead of guessing. | Must | Blurred or dark inputs trigger a retake prompt. |
 
 Status (Oct 28): built for the demo (docs/ARCHITECTURE.md §11c). Photo to drafts works end to end: shrink and strip metadata, pixel and model checks (INT-05), vision names the items with category, size, condition and confidence (INT-01, INT-LAB), SAM 3.1 boxes, crops by box, original overwritten and never stored (INT-02, tested), the owner edits each draft before listing (INT-04). Offline simulation by default; `AGORA_INTAKE=meta` uses the real models (checked live on one generated photo of four items: four drafts in 7.6 s).
-Not done: INT-03 as written. Crops are boxes, not masks, so the background stays in, and there is no separate face detector or 100-photo leak test; a person or readable text flagged by the vision model means no picture is kept for that item. INT-01's six-item accuracy test is not run.
+Measured Oct 28 on 24 generated photos with the live models (docs/ARCHITECTURE.md §11c, `npm run evals:intake`, shown on the judge dashboard): 11 of 12 six-item piles became exactly six drafts, 97.2% of the expected items were found and named (INT-01 met on this set, not on real photos); 0 of 87 kept crops were judged to show a person or readable text by a separate Muse Spark call after the per-crop check was added (the first run, without it, leaked 6 of 80 crops showing a person).
+Not done: INT-03 as written. Crops are boxes, not masks, so the background stays in; the leak test is 24 generated photos judged by the same model family, not 100 photos and not a face detector; children are not in the test photos.
 
 ## Out of scope
 

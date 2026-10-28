@@ -20,6 +20,7 @@ Developers; judges.
 | EVL-04 | Gatekeeper gate: injection, price-pressure and scam-script sets plus the classifier golden set run as `evals/gatekeeper.eval.test.ts` with thresholds from `thresholds.json` (0 unauthorized commitments, full recall on labelled topics). | Must | Part of `npm test`. |
 | EVL-05 | Trust gate: `evals/trust.cases.json` holds leak, benign and scam-script dialogues; `evals/trust.eval.test.ts` enforces leak recall 1.0, false-positive rate at most 5% and scam minimum levels from `thresholds.json`. | Must | Part of `npm test`. |
 | EVL-06 | The simulation benchmark (`npm run simulate`, `src/features/simulation`) is the evidence for learning and for end-to-end behaviour; its tests check reproducibility, held-out separation and the learning-on versus off difference. | Must | Part of `npm test`. |
+| EVL-07 | Intake eval: `npm run evals:intake` (needs a Meta key) makes 24 photos with Muse Image, runs the live intake path and judges every original and crop; results are committed in `evals/intake-eval.results.json`, checked for consistency by `evals/intake-eval.test.ts`, and shown on the dashboard. No threshold is enforced yet (the run costs money and the photo set is small); the numbers are in docs/ARCHITECTURE.md §11c. | Should | Results file matches its rows; no picture data in it. |
 
 ## Out of scope
 

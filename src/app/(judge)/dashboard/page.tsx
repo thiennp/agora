@@ -9,6 +9,7 @@ import { getPlatform } from "@/app/_composition/platform";
 import { loadCityMap, loadDashboard, type CityMapData, type Scenario } from "@/app/_composition/reports";
 import { CityMap } from "@/components/CityMap";
 import { runSafetyChecks, type SafetyCheck } from "@/app/_composition/safety-checks";
+import { loadIntakeEval } from "@/app/_composition/intake-eval";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   } catch {
     checks = null;
   }
+
+  const intakeEval = loadIntakeEval();
+  const pc = (n: number | null) => (n === null ? "n/a" : `${n}%`);
 
   const failures = Object.entries(d.failureCounts).map(([k, n]) => {
     const [arm, kind, ...reason] = k.split(":");
@@ -147,7 +151,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <ul className="list">
             <li><Badge tone="warn">Cost per deal</Badge> <span className="small">Not measured: the simulation uses template notes and no live model.</span></li>
             <li><Badge tone="warn">Model choices</Badge> <span className="small">Spark Open versus Spark API is not compared: it needs live model calls.</span></li>
-            <li><Badge tone="info">Privacy leaks</Badge> <span className="small">Checked by the safety checks above, not by this simulation. Face and address leaks in photos are not tested: there is no photo intake.</span></li>
+            <li><Badge tone="info">Privacy leaks</Badge> <span className="small">Checked by the safety checks above, not by this simulation. Leaks in photos are measured in the photo intake card below, on a small set of generated photos.</span></li>
             <li><Badge tone="info">Real people</Badge> <span className="small">Hidden rules and the preference change are stand-ins.</span></li>
           </ul>
         </Card>
@@ -175,6 +179,27 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             </div>
           </>
         ) : <p className="muted">The test sets are not available in this environment.</p>}
+      </Card>
+
+      <Card title="Photo intake, measured with the real models">
+        {intakeEval ? (
+          <div className="stack">
+            <p className="muted small">
+              Measured on {intakeEval.date} (a stored run, not live): {intakeEval.summary.photos.total} photos made by {intakeEval.models.generator} from prompts, read by {intakeEval.models.vision} and {intakeEval.models.segmentation}.
+              {intakeEval.summary.photos.generationFailed ? ` ${intakeEval.summary.photos.generationFailed} could not be generated and are left out.` : ""}
+            </p>
+            <div className="grid grid-kpi">
+              <div className="card kpi"><div className="value">{intakeEval.summary.piles.exactlySix}/{intakeEval.summary.piles.photos}</div><div className="label">piles of six items split into exactly six drafts</div></div>
+              <div className="card kpi"><div className="value">{pc(intakeEval.summary.piles.itemRecallPct)}</div><div className="label">of the six items found and named</div><div className="sub muted">{pc(intakeEval.summary.piles.draftPrecisionPct)} of drafts were a real item</div></div>
+              <div className="card kpi"><div className="value">{intakeEval.summary.privacy.cropsJudgedPerson + intakeEval.summary.privacy.cropsJudgedText}/{intakeEval.summary.privacy.crops}</div><div className="label">pictures kept that show a person or readable text</div><div className="sub muted">{intakeEval.summary.privacy.blockedForPerson + intakeEval.summary.privacy.blockedForText} items had no picture kept for that reason</div></div>
+              <div className="card kpi"><div className="value">{intakeEval.summary.piles.meanSeconds ?? "n/a"} s</div><div className="label">per photo, start to drafts</div><div className="sub muted">{pc(intakeEval.summary.piles.draftsNeedingCheckPct)} of drafts marked please check</div></div>
+            </div>
+            <ul className="list small">
+              {intakeEval.limits.map((l) => <li key={l}>{l}</li>)}
+              <li>Not measured: faces in real photos, and photos with several people at the edge of the picture.</li>
+            </ul>
+          </div>
+        ) : <p className="muted">The intake eval has not been run (<code>npm run evals:intake</code>, needs a Meta key).</p>}
       </Card>
 
       <Card title="Live demo activity" id="live">

@@ -11,8 +11,8 @@ export interface IntakeDraft {
   needsCheck: boolean;
   /** The item's picture as a data URL: the only image that leaves intake (INT-03). Absent when none could be kept. */
   crop?: string;
-  /** Why there is no picture: a person or readable text was in it, or the item could not be outlined. */
-  noCropReason?: "person" | "text" | "no_outline";
+  /** Why there is no picture: a person or readable text was in it (seen by the labeling call or by the crop check), the item could not be outlined, or the crop check could not run (then nothing is kept). */
+  noCropReason?: "person" | "text" | "no_outline" | "unchecked";
 }
 
 export type IntakeResult =

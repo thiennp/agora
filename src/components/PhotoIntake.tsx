@@ -10,7 +10,7 @@ import { postJson } from "./post";
 import type { ItemOptions } from "./ItemForm";
 
 const MAX_SIDE = 1600;
-const NO_PICTURE = { person: "a person was in the picture", text: "readable text was in the picture", no_outline: "it could not be outlined" } as const;
+const NO_PICTURE = { person: "a person was in the picture", text: "readable text was in the picture", no_outline: "it could not be outlined", unchecked: "it could not be checked for privacy" } as const;
 
 /** Draw the photo onto a canvas at a sensible size, upright, as JPEG. That also drops the camera's location and time. */
 async function shrink(file: File): Promise<string> {

@@ -15,7 +15,8 @@
     "simulate": "tsx evals/run-simulation.ts",
     "bench:matching": "tsx evals/bench-matching.ts",
     "mcp:docs": "tsx tools/docs-mcp.ts",
-    "capacity": "tsx evals/capacity-model.ts"
+    "capacity": "tsx evals/capacity-model.ts",
+    "evals:intake": "tsx evals/run-intake-eval.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",

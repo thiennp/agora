@@ -1,6 +1,6 @@
 import type { AppConfig } from "@/lib/app-config";
 import type { MetaClient, SamClient } from "@/lib/meta";
-import { labelPhoto } from "../../features/labeling/public-api/infrastructure";
+import { checkCrop, labelPhoto, type CropCheck } from "../../features/labeling/public-api/infrastructure";
 import type { PhotoLabels } from "../../features/labeling/public-api/types";
 import { locateItems } from "../../features/segmentation/public-api/infrastructure";
 import type { Located } from "../../features/segmentation/public-api/types";
@@ -13,6 +13,8 @@ export interface IntakePorts {
   simulated: boolean;
   label(image: string, ownerId: string): Promise<PhotoLabels>;
   locate(image: string, concepts: string[], size: { width: number; height: number }): Promise<Located[]>;
+  /** A separate look at a finished crop (a data URL): does a person or readable text show? A throw counts as "could not check". */
+  checkCrop(image: string, ownerId: string): Promise<CropCheck>;
 }
 
 /** Real models: Muse Spark names the items, SAM 3.1 finds each one. */
@@ -21,6 +23,7 @@ export function createMetaPorts(o: { client: MetaClient; sam: SamClient; catalog
     simulated: false,
     label: (image, ownerId) => labelPhoto({ client: o.client, catalog: o.catalog, image, participantId: ownerId }),
     locate: (image, concepts) => locateItems({ sam: o.sam, image, concepts }),
+    checkCrop: (image, ownerId) => checkCrop({ client: o.client, image, participantId: ownerId }),
   };
 }
 
@@ -33,7 +36,7 @@ const SLOTS = [
 
 /**
  * Offline stand-in for demo mode: no model looks at the photo. It "finds" up to three sample items, one per category of the app,
- * at three fixed places on the photo, always marked low confidence so the owner must check each (docs/ARCHITECTURE.md section 13).
+ * at three fixed places on the photo, always marked low confidence so the owner must check each (docs/ARCHITECTURE.md section 13). Its crop check always says clear: nothing looks at the picture.
  */
 export function createSimulatedPorts(catalog: Catalog): IntakePorts {
   const picks = catalog.categories.slice(0, 3);
@@ -44,6 +47,9 @@ export function createSimulatedPorts(catalog: Catalog): IntakePorts {
         photo: "ok",
         items: picks.map((c) => ({ name: c.hints[0] ?? c.label, concept: c.hints[0] ?? c.label, category: c.id, size: null, condition: null, quantity: 1, confidence: 0.5, showsPerson: false, showsReadableText: false })),
       };
+    },
+    async checkCrop() {
+      return { person: false, text: false };
     },
     async locate(_image, concepts, size) {
       return concepts.map((_c, i) => {

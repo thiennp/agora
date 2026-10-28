@@ -18,26 +18,32 @@ function iou(a: Box, b: Box): number {
 /**
  * Turn what SAM found for one concept into the boxes to crop. Boxes are scaled to the photo we kept, clamped inside it, and dropped when
  * unsure (confidence under 0.5), tiny (under 3% of a side) or a near-duplicate. If the label said there are several of the thing and SAM
- * found that many, each gets its own box; otherwise they are one item (a pair of boots found as two boxes is one pair) and share one.
+ * found that many, each gets its own box. Otherwise they are one item: a pair of boots found as two boxes side by side share one box, but
+ * boxes far apart (SAM matched several things to a loose word like "blanket") are not merged into one huge crop; the most confident one
+ * is kept instead.
  */
 export function refineBoxes(found: SamBox[], size: { width: number; height: number }, quantity = 1): Box[] {
-  const kept: Box[] = [];
+  const kept: { box: Box; confidence: number }[] = [];
   for (const f of found) {
     if (f.confidence !== undefined && f.confidence < 0.5) continue;
     const sx = f.width > 0 ? size.width / f.width : 1;
     const sy = f.height > 0 ? size.height / f.height : 1;
-    const b: Box = {
+    const box: Box = {
       x1: Math.max(0, Math.round(Math.min(f.x1, f.x2) * sx)),
       y1: Math.max(0, Math.round(Math.min(f.y1, f.y2) * sy)),
       x2: Math.min(size.width, Math.round(Math.max(f.x1, f.x2) * sx)),
       y2: Math.min(size.height, Math.round(Math.max(f.y1, f.y2) * sy)),
     };
-    if (b.x2 - b.x1 < size.width * 0.03 || b.y2 - b.y1 < size.height * 0.03) continue;
-    if (kept.some((k) => iou(k, b) > 0.7)) continue;
-    kept.push(b);
+    if (box.x2 - box.x1 < size.width * 0.03 || box.y2 - box.y1 < size.height * 0.03) continue;
+    if (kept.some((k) => iou(k.box, box) > 0.7)) continue;
+    kept.push({ box, confidence: f.confidence ?? 1 });
   }
-  if (kept.length <= 1) return kept;
-  return quantity > 1 && kept.length === quantity ? kept : [union(kept)];
+  const boxes = kept.map((k) => k.box);
+  if (boxes.length <= 1) return boxes;
+  if (quantity > 1 && boxes.length === quantity) return boxes;
+  const all = union(boxes);
+  if (area(all) <= 1.6 * boxes.reduce((a, b) => a + area(b), 0)) return [all];
+  return [kept.reduce((a, b) => (b.confidence > a.confidence ? b : a)).box];
 }
 
 /** A little room around the item so the crop is not cut tight; stays inside the photo. */

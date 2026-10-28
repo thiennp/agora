@@ -1,0 +1,1451 @@
+{
+  "date": "2026-10-28",
+  "models": {
+    "generator": "muse-image-1.0",
+    "vision": "muse-spark-1.3",
+    "segmentation": "sam-3.1",
+    "judge": "muse-spark-1.3"
+  },
+  "calls": {
+    "imageGenerations": 0,
+    "visionCalls": 122,
+    "samCalls": 108,
+    "judgeCalls": 111
+  },
+  "summary": {
+    "photos": {
+      "total": 24,
+      "pile": 12,
+      "person": 6,
+      "text": 6,
+      "generationFailed": 0,
+      "stoppedBeforeDrafts": 0
+    },
+    "piles": {
+      "photos": 12,
+      "exactlySix": 11,
+      "exactlySixPct": 91.7,
+      "itemRecallPct": 97.2,
+      "draftPrecisionPct": 93.3,
+      "draftsWithCropPct": 84,
+      "draftsNeedingCheckPct": 49.3,
+      "meanSeconds": 10.6
+    },
+    "privacy": {
+      "validPrivacyPhotos": 12,
+      "drafts": 118,
+      "blockedForPerson": 15,
+      "blockedForText": 6,
+      "crops": 87,
+      "cropsJudgedPerson": 0,
+      "cropsJudgedText": 0,
+      "cropLeakPct": 0
+    }
+  },
+  "rows": [
+    {
+      "id": "pile-01",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 11.5,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "blue puffer jacket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red rain boots",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden toy train",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "children's picture book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "white knit beanie",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "plush bunny toy",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-02",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 9.7,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "striped baby cardigan",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "yellow baby bib",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "white baby shoes",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden baby rattle",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "light blue book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige teddy bear",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 5
+    },
+    {
+      "id": "pile-03",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 12.2,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "wooden building blocks",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red toy car",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "shape sorter cube",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "colorful xylophone with mallets",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "pastel stacking cups",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "grey polka dot soft ball",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-04",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 8.4,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "green bike helmet",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "pink kick scooter",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red sand bucket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "straw sun hat",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "blue jump rope",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "soccer ball",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-05",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 9.8,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "pink knit cardigan",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "blue denim overalls",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "green rain boots",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige knit scarf",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "white striped socks",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red mittens",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-06",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 10.5,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "blue knit baby blanket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige muslin cloth",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "baby bottle",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "baby pacifier",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "green patchwork baby quilt",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "wooden baby play gym",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ],
+      "expected": 6,
+      "matched": 5
+    },
+    {
+      "id": "pile-07",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 14.7,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "blue panda backpack",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "green lunch box",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "purple water bottle",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "pink pencil case",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "light blue notebook",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "box of crayons",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-08",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 11.4,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "folded black stroller frame",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "beige ring sling",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "green diaper backpack",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige folding baby bassinet with canopy",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "clear stroller rain cover",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden crib mobile",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-09",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 10.4,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "wooden dollhouse",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "patchwork rag doll",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "toy pot and pan set (1 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "toy pot and pan set (2 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "toy pot and pan set (3 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "toy pot and pan set (4 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "green dinosaur figure",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "small toy drum with sticks",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden train track pieces",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-10",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 11.4,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "yellow hooded rain jacket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "blue swim shorts",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "orange life vest",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "blue and white striped towel",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "blue and green flip flops",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "snorkel mask with snorkel",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-11",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 7.1,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "white short-sleeve bodysuit",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "beige knit baby cardigan",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "white baby socks pair",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "brown knit baby booties pair",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige knit baby hat",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "cream muslin bandana bib",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "pile-12",
+      "kind": "pile",
+      "status": "ok",
+      "seconds": 9.6,
+      "original": {
+        "person": false,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "green toy tractor",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red tricycle",
+          "hasCrop": false,
+          "noCropReason": "no_outline",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "blue toy slide",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "green watering can",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "colorful sand toy set",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "yellow rain boots",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ],
+      "expected": 6,
+      "matched": 6
+    },
+    {
+      "id": "person-1",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 6.7,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "wooden toy train",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ]
+    },
+    {
+      "id": "person-2",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 6.8,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "grey plush bunny",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "The Little Fox and the Star book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige knit baby hat",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "person-3",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 8,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "pink floral quilted baby jacket",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "red toy car",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "ocean friends board book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "person-4",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 10.2,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "green kids scooter",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "black and white soccer ball",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "blue sand bucket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "person-5",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 9.5,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "pink knit baby blanket",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "folded white muslin cloths",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "brown teddy bear",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden baby rattle",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige baby pacifier",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ]
+    },
+    {
+      "id": "person-6",
+      "kind": "person",
+      "status": "ok",
+      "seconds": 8.4,
+      "original": {
+        "person": true,
+        "text": false
+      },
+      "drafts": [
+        {
+          "name": "small blue toy drum",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "pair of wooden drumsticks",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "cloth rag doll in checkered dress",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "green plastic dinosaur figure",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ]
+    },
+    {
+      "id": "text-1",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 16.2,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "blue hooded winter jacket",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red rain boots",
+          "hasCrop": false,
+          "noCropReason": "person",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "children's picture book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "text-2",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 11.4,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "beige knit baby hat",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "red toy car",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden bear baby rattle",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "text-3",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 9.7,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "beige baby shoes",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "My First Animals board book",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "beige plush bunny",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        }
+      ]
+    },
+    {
+      "id": "text-4",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 11.5,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "yellow rain jacket",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "wooden toy train",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "straw sun hat",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": true,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "text-5",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 9.9,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "patterned changing pad",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "folded muslin cloth",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "wooden building blocks (1 of 3)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden building blocks (2 of 3)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "wooden building blocks (3 of 3)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "text-6",
+      "kind": "text",
+      "status": "ok",
+      "seconds": 10.1,
+      "original": {
+        "person": false,
+        "text": true
+      },
+      "drafts": [
+        {
+          "name": "dinosaur kids backpack",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "pink unicorn lunchbox",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "yellow fox pencil case",
+          "hasCrop": false,
+          "noCropReason": "text",
+          "needsCheck": true,
+          "cropLeak": null
+        },
+        {
+          "name": "colored pencils (1 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "colored pencils (2 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "colored pencils (3 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        },
+        {
+          "name": "colored pencils (4 of 4)",
+          "hasCrop": true,
+          "noCropReason": null,
+          "needsCheck": false,
+          "cropLeak": {
+            "person": false,
+            "text": false
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "The photos are generated by a model from prompts, not taken by people, and a generated picture can miss its prompt (each original is checked too: in all 12 person and text photos the judge saw what the prompt asked for).",
+    "The leak judge is Muse Spark, the same model family that labels the items: it catches obvious leaks, it is not an independent face detector.",
+    "Item matching is by keywords in the draft name, so a correct item named in an unexpected way counts as a miss."
+  ]
+}

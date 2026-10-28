@@ -4,6 +4,7 @@ import { checkPhotoQuality, createCropStore, cutCrop, normalizePhoto, withOrigin
 import type { CropStore } from "../../features/crops/public-api/types";
 import { normalizeSize } from "../../features/labeling/public-api/infrastructure";
 import { padBox, refineBoxes } from "../../features/segmentation/public-api/infrastructure";
+import type { Box } from "../../features/segmentation/public-api/types";
 import type { IntakeDraft, IntakeResult } from "../../public-api/types";
 import type { Catalog, IntakePorts } from "./ports";
 
@@ -20,7 +21,8 @@ const RETAKE = {
  * Photo to item drafts (INT-01). Steps: shrink the photo and drop its metadata, refuse a dark or blurry one, have the vision model name
  * the items, have SAM 3.1 find each one, cut a crop per item from its box, keep only the crops. The original bytes are overwritten with
  * zeros as soon as the shrunk copy exists, and the shrunk copy before the call returns (INT-02, INT-CRP-02). A person or readable text
- * in an item's area means no picture is kept for that item (INT-CRP-04). Nothing here throws at the owner: failures come back as a
+ * in an item's area means no picture is kept for that item, and every crop is looked at once more on its own before it is kept; if that
+ * look cannot be made, nothing is kept (INT-CRP-04). Nothing here throws at the owner: failures come back as a
  * status the page can explain, and the items form always still works (INT-SEG-03).
  */
 export function createIntake(deps: { catalog: Catalog; ports: IntakePorts; crops?: CropStore }) {
@@ -57,7 +59,9 @@ export function createIntake(deps: { catalog: Catalog; ports: IntakePorts; crops
         const needsOutline = items.map((i) => !i.showsPerson && !i.showsReadableText);
         const located = await ports.locate(image, items.map((i, n) => (needsOutline[n] ? i.concept : "")), photo);
 
-        const drafts: IntakeDraft[] = [];
+        // One planned draft per picture to make; each crop is cut and then checked by a separate model call, all in parallel.
+        type Plan = { base: Omit<IntakeDraft, "id" | "crop" | "noCropReason">; box?: Box; reason?: IntakeDraft["noCropReason"] };
+        const plans: Plan[] = [];
         for (const [n, item] of items.entries()) {
           const validCategory = categoryIds.has(item.category);
           const category = validCategory ? item.category : catalog.categories[0]!.id;
@@ -73,21 +77,29 @@ export function createIntake(deps: { catalog: Catalog; ports: IntakePorts; crops
             needsCheck: !validCategory || item.confidence < LOW_CONFIDENCE || Boolean(sizes?.length && !size),
           };
           if (item.showsPerson || item.showsReadableText) {
-            drafts.push({ id: randomUUID(), ...base, needsCheck: true, noCropReason: item.showsPerson ? "person" : "text" });
+            plans.push({ base: { ...base, needsCheck: true }, reason: item.showsPerson ? "person" : "text" });
             continue;
           }
           const boxes = refineBoxes(located[n]?.boxes ?? [], photo, item.quantity);
-          if (boxes.length === 0) {
-            drafts.push({ id: randomUUID(), ...base, needsCheck: true, noCropReason: "no_outline" });
-            continue;
-          }
-          for (const [k, box] of boxes.entries()) {
-            const id = randomUUID();
-            const crop = await cutCrop(photo.jpeg, padBox(box, photo));
-            crops.holdDraft(ownerId, id, crop);
-            drafts.push({ id, ...base, name: boxes.length > 1 ? `${base.name} (${k + 1} of ${boxes.length})` : base.name, crop });
-          }
+          if (boxes.length === 0) plans.push({ base: { ...base, needsCheck: true }, reason: "no_outline" });
+          else for (const [k, box] of boxes.entries()) plans.push({ base: { ...base, name: boxes.length > 1 ? `${base.name} (${k + 1} of ${boxes.length})` : base.name }, box: padBox(box, photo) });
         }
+        const drafts = await Promise.all(
+          plans.map(async (p): Promise<IntakeDraft> => {
+            const id = randomUUID();
+            if (!p.box) return { id, ...p.base, noCropReason: p.reason };
+            const crop = await cutCrop(photo.jpeg, p.box);
+            let verdict;
+            try {
+              verdict = await ports.checkCrop(crop, ownerId);
+            } catch {
+              return { id, ...p.base, needsCheck: true, noCropReason: "unchecked" };
+            }
+            if (verdict.person || verdict.text) return { id, ...p.base, needsCheck: true, noCropReason: verdict.person ? "person" : "text" };
+            crops.holdDraft(ownerId, id, crop);
+            return { id, ...p.base, crop };
+          }),
+        );
         return { status: "ok", drafts, capped: seen.length > MAX_ITEMS, simulated: ports.simulated };
       } finally {
         photo.jpeg.fill(0);

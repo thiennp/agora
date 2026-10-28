@@ -604,15 +604,33 @@ repository and the saved state. It is demo data, deleted with the reset.
 1. **Shrink and strip.** `sharp` rotates the photo upright, limits it to 1600 px and re-encodes it as JPEG, so camera metadata is gone. A file that is not a photo answers `unreadable`.
 2. **Pixel check.** Too dark (mean brightness) or very blurry (edge-filter variation) answers `retake` before any model is paid for. This is a coarse filter; the vision model gives its own verdict next.
 3. **Name the items.** One Muse Spark vision call (Meta client, role `intake`, schema-checked) lists each item with a name, a one-noun concept, the app's category, size only if printed on a visible label, condition if it can tell, a confidence, and flags for a person or readable text in the item's area. The prompt carries the app's own categories, sizes and conditions.
-4. **Find each item.** One SAM 3.1 call per concept, in parallel; a failing call costs only that item its outline. Items flagged with a person or text are not sent to SAM at all.
-5. **Crop.** Boxes are scaled, clamped, de-duplicated and padded 3 percent; a pair found as two boxes is one item, several of a thing get one draft each when the count matches. Each crop is cut from the shrunk copy, shrunk to 480 px, and held by draft id.
+4. **Find each item.** One SAM 3.1 call per concept, in parallel; a multi-word concept that finds nothing is tried again as its last word ("board book" found nothing, "book" did); a failing call costs only that item its outline. Items flagged with a person or text are not sent to SAM at all.
+5. **Crop and check.** Boxes are scaled, clamped, de-duplicated and padded 3 percent; a pair side by side is one item, several of a thing get one draft each when the count matches, and boxes far apart are not merged (the most confident is kept). Each crop is cut from the shrunk copy, shrunk to 480 px, and then looked at once more on its own by a separate Muse Spark call (person or readable text?, "when unsure, true"); a flagged crop is dropped, and if the check cannot run nothing is kept. Surviving crops are held by draft id.
 6. **Discard.** The original bytes are overwritten with zeros as soon as the shrunk copy exists, and the shrunk copy before the call returns.
 
 The owner then checks each draft (name, category, size, condition; anything guessed or low confidence says "please check") and lists the ones they want through `POST /api/items` with the draft id, which moves the picture to the item. Crops live in an in-memory store (`crops/internal/infrastructure/store-crops.ts`): drafts for 30 minutes, items until withdrawn. They are not in the saved demo state, so after a restart items work but show no picture.
 
 `AGORA_INTAKE` picks the models: `simulated` (default, offline: three sample items from the app's own categories cut from fixed places on the photo, always "please check", and the page says no model looked at it) or `meta` (Muse Spark and SAM 3.1 through `META_API_KEY`; a separate Meta client with its own budget, so the rest of the demo stays on the mock client). Failures never reach the owner as errors: `retake`, `unreadable` and `unavailable` are answers the page explains, and the form below always still works.
 
-Known limits: crops are rectangles, not masks (masks are base85 rasters whose decoding is not documented on the pages read), so background stays in; person and text checks rely on the vision model's flags, not a separate face detector; SAM calls are not in the cost meter; only one real photo (a generated one) has been run through the live path.
+### Measured (the intake eval)
+
+`npm run evals:intake` (needs a Meta key) makes 24 photos with Muse Image from the prompts in `evals/intake-photos.ts` (12 piles of six items, 6 with an adult in the picture, 6 with a name and address on a label), runs each through the live path, and has a separate Muse Spark call look at every original and every kept crop. It writes names and counts only to `evals/intake-eval.results.json` (committed; `evals/intake-eval.test.ts` checks the file matches its rows and holds no picture data), and the judge dashboard shows it. Photos are cached under `reports/intake-photos` (not committed) so reruns only pay for the model calls.
+
+| Oct 28 | First run (labeling flags only) | After crop check, head-noun retry and box rule |
+|---|---|---|
+| Piles split into exactly six drafts | 11 of 12 | 11 of 12 |
+| Expected items found and named | 97.2% | 97.2% |
+| Drafts that were a real item | 95.9% | 93.3% |
+| Pile drafts with a picture | 78.1% | 84.0% |
+| Crops judged to show a person or readable text | 6 of 80 (7.5%), all people, in 3 of the 6 person photos; 0 text | 0 of 87 |
+| Items with no picture kept for person or text | 17 | 21 (2 of them in pile photos, which have no people or text: false alarms) |
+| Photos where the judge saw a person / readable text in the original | 6 of 6 / 6 of 6 | same |
+
+The first run is what found the leak: the labeling call flagged the person in 6 items correctly but missed 6 crops of toys with a hand or body at the edge; the per-crop check closed it on this set. Cost of the second run, estimated at the press-reported Muse Spark rate (no SAM or image price known): about $0.60 for 233 Muse Spark calls, 108 SAM calls and no image generation, roughly 10 s per photo from upload to drafts (the first run's 16 s included making the photo).
+
+Limits that matter: the photos are generated, not taken; the judge is Muse Spark, the same family as the checker, so 0 of 87 means no obvious leak survived, not that none can; 24 photos is far below the 100 in INT-03; item matching is by keywords in the draft name; the person photos use adults only, so children's faces are untested; photos with the person only at the edge are few. Items still without an outline (10 of 75 pile drafts) are things SAM does not find under any word we tried ("baby quilt", "play gym").
+
+Known limits of the pipeline: crops are rectangles, not masks (masks are base85 rasters whose decoding is not documented on the pages read), so background stays in; SAM calls are not in the cost meter.
 
 ## 12. Deployment
 
