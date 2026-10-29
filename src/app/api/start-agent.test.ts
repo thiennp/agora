@@ -1,14 +1,13 @@
 import React from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { resetRateLimit } from "@/app/_composition/api";
 import { useAppStore } from "@/app/_composition/apps";
-import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
 import { createAppStore, createMemoryBackend, repoAppIds } from "@/lib/app-config";
 import { answersFromQuery, INTERVIEW_PURPOSE } from "@/lib/interview";
 import { GET as agentMd } from "../start/agent.md/route";
 import Start from "../start/page";
 import { POST as interview } from "./interview/route";
+import { endWorld, resetWorld } from "./test-support";
 
 (globalThis as unknown as { React: typeof React }).React = React; // the page is JSX; vitest has no automatic runtime here
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
@@ -19,10 +18,9 @@ const full = {
 
 describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
   let store: ReturnType<typeof createAppStore>;
+  afterEach(endWorld);
   beforeEach(() => {
-    resetRateLimit();
-    resetInterviewLimits();
-    useInterviewModel(undefined);
+    resetWorld();
     store = createAppStore(createMemoryBackend(), { reserved: repoAppIds() });
     useAppStore(store);
   });

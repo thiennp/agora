@@ -21,3 +21,5 @@ must run offline for judges and CI, and must not let a runaway loop spend withou
 - Prices in the meter are estimates and one is an unverified placeholder; no cost figure should be quoted before they are
   checked.
 - The live Meta endpoint format is unconfirmed, so the adapters are exercised only against a simulated backend.
+
+> Superseded in part (Oct 29): the mock adapter remains only as a test double; there is no app-level mock mode, the app always uses the real Meta Model API (`AGORA_MODE` removed).

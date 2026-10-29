@@ -3,7 +3,7 @@
 What the platform stores, and what it does not.
 
 - **Location:** only a coarse district code (about 5 km) until both owners confirm; exact places live only in the handoff.
-- **Photos:** originals are discarded; only item crops are kept. The photo is read in memory, shrunk and stripped of camera metadata, sent to Meta only when `AGORA_INTAKE=meta`, and its bytes overwritten before the request ends. Crops are small JPEGs held in memory (drafts for 30 minutes, listed items until withdrawn or restart) and are not in the saved state. If a person or readable text is in an item's area no picture is kept for it, and each crop is looked at once more on its own before it is kept (if that look cannot run, nothing is kept). Both checks are Muse Spark calls, not a face detector. Measured on 24 generated photos (Oct 28): 0 of 87 kept crops judged to show a person or readable text, against 6 of 80 before the second look; the judge is the same model family, children are not in the test photos, and the set is far below 100 photos.
+- **Photos:** originals are discarded; only item crops are kept. The photo is read in memory, shrunk and stripped of camera metadata, sent to Meta (Muse Spark vision and SAM 3.1; always, `AGORA_INTAKE` was removed Oct 29), and its bytes overwritten before the request ends. Crops are small JPEGs held in memory (drafts for 30 minutes, listed items until withdrawn or restart) and are not in the saved state. If a person or readable text is in an item's area no picture is kept for it, and each crop is looked at once more on its own before it is kept (if that look cannot run, nothing is kept). Both checks are Muse Spark calls, not a face detector. Measured on 24 generated photos (Oct 28): 0 of 87 kept crops judged to show a person or readable text, against 6 of 80 before the second look; the judge is the same model family, children are not in the test photos, and the set is far below 100 photos.
 - **Chat messages (relay):** the database keeps each message's screened text, its translation, its SHA-256 hash and screening
   flags. The raw text an owner typed is never written to the database; it exists only in memory for that owner's own view.
 - **Screening and gatekeeper logs:** topics, kinds of findings and outcomes only, never message text.
@@ -20,7 +20,7 @@ What the platform stores, and what it does not.
 
 ## Retention and erasure
 
-The demo's saved state (see docs/ARCHITECTURE.md §11b) is one document that holds the screened relay text, its translation and hash, but never the raw text an owner typed and never a plaintext address. Its encrypted fields use the demo's hard-coded key, so it is demo data only: the reset deletes it and no retention job covers it yet.
+The saved state (see docs/ARCHITECTURE.md §11b) is one document that holds the screened relay text, its translation and hash, but never the raw text an owner typed and never a plaintext address. Its encrypted fields use `FIELD_ENCRYPTION_SECRET` (the old hard-coded demo key and the reset route are removed); no retention job covers it yet.
 
 Values marked (decided) were set by the project owner; values marked (proposed) are defaults to confirm. Retention jobs are
 not built yet; until they exist these are the rules the code must meet, not behaviour it has.

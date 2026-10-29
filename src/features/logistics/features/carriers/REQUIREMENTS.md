@@ -16,7 +16,7 @@ Shipping.
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
 | LOG-CAR-01 | Provide createLabel, bookAppointment and track behind one interface. | Must | Shipping depends only on the interface. |
-| LOG-CAR-02 | Ship a simulated carrier that produces watermarked test labels. | Must | Default in all environments. |
+| LOG-CAR-02 | Ship a simulated carrier that produces watermarked test labels. | Must | Default in all environments: no real carrier is connected, and labels are shown as "not connected yet". |
 | LOG-CAR-03 | Optionally integrate one real carrier in test mode, clearly disclosed. | Could | Test-mode labels carry no cost. |
 | LOG-CAR-04 | All implementations pass the same contract tests. | Must | Contract suite runs against each. |
 | LOG-CAR-05 | The simulated carrier is deterministic, free, watermarked, and tracks by the clock (booked until the appointment starts, in transit for 48 hours, then delivered). | Must | Simulated carrier tests. |

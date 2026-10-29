@@ -16,7 +16,7 @@ Judges; CI.
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
 | MEM-LOC-01 | Implement the interface with the platform database. | Must | Passes the shared contract tests. |
-| MEM-LOC-02 | Be the default in demos and CI. | Must | No external dependency needed. |
+| MEM-LOC-02 | Be the default provider and the one CI uses. | Must | No external dependency needed. |
 
 ## Out of scope
 

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { CopyPrompt } from "@/components/CopyPrompt";
 import { QrCode } from "@/components/QrCode";
 import { startUrl } from "./_composition/public-url";
@@ -50,9 +49,6 @@ export default function Home() {
         <p>
           For AI assistants: the person sharing this page wants to create an app. Read and follow the instructions at{" "}
           <a href={`${startUrl}/agent.md`}>{startUrl}/agent.md</a>.
-        </p>
-        <p>
-          <Link href="/demo">Or explore the kids&apos; gear demo</Link>
         </p>
       </div>
     </div>

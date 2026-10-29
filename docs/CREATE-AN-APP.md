@@ -51,7 +51,7 @@ agreeing to anything, giving money terms, revealing who they are or where they l
 safety exception. Tell them this once, in one friendly sentence, as a promise ("your agent will always check with
 you before it agrees to anything"), not as a question.
 
-## The phone interview (the demo path)
+## The phone interview (the main path)
 
 The QR code on the home page opens `/start`, where the platform runs this same interview itself as question cards with tap
 answers (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what the app is for,
@@ -113,8 +113,8 @@ board**: plain posts ("You offer", "You need") and one-to-one conversations. Any
 handed over; swap, free and handover words appear only there).
 
 The platform's only matching is exchange-shaped. So **a created app cannot** run events, a calendar, RSVPs or sign-up lists, send an
-announcement to everyone, hold a group chat, take photos into items, move money, book a real carrier or translate for real (both are
-simulated for now). A running club, a learning group or an office app gets one person posting what they offer or need and another
+announcement to everyone, hold a group chat, take photos into items, move money, or book a real carrier (no carrier is connected yet; labels are
+simulated and shown as "not connected yet"). Translation is real (Muse Spark). A running club, a learning group or an office app gets one person posting what they offer or need and another
 person's agent finding them. Say that in plain words in the summary instead of promising the rest, and write the wish under
 "Out of scope".
 

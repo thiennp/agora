@@ -1,17 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Home from "@/app/page";
-import { resetRateLimit } from "@/app/_composition/api";
 import { appPageView } from "@/app/_composition/app-views";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore, useMuseKeyStore } from "@/app/_composition/identity";
-import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
 import { memberStatusView } from "@/app/_composition/member-status";
-import { resetMuseRateLimits } from "@/app/_composition/muse-api";
 import { appUrl, startUrl } from "@/app/_composition/public-url";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
-import { createIdentityStore, createMuseKeyStore } from "@/lib/identity";
+import { loadApp } from "@/lib/app-config";
 import { POST as interview } from "./interview/route";
 import { POST as build } from "./interview/build/route";
 import { POST as join } from "./apps/[app]/join/route";
@@ -26,6 +20,7 @@ import * as statusRoute from "./muse/[app]/status/route";
 import * as actionsRoute from "./muse/[app]/actions/route";
 import * as cardsRoute from "./muse/[app]/cards/route";
 import * as mcpRoute from "./muse/[app]/mcp/route";
+import { endWorld, resetWorld } from "./test-support";
 
 /**
  * The whole Muse-first demo in mock mode, end to end through the real routes (docs/PLAN.md §2c step 7): the QR home page, the
@@ -51,16 +46,9 @@ const answers = [
   { step: "feel", choice: "friendly" },
 ];
 
-describe("Muse-first demo, end to end in mock mode", () => {
-  beforeEach(() => {
-    resetRateLimit();
-    resetInterviewLimits();
-    resetMuseRateLimits();
-    useInterviewModel(undefined);
-    useIdentityStore(createIdentityStore());
-    useMuseKeyStore(createMuseKeyStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
-  });
+describe("Muse-first flow, end to end with the model stood in", () => {
+  afterEach(endWorld);
+  beforeEach(() => resetWorld());
 
   it("goes from the QR code to a Muse reading a member's real status, and nothing a Muse holds can answer a card", async () => {
     // 1. The home page is one QR code that opens /start.

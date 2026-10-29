@@ -43,13 +43,15 @@ safety extras, languages. Tier 1 is never cut.
 
 **Tier gate (BR-37).** Tier 2 code does not start until tier 1 can be shown end to end: the simulation and benchmark
 produce the learning curve, the demo UI and dashboard cover the demo flow, storage is persistent, and photo intake exists
-(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room, items with photo intake) and judge dashboard (learning curves from the CSV) exist, and demo state is saved to Postgres or a file (restart-tested), but relational repositories
+(or its cut is written down). Today the simulation, benchmark, demo UI (owner cards, deal room, items with photo intake) and judge dashboard (learning curves from the CSV) exist, and state is saved to Postgres or a file (restart-tested; demo UI since removed, see §2c), but relational repositories
 do not exist, so the next work is tier 1, not the `community` config section.
 **Photo intake: BUILD (decided Oct 28, after probing the live API).** A Meta key exists and the vision call is confirmed: Muse Spark names the items in a photo, SAM 3.1 returns a box per item (concept prompt, one call per item, in parallel), and crops are cut from the boxes; the pipeline took about 6 s on a test photo (details in docs/ARCHITECTURE.md §13). **Built Oct 28:** upload on `/items`, vision, SAM boxes, box crops, original overwritten and never stored, owner reviews each draft; offline simulation by default, real models with `AGORA_INTAKE=meta`. **Measured Oct 28** (24 generated photos, live models, `npm run evals:intake`, on the dashboard; docs/ARCHITECTURE.md §11c): 11 of 12 six-item piles gave exactly six drafts, 97.2% of items found and named, 0 of 87 kept crops judged to show a person or readable text (6 of 80 before the per-crop check was added). Not done: masked (background-removed) crops, a face detector (the checks are Muse Spark calls), a leak test on 100 photos or on real or children's photos. The cut rule is no longer needed.
 **Superseded in part on Oct 28 (§2c):** the Muse-first demo pulls the create-an-app flow, apps as data and member status into tier 1. The rest of tier 2 (community posting, circles, the `community` config section) stays gated.
 **Decision (Oct 27):** the gate stays closed for the `community` config section and tier 2 code. The demo UI and dashboard are done; demo state now survives restarts (one saved document, Postgres or file); relational repositories and photo intake are the open tier-1 items, and a written cut for photo intake is acceptable if it cannot land. Build status is tracked in `CLAUDE.md`. The demo UI follows Agora's own design tokens (Tailwind 4) and has a public `/styleguide`.
 
 ## 2c. Muse-first demo (decided Oct 28)
+
+> **Superseded in part on Oct 29 (ship a real app).** Demo and mock mode are removed: no built-in personas (Mia, Jonas), no `/demo` page, no `(owner)` pages, no demo reset route, no seeded demo app, no `AGORA_MODE` or `AGORA_INTAKE`, no simulated translation. Every platform route needs `?app=<id>` of a created app and that app's session; translation, photo intake and the interviewer always call the real Meta Model API (Muse Spark, SAM 3.1) and the app fails by name without `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` and `REPORT_EXPORT_SECRET`. The home page also shows a copy-paste prompt for Muse or Meta AI. Request rate limits, the interview/build limits and the 200-stored-apps cap are lifted until 2026-12-01 (`limitsLifted`); recovery-code and bad-key guards stay. The simulation, the judge dashboard, the styleguide and the simulated carrier (labelled "not connected yet") remain. Passages below that describe demo mode, personas or mock mode are history.
 
 **Decision (Oct 28):** the demo is a real Muse creating an app live, not the kids' gear deal room. This changes the tier
 gate above: the create-an-app flow, apps as data and member status move into tier 1 for the demo. Kids' gear stays as a
@@ -87,7 +89,7 @@ the person's own Muse is an extra layer when it can connect.
 | 4 | App overview at `/agora/app/{app}` with a share QR, and a public page (reframed in §2c-ter). | ½–1 day | built (Oct 28), reframed Oct 28: one address, three views by session (stranger = public page, user, creator = private overview with share QR, share button, list of people using the app); the share link is the app's address with no secret; `describeApp` writes purpose, features and rules in plain words from the config. Not built: a rotatable invite secret, removing a member, the member status link (step 5) |
 | 5 | Member status at `/agora/app/{app}/muse/{id}`, grouped and charted, built from the existing read views and the audit store (a stub today). | 1 day | built (Oct 28): `/app/{app}/muse/{id}` for the member only (404 for everyone else, the creator included), groups for waiting on you, deals, items, what it did alone (from the member's own deals; audit store still a stub, said on the page), lessons and standing rules, with bar charts and a 7-day line chart, empty states, 375 px; linked from the app page. Members of stored apps are real parties since step 7, so the groups fill with their own items, deals and cards. Not built: answering cards from this page |
 | 6 | Read-only access for a person's own Muse: app overview, my status, my actions, pending cards, as a documented HTTP API that Muse can turn into a custom connector (per-member key), and over MCP if step 0 confirms it. No tool answers a card. | 1 day | built (Oct 28): per-member keys (`src/lib/identity/muse-keys.ts`, `agmk_` + 256 bits, hashed, shown once, revocable, max 3), `GET /api/muse/{app}/overview\|status\|actions\|cards` (Bearer key, GET only), `/api/muse/openapi.json`, the same four reads over stateless MCP at `/api/muse/{app}/mcp`, a "Connect your own Muse" card on the status page, `docs/MUSE-CONNECTOR.md`. Not confirmed with a real Muse (step 0 hands-on check still pending); no OAuth; actions come from the member's own deals until the audit log exists |
-| 7 | Docs, tests, demo script; members of stored apps as parties (the gap left by step 5). | ½ day | built (Oct 28): members are parties (ADR 0007), `src/app/api/muse-first-flow.test.ts` runs the whole flow in mock mode, `docs/DEMO-SCRIPT.md` rewritten for the Muse-first demo with its fallback and the honest list of what is simulated. Open: the owner's hands-on checks (§2d, and the list in DEMO-SCRIPT), deploying at agentwitch.com/agora |
+| 7 | Docs, tests, demo script; members of stored apps as parties (the gap left by step 5). | ½ day | built (Oct 28): members are parties (ADR 0007), `src/app/api/muse-first-flow.test.ts` runs the whole flow with test doubles for the model (mock mode since removed), `docs/DEMO-SCRIPT.md` rewritten for the Muse-first walkthrough with its fallback and the honest list of what is not connected. Open: the owner's hands-on checks (§2d, and the list in DEMO-SCRIPT), deploying at agentwitch.com/agora |
 | 8 | A created app is usable: the person's own items, cards, deals and deal-room pages under `/app/{app}/...`, the app's own words, honest limits, 404s and demo-nav clean-up (§2c-quater, BR-46). | ½ day | built (Oct 28): shared page bodies and `ScopeContext`, `memberScope`, `appVocabulary`, `src/app/api/created-app.test.ts`; checked at 375 px. Not built: events, RSVPs, group chat, photo intake in created apps, using the app through Muse alone |
 
 About 6–8 days of work against 5 days to the G3 freeze. Cut order if late: step 6, then the charts in step 5 (keep the
@@ -132,7 +134,7 @@ taps in our app. Until decided, the current rule stands (own tap in our app) and
 ### 2c-quater. A created app is usable (Oct 28, step 8)
 
 The first end-to-end run showed a created app was a shell: an overview and a status page, with nothing to post, match, answer or discuss.
-Step 8 adds the person's own pages under `/app/{app}/items`, `/cards`, `/deals` and `/deals/{id}` (BR-46). They are the demo's pages,
+Step 8 adds the person's own pages under `/app/{app}/items`, `/cards`, `/deals` and `/deals/{id}` (BR-46). They are the app's pages (formerly shared with the removed demo pages),
 parameterised by an app scope instead of copied (`src/app/_pages/*Body.tsx`, `ScopeProvider`), and run on the app's own platform as
 the signed-in light-identity member. The routes already took `?app=` and the session; what was missing was the pages and the words.
 - **Flow:** add what I offer or need, see the matcher's candidates, ask my agent to propose a deal (or to reach out), answer owner cards
@@ -145,7 +147,7 @@ the signed-in light-identity member. The routes already took `?app=` and the ses
   a run club, a learning group or an office gets one-to-one posts and conversations. No events, calendar, RSVP or sign-up lists, no group
   chat or announcements, no photo intake in created apps, translation and shipping labels simulated. A person in a board app who offers
   something is found by someone who needs it; only the person who needs something can ask their agent to reach out.
-- **Clean-up:** an unknown app is a 404 (page, `agent.md`, API); the demo nav and persona switch and demo footer are hidden inside `/app/...`;
+- **Clean-up:** an unknown app is a 404 (page, `agent.md`, API); the site nav and footer are hidden inside `/app/...` (the persona switch and demo pages were removed Oct 29);
   the root `loading.tsx` moved into `(owner)`, `(judge)` and `docs` because a Suspense boundary above `/app` made not-found a 200.
 
 ## 2d. Step 0: can a real Muse connect?
@@ -258,7 +260,7 @@ Held-out scenarios, failures shown, no cherry-picking.
 | Thu Oct 30 | Owner cards, relay channel, handoff card, safety rules, lessons written to and read from memory. Carrier adapter interface with a simulated label + appointment. | End-to-end single deal with learning hook |
 | Fri Oct 31 | Sandbox city simulator, benchmark harness, learning-curve run. **G2.** | First real numbers |
 | Sat Nov 1 | Dashboard, privacy test harness, voice in/out, scam-report export. One real carrier test-mode integration only if G1 and G2 passed. | Judge-facing UI |
-| Sun Nov 2 | README, mock mode polish, seeded data, rehearse live demo 3×. **G3 freeze.** | Runnable by judges |
+| Sun Nov 2 | README, polish, rehearse the live demo 3×. **G3 freeze.** | Runnable by judges |
 | Mon Nov 3 | Record and edit the 3-minute video. Last technical questions day. | Video |
 | Tue Nov 4 | Submit early afternoon (deadline 9 PM ET). Verify public repo, video link, contributors. | Submitted |
 
@@ -349,7 +351,7 @@ Agora grows from a platform with one demo app into a platform for any community.
 ## 13. Submission checklist
 
 - [ ] Repo public; no secrets in history
-- [ ] README: what was built during the window, what is simulated, how to run (mock mode), what is private
+- [ ] README: what was built during the window, what is simulated, how to run (real Meta key and two secrets), what is private
 - [ ] 3-minute video, link accessible
 - [ ] All contributors listed on the submission page
 - [ ] Representative appointed; submitted before 9 PM ET Nov 4

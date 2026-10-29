@@ -20,7 +20,7 @@ holding `app.config.ts`, a sandbox community and requirements. This flow is desi
 end to end with a real Muse**.
 
 Example apps (examples of what the platform runs, not the product itself):
-- `apps/kids-gear` — parents' agents trade outgrown kids' gear. This is the hackathon demo.
+- `apps/kids-gear` — parents' agents trade outgrown kids' gear. An example app for the simulation and the docs.
 - `apps/garden-tools` — neighbours swap garden tools and seeds. Built as a dry run of the create-an-app flow.
 - Planned examples (not built): a running club / marathon association, an office app, a learning group.
 
@@ -69,25 +69,12 @@ folder refines it)  4. `docs/PLAN.md`  5. `docs/ARCHITECTURE.md` (section 2b: pl
 
 ## Status (update when it changes)
 
-Built: app config schema and loader, Meta client (routing, cost meter, budgets), family profile and consent,
-catalog (items lifecycle, forecast), matching (candidates, scoring), gatekeeper (classifier, policy, red-team evals),
-negotiation (deal state machine, offers, negotiator policy and note writer, DealEvents hub), owner cards (questions,
-confirmations, standing rules, hard limits), language (detection, translation, per-owner views), relay (screened, translated,
-faithful), trust (screening, scam signals, reputation, reports, `agora.report.v1` export), logistics (handoff modes, encrypted
-places and addresses, simulated carrier, labels, appointments, tracking, outcomes), learning (lessons from decisions,
-tighten-only adjustments with owner-approved relaxation through stretch offers, standing-rule proposals), memory (local provider, AgentWitch mirror) and simulation (sandbox city,
-simulated owners with hidden rules, held-out benchmark, CSV; see docs/SIMULATION.md), migrations 0001–0011 (0001–0010 one per slice, 0011 the saved demo state; `npm run db:check` applies them to an empty Postgres 16, needs Docker; model_calls, audit and queue tables are not written yet),
-two example apps, and a **demo web app** (`src/app`, styled with Agora's own Tailwind 4 design tokens, light and dark, plus a public read-only `/styleguide`): owner cards, deal room with relay chat and handoff card, and a judge
-dashboard that draws the learning curves from the simulation CSV, a synthetic-city map and live safety checks (the red-team and screening sets). It runs in **demo mode only** (`AGORA_MODE=mock`, the
-default): two built-in personas (Mia, Jonas) that are not authentication, in-memory state, simulated translation and
-carrier. Demo state is saved after every change to Postgres (`DATABASE_URL`) or a file (`AGORA_STATE_FILE`) and restored on start (docs/ARCHITECTURE.md §11b); with neither it is memory only. `AGORA_MODE=live` answers 501 until accounts are built (only `live` is refused; there is no separate demo value).
-Scaffold only (empty files, no behaviour yet): the `safety`, `intake` and `voice` slices, the dashboard slice's sub-features (the dashboard's logic lives in `src/app/_composition`), `src/lib/{audit,budget,db,flags,queue}.ts`, `db/seed.sql`, the golden-file evals, and Playwright e2e (the demo journey is covered by `src/app/api/api.test.ts`). Safety rules are enforced today in `schema.ts` (`safetyRules`), `catalog` and `gatekeeper/classifier`.
-Also built in the demo app: shipping in the deal room (propose another way to hand over, recipient's encrypted address, postage split as terms only, simulated label shown to the sender only, tracking), and an items page (add an offer or want from the app's own categories, see the matcher's candidates, ask the agent to propose a deal; several deals at once).
-Not built: photo intake (needs a Meta key for the vision call; the items form stands in), notifications, report review tooling, a real test-mode carrier, the real-model language quality test (G0), owner-card screens for stretch cards and a product workflow for the stretch lookup (only the simulation does it), relational Postgres repositories (migrations 0001–0010 are unused; demo state is one saved document), Postgres-backed memory, intake, voice,
-accounts and real authentication, live Meta API calls (endpoint format unconfirmed).
+This file is an older, shorter copy of `CLAUDE.md`; its status list went stale. **Read the Status section of `CLAUDE.md`**, which is the current one.
+Short version (Oct 29): Agora is a real app. There is no demo or mock mode and no built-in personas; every platform route needs `?app=<id>` of a created app and its session; translation, photo intake and the interviewer use the real Meta Model API and the app fails without `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` and `REPORT_EXPORT_SECRET`. The simulation, judge dashboard, styleguide and a simulated carrier (labelled "not connected yet") remain.
 
 ## Working here
 
+- Env (`.env.example`): `META_API_KEY`, `FIELD_ENCRYPTION_SECRET`, `REPORT_EXPORT_SECRET` (required), `DATABASE_URL` or `AGORA_STATE_FILE`, `APP` only for the simulation.
 - `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run bench:matching`, `npm run capacity`, `npm run mcp:docs` (the docs knowledge base as an MCP server; see `docs/DOCS-PLATFORM.md`), `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

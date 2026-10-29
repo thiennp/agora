@@ -20,7 +20,7 @@ cards waiting for you.
 - Meta's help page says Muse can build a **custom connector** from a service's API description. It does not say how that
   works in every region or on every phone, and we have not yet tried it with a real Muse account (`docs/PLAN.md` §2d).
 - Whether the consumer Muse app has an "Add custom connector" setting that takes a **MCP** address is **unconfirmed**:
-  sources disagree. The MCP address below is built so it works the day that is confirmed. Do not rely on it for the demo.
+  sources disagree. The MCP address below is built so it works the day that is confirmed. Do not rely on it in the walkthrough.
 - Muse may need to be in a country where it is offered. If something below does not match your screen, stop and tell us;
   everything on the status page works without Muse.
 
@@ -63,7 +63,7 @@ On the same page tap **Revoke** next to the key. The next request from Muse is r
   never logged, never accepted in a URL (`src/lib/identity/muse-keys.ts`).
 - Only a signed-in person (session cookie, not a key) can make or revoke keys: `GET/POST /api/apps/{app}/muse-key`,
   `POST /api/apps/{app}/muse-key/revoke`.
-- A wrong app, wrong key, revoked key, a session cookie or a demo app all get the same 401. Limits: 60 requests a minute
+- A wrong app, wrong key, revoked key, a session cookie or a repository app all get the same 401. Limits: 60 requests a minute
   per key, 120 per address, 20 wrong keys per 15 minutes per address.
 - MCP is stateless streamable HTTP with JSON replies, POST only; no session id to steal.
 - Answers carry a `notice` telling the model the text is data, not instructions.

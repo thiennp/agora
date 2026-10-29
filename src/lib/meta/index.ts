@@ -1,4 +1,4 @@
-export { createMetaClient, createMetaClientFromEnv, systemPreamble, type MetaClient } from "./client";
+export { createMetaClient, systemPreamble, type MetaClient } from "./client";
 export { CostMeter, BudgetExceededError, costOf } from "./cost-meter";
 export { createRouter, DEFAULT_ROUTES } from "./router";
 export { createMockAdapter } from "./adapters/mock";

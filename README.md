@@ -11,10 +11,10 @@ approval, records, time, workflows, matching, notifications, language and trust.
 [docs/PRIMITIVES.md](docs/PRIMITIVES.md).
 
 **The idea in one line:** paste one link into Muse, answer plain-language questions about your community, and Muse builds
-the app on Agora for you. (The flow is built and tested in mock mode; it has not been tried with a real Muse.)
+the app on Agora for you. (The flow is built and tested with test doubles for the model; it has not been tried with a real Muse.)
 
 Example apps on the platform:
-- [`apps/kids-gear`](apps/kids-gear) — parents' agents trade outgrown kids' gear. This is the hackathon demo.
+- [`apps/kids-gear`](apps/kids-gear) — parents' agents trade outgrown kids' gear. An example app used by the simulation and the docs; it is not seeded into the running app.
 - [`apps/garden-tools`](apps/garden-tools) — neighbours swap garden tools and seeds.
 - Planned: running club, office app, learning group.
 
@@ -30,10 +30,11 @@ Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents wo
 - **What is proven today.** Only the exchange use case (the kids' gear and garden tools apps) can be expressed and run. Community
   posting, circles and a non-exchange example are designed (`docs/PRIMITIVES.md`) but not built; the platform is not claimed to
   be general until a non-exchange example runs.
-- **Simulated parts.** The demo uses a sandbox city of synthetic families; everything it produces is labelled
-  simulated. Carrier labels are test-mode.
+- **Simulated parts.** The simulation and the judge dashboard use a sandbox city of synthetic families; everything they
+  produce is labelled simulated. No real carrier is connected: shipping labels come from a simulated carrier and are shown as
+  "not connected yet".
 - **Private backend.** AgentWitch is an optional, private background provider for family memory. This repository
-  runs without it (mock mode).
+  runs without it.
 - **No health advice.** The platform handles gear and logistics only.
 
 ## Where to start
@@ -43,28 +44,34 @@ Built for the Meta Global AI Developer Hackathon (Cerebral Valley). AI agents wo
 3. [docs/PLAN.md](docs/PLAN.md) — scope, gates, schedule, risks.
 4. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Fractal Slice Architecture, data model, privacy, scale, testing.
 
-## Run the demo
+## Run it
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000
+cp .env.example .env   # set META_API_KEY, FIELD_ENCRYPTION_SECRET, REPORT_EXPORT_SECRET
+npm run dev            # http://localhost:3000
 ```
 
-Open `/demo` (the home page `/` is a QR code that opens `/start`, the create-an-app interview; the code always points at `https://agentwitch.com/agora/start`, so scanning it only works once that is deployed. Locally, open `/start` directly), pick Mia or Jonas (two demo personas, not accounts), answer the agent's questions, add items, and open the
-judge dashboard. Demo state is memory only unless `AGORA_STATE_FILE=./state.json` (or `DATABASE_URL` for Postgres) is set,
-in which case it survives restarts. `npm run simulate` writes the benchmark that the dashboard charts; `npm test`,
-`npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. The demo needs no Meta key: translation
-and the carrier are simulated. The items page also takes a photo: by default (`AGORA_INTAKE=simulated`) no model looks at it and sample
-items are cut from fixed places on it; with `AGORA_INTAKE=meta` and `META_API_KEY` in `.env`, Muse Spark names the items and SAM 3.1 finds
-each one. The photo is never kept, only a small picture of each item you list.
+There is no demo or mock mode. The app needs a real Meta Model API key (`META_API_KEY`: translation, photo intake and the
+interviewer use Muse Spark and SAM 3.1) and two secrets of at least 16 characters (`FIELD_ENCRYPTION_SECRET` encrypts
+addresses, `REPORT_EXPORT_SECRET` signs report exports); without them it fails and names the missing variable. State survives
+restarts with `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE=./state.json`; with neither it is memory only.
 
-## Muse-first demo
+The home page `/` shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to `/start`, the create-an-app
+interview (the code always points at `https://agentwitch.com/agora/start`, so scanning only works once that is deployed;
+locally open `/start` directly). Creating an app makes you its creator; the app then lives at `/app/{app}` with its own items,
+cards and deals pages. Every platform API route needs `?app=<id>` and that app's session cookie. Photos are never kept, only a
+small picture of each item you list. `npm run simulate` writes the benchmark that the judge dashboard charts; `npm test`,
+`npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. Tests use test doubles for the model;
+no test calls Meta.
 
-A person scans the QR code on the home page, answers a short interview on their phone and gets an app: an overview with an invite
-QR, a join page for friends, and a status page per member showing what their agent works on. A person's own Muse can read that
-status through a read-only connector (`docs/MUSE-CONNECTOR.md`); it can never answer a card. The whole flow runs offline in mock
-mode (`npm test` covers it: `src/app/api/muse-first-flow.test.ts`). Not tried with a real Muse. The script, the fallback and the list of what is
-simulated are in [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md).
+## Muse-first walkthrough
+
+A person scans the QR code on the home page (or pastes the prompt into Muse), answers a short interview on their phone and gets
+an app: an overview with an invite QR, a join page for friends, and a status page per member showing what their agent works on.
+A person's own Muse can read that status through a read-only connector (`docs/MUSE-CONNECTOR.md`); it can never answer a card.
+`npm test` covers the whole flow with test doubles (`src/app/api/muse-first-flow.test.ts`). Not tried with a real Muse. The
+script, the fallback and the list of what is not connected are in [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md).
 
 ## Create an app (paste into Muse)
 

@@ -16,7 +16,7 @@ Builders of apps and screens; judges looking at the design.
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
 | STY-01 | Show the logo, colors, surfaces, buttons, alerts, badges, avatars, images, modals, form controls, tables and charts. | Should | Each has a section in the index. |
-| STY-02 | Read-only and public: no sign-in, no demo or owner data, no network calls. | Must | Sample values only. |
+| STY-02 | Read-only and public: no sign-in, no app or owner data, no network calls. | Must | Sample values only. |
 | STY-03 | Use only `src/components/ui` and tokens; no app or brand names beyond "Agora". | Must | Lint (no `apps/` import); review. |
 | STY-04 | Works at 375 px, in light and dark, and under `AGORA_BASE_PATH`. | Should | No horizontal page scroll; links use `next/link` or fragments. |
 | STY-05 | Ships no image files, icon sets or font files; picture slots are drawn in CSS and icons are inline SVG written for this project. | Must | No third-party assets. |

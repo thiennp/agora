@@ -4,7 +4,7 @@
 
 A report is exported as JSON in this format, designed for Meta. **It is a format only.** This project does not claim
 that Meta receives, reads or acts on it; whether Meta wants such reports is unconfirmed. Every export carries the
-disclaimer below, and the docs and demo say "designed for", never "reported to".
+disclaimer below, and the docs and the walkthrough say "designed for", never "reported to".
 
 ```json
 {
