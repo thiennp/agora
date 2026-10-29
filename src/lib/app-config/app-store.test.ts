@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ALWAYS_ASK_TOPICS, AppStoreError, MAX_STORED_APPS, createAppStore, createMemoryBackend, loadApp, registerAppStore, repoAppIds, type AppConfig } from "./index";
 
 const base = async (id: string): Promise<AppConfig> => ({ ...(await loadApp("garden-tools")), id, name: `App ${id}` });
@@ -8,6 +8,7 @@ const code = async (p: Promise<unknown>) => ((await p.then(() => null, (e: unkno
 afterEach(() => registerAppStore(undefined));
 
 describe("app store (apps as data, BR-41)", () => {
+  afterEach(() => vi.useRealTimers());
   it("stores a valid config and returns it by id and in the list", async () => {
     const store = fresh();
     const cfg = await base("friends-clothes");
@@ -62,6 +63,8 @@ describe("app store (apps as data, BR-41)", () => {
   });
 
   it("caps how many apps can be stored", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T00:00:00Z")); // the limits are lifted until the end of November 2026
     const backend = createMemoryBackend();
     const cfg = await base("seed-app");
     for (let i = 0; i < MAX_STORED_APPS; i++) await backend.insert({ ...cfg, id: `filler-${i}` });

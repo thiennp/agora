@@ -277,3 +277,5 @@ img, svg { vertical-align: middle; }
 .summary dd { margin: 0; overflow-wrap: anywhere; }
 .said { padding: 0 4px; }
 .recovery { font-size: 1.1rem; word-break: break-all; user-select: all; }
+.copy-prompt { display: grid; gap: 8px; width: min(100%, 36rem); }
+.copy-prompt textarea { width: 100%; font: inherit; font-size: 0.875rem; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text); resize: none; }

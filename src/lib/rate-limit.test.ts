@@ -22,3 +22,15 @@ describe("rate limiter", () => {
     expect(rl.size()).toBe(1);
   });
 });
+
+describe("limits lifted until the end of November 2026", () => {
+  it("lets a liftable limiter through before December 1 and enforces it from then on; a non-liftable one always enforces", () => {
+    let t = Date.parse("2026-11-30T23:59:00Z");
+    const liftable = createRateLimiter({ limit: 1, windowMs: 60_000, now: () => t, liftable: true });
+    const guard = createRateLimiter({ limit: 1, windowMs: 60_000, now: () => t });
+    expect([liftable.check("a").ok, liftable.check("a").ok]).toEqual([true, true]);
+    expect([guard.check("a").ok, guard.check("a").ok]).toEqual([true, false]);
+    t = Date.parse("2026-12-01T00:00:00Z");
+    expect([liftable.check("b").ok, liftable.check("b").ok]).toEqual([true, false]);
+  });
+});

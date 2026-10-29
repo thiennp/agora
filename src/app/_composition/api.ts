@@ -36,7 +36,7 @@ export async function platformFor(appId?: string): Promise<Platform> {
   return getPlatform(appId);
 }
 
-const limiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
+const limiter = createRateLimiter({ limit: 120, windowMs: 60_000, liftable: true });
 /** Guessing a recovery code is the one attack light identity invites, so it gets its own, much tighter limit (per address). */
 export const recoveryLimiter = createRateLimiter({ limit: 8, windowMs: 15 * 60_000 });
 export const resetRateLimit = () => {
