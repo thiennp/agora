@@ -1,10 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetRateLimit } from "@/app/_composition/api";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore } from "@/app/_composition/identity";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
-import { createIdentityStore } from "@/lib/identity";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { loadApp } from "@/lib/app-config";
 import { POST as createApp } from "./apps/route";
+import { endWorld, resetWorld } from "./test-support";
 import { POST as join } from "./apps/[app]/join/route";
 import { GET as me } from "./apps/[app]/me/route";
 import { GET as members } from "./apps/[app]/members/route";
@@ -32,11 +29,8 @@ async function setup() {
 }
 
 describe("light identity over HTTP (BR-42, BR-45)", () => {
-  beforeEach(() => {
-    resetRateLimit();
-    useIdentityStore(createIdentityStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
-  });
+  afterEach(endWorld);
+  beforeEach(() => resetWorld());
 
   it("makes the creator on create and a member on join, with a cookie that is HttpOnly and no secret in the body", async () => {
     const c = await createApp(as(undefined, "/api/apps", await config("club-a")), ctx());
@@ -90,7 +84,7 @@ describe("light identity over HTTP (BR-42, BR-45)", () => {
     expect((await getApp(as(undefined, "/api/apps/club-a"), ctx({ app: "club-a" }))).status).toBe(200);
   });
 
-  it("guards every platform route of a stored app by session, and leaves the demo apps on their personas", async () => {
+  it("guards every platform route of a stored app by session, and refuses a request that names no stored app", async () => {
     const { creator, member } = await setup();
     const deals = (cookie?: string) => listDeals(as(cookie, "/api/deals?as=a&app=club-a"), ctx());
     expect((await deals(undefined)).status).toBe(401);
@@ -104,8 +98,9 @@ describe("light identity over HTTP (BR-42, BR-45)", () => {
     await createApp(as(undefined, "/api/apps", await config("club-b")), ctx());
     const other = await createApp(as(undefined, "/api/apps", await config("club-c")), ctx());
     expect((await deals(cookieOf(other).replace("club-c", "club-a"))).status).toBe(401);
-    // The seeded demo app has no members and keeps working without a session.
-    expect((await listDeals(as(undefined, "/api/deals?as=a"), ctx()))).toHaveProperty("status", 200);
+    // There is no app without a session to fall back on: a request without ?app= is refused, and so is a repository example app (not a stored app).
+    expect((await listDeals(as(undefined, "/api/deals?as=a"), ctx())).status).toBe(400);
+    expect((await listDeals(as(creator.cookie, "/api/deals?as=a&app=kids-gear"), ctx())).status).toBe(404);
   });
 
   it("recovers on a new phone with the code: new session, old phone cut off, code replaced, wrong codes refused", async () => {

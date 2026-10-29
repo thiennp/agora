@@ -25,14 +25,14 @@ const STATUS: Record<string, number> = {
 
 /** The platform of an app by id; an id no repository or stored app has is a 404, not a server error. */
 export async function platformFor(appId?: string): Promise<Platform> {
-  if (appId !== undefined) {
-    getAppStore();
-    try {
-      await loadApp(appId);
-    } catch {
-      throw new HttpError(404, "unknown_app", `There is no app "${appId.slice(0, 40)}".`);
-    }
+  if (appId === undefined) throw new HttpError(400, "app_required", "Say which app this is about (?app=<id>).");
+  getAppStore();
+  try {
+    await loadApp(appId);
+  } catch {
+    throw new HttpError(404, "unknown_app", `There is no app "${appId.slice(0, 40)}".`);
   }
+  if (!isStoredApp(appId)) throw new HttpError(404, "unknown_app", `There is no app "${appId.slice(0, 40)}".`);
   return getPlatform(appId);
 }
 
@@ -101,19 +101,18 @@ async function serve<S extends z.ZodTypeAny>(
 }
 
 /**
- * Wraps a route: demo mode only, rate limited, input validated, errors in one shape (APP-01, API-01..03). Every action takes the
- * persona it acts as; the slices then check that persona really is a party to the card, deal or conversation, so one owner cannot
- * touch the other's cards. There are no accounts yet, so personas are not authentication.
+ * Wraps a route: rate limited, input validated, errors in one shape (APP-01, API-01..03). Every action takes the
+ * member it acts as (always the signed-in person of that app); the slices then check that member really is a party to the card,
+ * deal or conversation, so one owner cannot touch another's cards.
  */
 export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string[] }, run: (ctx: Ctx<z.infer<S>>) => Promise<unknown>) {
   return (req: Request, ctx: { params: Promise<Record<string, string>> }): Promise<Response> =>
     serve(req, ctx, opts.schema, async (input, params) => {
-      if (process.env.AGORA_MODE === "live") throw new HttpError(501, "auth_not_built", "The demo console is not available in live mode: there are no accounts yet.");
-      // Which app this request is about: the `app` path parameter, else `?app=`, else the demo app (BR-41).
+      // Which app this request is about: the `app` path parameter, else `?app=` (BR-41).
       const appId = params.app ?? new URL(req.url).searchParams.get("app") ?? undefined;
       let platform = await platformFor(appId);
-      // A stored app is a space its members see (BR-42, BR-45): no session for this app, no access. The demo apps keep their personas.
-      if (appId !== undefined && isStoredApp(appId)) {
+      // An app is a space its members see (BR-42, BR-45): no session for this app, no access.
+      if (appId !== undefined) {
         const who = await authorize(req, appId);
         if (req.method !== "GET") assertHuman(who); // an external Muse reads; every write needs the person's own session (BR-07, BR-44)
         // The caller acts as themselves, whatever `as` says: both persona keys resolve to the member the session proves, so one member

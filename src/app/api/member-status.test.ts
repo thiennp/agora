@@ -1,14 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetRateLimit } from "@/app/_composition/api";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore } from "@/app/_composition/identity";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { appPageView } from "@/app/_composition/app-views";
 import { memberStatusFor, memberStatusView } from "@/app/_composition/member-status";
-import { getPlatform } from "@/app/_composition/platform";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
-import { createIdentityStore } from "@/lib/identity";
+import { loadApp } from "@/lib/app-config";
 import { POST as createApp } from "./apps/route";
 import { POST as join } from "./apps/[app]/join/route";
+import { createTestApp, endWorld, resetWorld, startJacketDeal } from "./test-support";
 
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
 const post = (path: string, body: unknown, cookie?: string) =>
@@ -27,11 +23,8 @@ async function setup() {
 }
 
 describe("member status page (BR-43)", () => {
-  beforeEach(() => {
-    resetRateLimit();
-    useIdentityStore(createIdentityStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
-  });
+  afterEach(endWorld);
+  beforeEach(() => resetWorld());
 
   it("shows a member their own page, and denies another member, the creator, a stranger and a forged cookie the same way", async () => {
     const { creator, member, other } = await setup();
@@ -42,7 +35,7 @@ describe("member status page (BR-43)", () => {
     for (const cookie of [other.cookie, creator.cookie, null, "agora_s_club-s=forged"]) {
       expect(await memberStatusView("club-s", member.memberId, cookie)).toEqual({ kind: "denied" });
     }
-    // An id that does not exist, an app that does not exist and a demo app look the same.
+    // An id that does not exist, an app that does not exist and a repository example app (not a stored app) look the same.
     expect(await memberStatusView("club-s", "nope", member.cookie)).toEqual({ kind: "denied" });
     expect(await memberStatusView("missing-app", member.memberId, member.cookie)).toEqual({ kind: "denied" });
     expect(await memberStatusView("kids-gear", member.memberId, member.cookie)).toEqual({ kind: "denied" });
@@ -63,8 +56,10 @@ describe("member status page (BR-43)", () => {
   });
 
   it("groups cards, deals, items and counts for a member who has them, and shows no message text or other member's id", async () => {
-    const p = await getPlatform("kids-gear");
-    const s = await memberStatusFor(p, { id: "demo-jonas", name: "Jonas", role: "member" });
+    const t = await createTestApp();
+    await startJacketDeal(t);
+    const p = t.platform;
+    const s = await memberStatusFor(p, { id: t.b.id, name: "Jonas", role: "member" });
     expect(s.deals.length).toBeGreaterThan(0);
     expect(s.items.length).toBeGreaterThan(0);
     expect(s.dealsByState.reduce((n, x) => n + x.value, 0)).toBe(s.deals.length);
@@ -72,13 +67,13 @@ describe("member status page (BR-43)", () => {
     expect(s.alone.dealsRunning).toBe(s.deals.filter((d) => d.open).length);
     expect(s.activity.counts.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
     const json = JSON.stringify(s);
-    expect(json).not.toContain("demo-mia");
+    expect(json).not.toContain(t.a.id);
     expect(json).not.toContain("simulated");
     const pending = async (id: string) => { const x = await memberStatusFor(p, { id, name: "", role: "member" }); return x.waiting.confirmations.length + x.waiting.questions.length; };
-    expect((await pending("demo-jonas")) + (await pending("demo-mia"))).toBeGreaterThan(0);
-    // The other persona sees their own side only.
-    const mia = await memberStatusFor(p, { id: "demo-mia", name: "Mia", role: "member" });
-    expect(JSON.stringify(mia)).not.toContain("demo-jonas");
+    expect((await pending(t.b.id)) + (await pending(t.a.id))).toBeGreaterThan(0);
+    // The other member sees their own side only.
+    const mia = await memberStatusFor(p, { id: t.a.id, name: "Mia", role: "member" });
+    expect(JSON.stringify(mia)).not.toContain(t.b.id);
   });
 
   it("links the member and the creator to their own page from the app page", async () => {

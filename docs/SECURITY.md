@@ -4,9 +4,7 @@ The design (threat model, controls and what is built) is in `docs/ARCHITECTURE.m
 retention in `docs/PRIVACY.md`, and the decision boundary in ADR 0005. This file states the current status plainly.
 
 ## Status
-- The app runs in **demo mode** only: two built-in personas that are not authentication, in-memory state by default (saved to Postgres `app_state` or the file named by `AGORA_STATE_FILE` when configured), simulated
-  translation and carrier. `AGORA_MODE=live` answers 501 until accounts exist. Do not expose a demo instance as a service
-  for real people.
+- The app has **no demo or mock mode** (removed Oct 29, superseded: earlier versions ran two built-in personas, simulated translation and a hard-coded key). Identity is light: a cookie session per app and a recovery code, not real accounts. State is memory only unless `DATABASE_URL` (Postgres `app_state`) or `AGORA_STATE_FILE` is set. It fails at start without `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` and `REPORT_EXPORT_SECRET`. No real carrier is connected (the simulated one is labelled "not connected yet"). Until 2026-12-01 request rate limits, the interview/build limits and the stored-apps cap are lifted (`limitsLifted`); the recovery-code and bad-key guards stay.
 - No external security review or penetration test has been done.
 
 ## What is enforced in code today
@@ -17,10 +15,9 @@ retention in `docs/PRIVACY.md`, and the decision boundary in ADR 0005. This file
 - API routes validate input with zod and are rate limited; audit entries hold decisions, never message text.
 - A test scans the logistics code for payment identifiers: the platform never holds or moves money.
 
-## Saved demo state
+## Saved state
 The saved state holds the screened relay text, agent notes and encrypted handoff fields (never what an owner typed before screening,
-and never a plaintext address). The fields are encrypted with the demo's hard-coded key, so anyone with the repository and the
-saved state can read them. It is demo data, deleted by the reset, and has no access control beyond the database or file.
+and never a plaintext address). The fields are encrypted with `FIELD_ENCRYPTION_SECRET` (the old hard-coded demo key and the reset route are removed), so the state is as private as that secret plus access to the database or file. There is no per-member erase or retention job yet.
 
 ## Light identity (stored apps)
 Apps created through the platform have light identity (BR-45, docs/ARCHITECTURE.md §2b): random session tokens held in an HttpOnly

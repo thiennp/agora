@@ -15,7 +15,7 @@ Judges.
 
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
-| APP-JDG-01 | A single dashboard page needing no login for the demo. | Must | Opens directly. |
+| APP-JDG-01 | A single dashboard page needing no login. | Must | Opens directly. |
 | APP-JDG-02 | Show a "try it" entry point where possible. | Could | Link to a live scenario. |
 | APP-JDG-03 | Everything from the simulation is labelled SIMULATED and states what is not measured. | Must | Banner and "not measured" panel present. |
 | APP-JDG-04 | Charts have a text alternative and work at 375 px. | Must | "Show the numbers" table; no horizontal scroll. |

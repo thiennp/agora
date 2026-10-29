@@ -5,7 +5,6 @@ import { Banner, Card } from "@/components/Card";
 import { LineChart } from "@/components/LineChart";
 import { RerunButton } from "@/components/RerunButton";
 import { AutoRefresh } from "@/components/AutoRefresh";
-import { getPlatform } from "@/app/_composition/platform";
 import { loadCityMap, loadDashboard, type CityMapData, type Scenario } from "@/app/_composition/reports";
 import { CityMap } from "@/components/CityMap";
 import { runSafetyChecks, type SafetyCheck } from "@/app/_composition/safety-checks";
@@ -25,14 +24,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const h = d.headroom;
   const cards = h.cardsPerConfirmed;
   const drift = d.config.drift;
-
-  let live: { feed: { at: string; text: string }[]; audit: Awaited<ReturnType<typeof getPlatform>>["audit"] } | null = null;
-  try {
-    const p = await getPlatform();
-    live = { feed: p.feed.slice(0, 8), audit: p.audit };
-  } catch {
-    live = null;
-  }
 
   let map: CityMapData | null = null;
   try {
@@ -200,29 +191,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             </ul>
           </div>
         ) : <p className="muted">The intake eval has not been run (<code>npm run evals:intake</code>, needs a Meta key).</p>}
-      </Card>
-
-      <Card title="Live demo activity" id="live">
-        {live ? (
-          <div className="grid grid-2">
-            <div>
-              <h3>What just happened</h3>
-              {live.feed.length === 0 ? <p className="muted">Nothing yet. <Link href="/cards?as=a">Try the demo.</Link></p> : (
-                <ul className="list">{live.feed.map((f, i) => <li key={i} className="small">{f.text} <span className="muted">· {new Date(f.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></li>)}</ul>
-              )}
-              <p style={{ marginTop: 12 }}><Link className="btn primary" href="/cards?as=a">Try it as an owner</Link></p>
-            </div>
-            <div>
-              <h3>Privacy and safety, counted live</h3>
-              <ul className="list small">
-                <li>Agent decisions: {live.audit.gatekeeper.auto ?? 0} handled alone, {live.audit.gatekeeper.ask ?? 0} sent to an owner, {live.audit.gatekeeper.forbid ?? 0} refused</li>
-                <li>Messages: {live.audit.screening.allow ?? 0} clean, {live.audit.screening.redact ?? 0} with details removed, {live.audit.screening.block ?? 0} blocked</li>
-                <li>Owner cards: {live.audit.cards.question_answered ?? 0} questions answered, {live.audit.cards.confirmation_decided ?? 0} confirmations decided</li>
-              </ul>
-              <p className="muted small">Counts only: nothing here records message text.</p>
-            </div>
-          </div>
-        ) : <p className="muted">The live demo is not available in this mode.</p>}
       </Card>
 
       <details>

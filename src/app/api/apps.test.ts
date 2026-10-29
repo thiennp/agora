@@ -1,10 +1,8 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { platformFor, resetRateLimit } from "@/app/_composition/api";
-import { useIdentityStore } from "@/app/_composition/identity";
-import { createIdentityStore } from "@/lib/identity";
-import { useAppStore } from "@/app/_composition/apps";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { platformFor } from "@/app/_composition/api";
+import { loadApp } from "@/lib/app-config";
 import { POST as createApp } from "./apps/route";
+import { endWorld, resetWorld } from "./test-support";
 import { GET as getApp } from "./apps/[app]/route";
 import { POST as addItem } from "./items/route";
 import { GET as listDeals } from "./deals/route";
@@ -16,11 +14,8 @@ const j = async (r: Response) => (await r.json()) as any;
 const config = async (id: string) => ({ ...(await loadApp("garden-tools")), id, name: `Club ${id}`, tagline: "Swap with friends" });
 
 describe("apps as data over HTTP (BR-41)", () => {
-  beforeEach(() => {
-    resetRateLimit();
-    useIdentityStore(createIdentityStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
-  });
+  afterEach(endWorld);
+  beforeEach(() => resetWorld());
 
   it("creates an app from a config, then serves its public summary without a redeploy", async () => {
     const created = await createApp(req("/api/apps", await config("friends-club")), ctx());
@@ -44,25 +39,28 @@ describe("apps as data over HTTP (BR-41)", () => {
     expect((await getApp(req("/api/apps/nothing"), ctx({ app: "nothing" }))).status).toBe(404);
   });
 
-  it("keeps each app's data apart: the demo app and a stored app never see each other's items or deals", async () => {
+  it("keeps each app's data apart: two stored apps never see each other's items or deals", async () => {
     const created = await createApp(req("/api/apps", await config("scoped-club")), ctx());
     const cookie = created.headers.get("set-cookie")!.split(";")[0]!;
-    const demo = await platformFor();
-    const other = await platformFor("scoped-club");
-    expect(other).not.toBe(demo);
-    expect(other.app.id).toBe("scoped-club");
-    expect(demo.app.id).not.toBe("scoped-club");
+    const other2 = await createApp(req("/api/apps", await config("other-club")), ctx());
+    const cookie2 = other2.headers.get("set-cookie")!.split(";")[0]!;
+    const first = await platformFor("scoped-club");
+    const second = await platformFor("other-club");
+    expect(first).not.toBe(second);
+    expect(first.app.id).toBe("scoped-club");
+    expect(second.app.id).toBe("other-club");
 
-    // The demo app has its seeded deal, the new app starts empty.
+    // Both apps start empty.
     expect((await j(await listDeals(withCookie(req("/api/deals?as=a&app=scoped-club"), cookie), ctx()))).deals).toHaveLength(0);
-    expect((await j(await listDeals(req("/api/deals?as=a"), ctx()))).deals.length).toBeGreaterThan(0);
+    expect((await j(await listDeals(withCookie(req("/api/deals?as=a&app=other-club"), cookie2), ctx()))).deals).toHaveLength(0);
 
-    // An item added to the stored app is in its catalog and not in the demo app's.
+    // An item added to one app is in its catalog and not in the other's; one app's session does not open the other.
     const added = await addItem(withCookie(req("/api/items?app=scoped-club", { as: "a", kind: "offer", category: "hand-tools", condition: "good", description: "A good spade" }), cookie), ctx());
     expect(added.status).toBe(200);
     const { id } = await j(added);
-    expect(await other.catalog.items.get(id)).toBeTruthy();
-    expect(await demo.catalog.items.get(id)).toBeFalsy();
+    expect(await first.catalog.items.get(id)).toBeTruthy();
+    expect(await second.catalog.items.get(id)).toBeFalsy();
+    expect((await addItem(withCookie(req("/api/items?app=other-club", { as: "a", kind: "offer", category: "hand-tools", condition: "good" }), cookie), ctx())).status).toBe(401);
   });
 
   it("answers 404 for a request about an app that does not exist", async () => {

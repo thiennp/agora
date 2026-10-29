@@ -1,11 +1,12 @@
 import { loadApp, type AppConfig } from "@/lib/app-config";
 import { getAppStore } from "./apps";
-import { loadEnv } from "@/lib/env";
-import { CostMeter, createMetaApiAdapter, createMetaClient, createMockAdapter, createRouter, createSamClient } from "@/lib/meta";
+import { loadEnv, requireRuntimeEnv } from "@/lib/env";
+import { createSamClient } from "@/lib/meta";
+import { metaClientFor } from "./meta";
 import { createDealEventBus, type DealEventBus } from "@/hubs/DealEvents/command";
 import { createCatalogService } from "@/features/catalog/public-api/infrastructure";
 import { createGatekeeper } from "@/features/gatekeeper/public-api/infrastructure";
-import { createIntake, createMetaPorts, createSimulatedPorts } from "@/features/intake/public-api/infrastructure";
+import { createIntake, createMetaPorts } from "@/features/intake/public-api/infrastructure";
 import { createLanguageService } from "@/features/language/public-api/infrastructure";
 import { createLearning } from "@/features/learning/public-api/infrastructure";
 import { createLogistics, createSimulatedCarrier } from "@/features/logistics/public-api/infrastructure";
@@ -19,8 +20,9 @@ import { getIdentityStore, isStoredApp } from "./identity";
 import { backendFromEnv, type StateBackend } from "./persistence";
 
 /**
- * Composition root of the demo: the one place that wires the slices together and seeds a scenario. It lives in the entry layer so
- * slices stay independent of each other. Demo mode only: there are no accounts, so the two personas are not real users.
+ * Composition root: the one place that wires the slices together for one app. It lives in the entry layer so slices stay independent
+ * of each other. Every party is a real member of that app (see `addMember`); the persona keys are only the names a route uses for
+ * "the member acting", and both resolve to the signed-in member.
  */
 export type PersonaKey = "a" | "b";
 
@@ -45,35 +47,21 @@ export interface Audit {
   cards: Record<string, number>;
 }
 
-const DEMO_SECRET = "demo-only-secret-key-0123456789";
 const TOPIC_WORDS: Record<string, string> = { pickup_time_window: "a pickup time", price_terms: "terms", commitment: "agreeing", location_reveal: "a place", identity_reveal: "personal details", shipping_choice: "shipping" };
-
-function personas(): Record<PersonaKey, Persona> {
-  const day = new Date();
-  day.setUTCDate(day.getUTCDate() + 1);
-  const at = (h: number) => new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h)).toISOString();
-  return {
-    a: { key: "a", id: "demo-mia", name: "Mia", language: "en", districtCode: "g:52.50:13.40", availability: [{ from: at(10), to: at(14) }] },
-    b: { key: "b", id: "demo-jonas", name: "Jonas", language: "de", districtCode: "g:52.50:13.45", availability: [{ from: at(11), to: at(16) }] },
-  };
-}
 
 async function build(appId: string, opts: { fresh?: boolean } = {}) {
   const env = loadEnv();
-  if (env.MODE === "live") throw new Error("the demo console is not available in live mode: there are no accounts yet");
+  const secrets = process.env.NODE_ENV === "test" ? { FIELD_ENCRYPTION_SECRET: env.FIELD_ENCRYPTION_SECRET ?? "test-secret-0123456789abcdef", REPORT_EXPORT_SECRET: env.REPORT_EXPORT_SECRET ?? "test-export-0123456789abcdef" } : requireRuntimeEnv(env);
   getAppStore();
   const app: AppConfig = await loadApp(appId);
-  // The demo scenario (Mia, Jonas, a winter jacket) is seeded only into the app the demo runs on. Every other app starts empty: its
-  // stores, saved state and audit are its own and never see another app's data (BR-41).
-  const seeded = appId === env.APP;
-  if (seeded && app.policies.pricing.mode === "swap_only") throw new Error("the demo needs an app whose deals can be free");
-  const who = personas();
+  if (!isStoredApp(appId)) throw new Error(`"${appId}" is not a stored app`);
+  // An app starts empty: its stores, saved state and audit are its own and never see another app's data (BR-41).
+  const who = {} as Record<PersonaKey, Persona>;
   // What the app lets owners offer: free where deals can be free, else swaps only.
   const terms = app.policies.pricing.mode === "swap_only" ? "swap" : "free";
-  // Parties of this platform. The demo apps run on the two built-in personas. A stored app starts with nobody: its members are added
-  // as they join (`addMember`), so a party is always a real membership of this app and never another app's (docs/adr/0007).
-  const stored = isStoredApp(appId);
-  const byId = new Map<string, Persona>(stored ? [] : Object.values(who).map((p) => [p.id, p]));
+  // Parties of this platform: nobody at first; members are added as they join (`addMember`), so a party is always a real membership of
+  // this app and never another app's (docs/adr/0007).
+  const byId = new Map<string, Persona>();
   const lang = (f: string) => byId.get(f)?.language ?? "en";
 
   // Everything the stores create from here until the seeding step is tracked, so it can be saved and restored (src/lib/state.ts).
@@ -104,21 +92,10 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: [terms] });
   const catalog = createCatalogService({ app, canShare: (f) => byId.has(f) });
 
-  // No model key in the demo: translation is a clearly labelled simulation, so the relay path is real but the words are not.
-  const client = createMetaClient({
-    app,
-    adapters: {
-      mock: createMockAdapter((req) => {
-        const to = /into language "([a-z]{2})"/.exec(req.system)?.[1] ?? "en";
-        const text = (JSON.parse(req.prompt) as { text?: string }).text ?? "";
-        return JSON.stringify({ translation: `[simulated ${to}] ${text}`, confidence: 0.9 });
-      }),
-    },
-    router: createRouter({ providers: { "muse-spark": "mock", "muse-spark-open": "mock" } }),
-    meter: new CostMeter({ perParticipantUsd: 1, globalUsd: 50 }),
-  });
+  // Translation and every other model call go to the real Meta Model API (Muse Spark).
+  const client = metaClientFor(app);
   const language = createLanguageService({ app, client });
-  const trust = createTrust({ app, exportSecret: DEMO_SECRET, audit: (e) => bump(audit.screening, e.decision) });
+  const trust = createTrust({ app, exportSecret: secrets.REPORT_EXPORT_SECRET, audit: (e) => bump(audit.screening, e.decision) });
   const negotiation = createNegotiationService({
     app, items: catalog.items, gatekeeper, bus, language, canStartDeal: (f) => trust.reputation.canStartDeal(f),
     mandateOf: (f) => book.negotiationMandate(f, lang(f)),
@@ -136,7 +113,7 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
     rules: { eligibleTopics: () => eligibleStandingTopics(app), activeTopics: (f) => book.list(f).map((m) => m.topic), add: (i) => book.add(i) },
   });
   const logistics = createLogistics({
-    app, deals: negotiation, carrier: createSimulatedCarrier(), secret: DEMO_SECRET, bus,
+    app, deals: negotiation, carrier: createSimulatedCarrier(), secret: secrets.FIELD_ENCRYPTION_SECRET, bus,
     constraintsOf: (f) => ({ districtCode: byId.get(f)!.districtCode, availability: byId.get(f)!.availability }),
   });
   const matcher = createMatchService({ app, limitsOf: (f) => book.limitsOf(f) });
@@ -154,56 +131,18 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
     if (!have.availability.some((w) => Date.parse(w.to) > Date.now())) book.setLimits(m.id, { ...have, availability: persona.availability, allowedTerms: [terms] });
     return persona;
   };
-  // Photo intake: simulated and offline unless AGORA_INTAKE=meta, which uses Muse Spark vision and SAM 3.1 with META_API_KEY. Only this
-  // step calls the real Meta API in the demo; everything else keeps the mock client above. Crops are not part of the saved state.
+  // Photo intake: Muse Spark vision names the items and SAM 3.1 boxes them. Crops are not part of the saved state.
+  const metaKey = process.env.NODE_ENV === "test" ? (env.META_API_KEY ?? "test-key") : requireRuntimeEnv(env).META_API_KEY;
   const intake = createIntake({
     catalog: app.catalog,
-    ports:
-      env.AGORA_INTAKE === "meta"
-        ? createMetaPorts({
-            catalog: app.catalog,
-            sam: createSamClient({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }),
-            client: createMetaClient({
-              app,
-              adapters: { "meta-api": createMetaApiAdapter({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: env.META_API_KEY! }) },
-              router: createRouter({ providers: { "muse-spark": "meta-api", "muse-spark-open": "meta-api" } }),
-              meter: new CostMeter({ perParticipantUsd: 1, globalUsd: 50 }),
-            }),
-          })
-        : createSimulatedPorts(app.catalog),
+    ports: createMetaPorts({ catalog: app.catalog, sam: createSamClient({ baseUrl: env.META_API_URL ?? "https://api.meta.ai/v1", apiKey: metaKey }), client }),
   });
   leave();
 
-  const backend: StateBackend | null = backendFromEnv(env, seeded ? undefined : appId);
+  const backend: StateBackend | null = backendFromEnv(env, appId);
   const saved = opts.fresh ? null : await backend?.load();
-  let dealId: string | undefined;
-  if (saved) {
-    scope.restore(saved);
-    dealId = meta.dealId;
-    // The scenario's windows are "tomorrow" on the day it was first built; a demo restored a day later gets fresh windows.
-    if (Date.now() - Date.parse(meta.createdAt ?? "") > 12 * 3_600_000) {
-      for (const p of Object.values(who)) book.setLimits(p.id, { availability: p.availability, allowedTerms: [terms] });
-    }
-  } else if (seeded) {
-
-  // The scenario: Mia offers a winter jacket, Jonas needs one. The match, the offer and the agents' first moves are all real.
-  const mia = who.a;
-  const jonas = who.b;
-  const offer = await catalog.items.create(mia.id, { kind: "offer", category: "clothing", size: "68", condition: "good", description: "Winter jacket" });
-  const want = await catalog.items.create(jonas.id, { kind: "want", category: "clothing", size: "68" });
-  await catalog.items.list(offer.id);
-  await catalog.items.list(want.id);
-  const common = { appId: app.id, createdAt: new Date().toISOString() };
-  matcher.onListed({ ...common, id: offer.id, familyId: mia.id, kind: "offer", category: "clothing", size: "68", condition: "good", districtCode: mia.districtCode });
-  const found = matcher.candidatesFor({ ...common, id: want.id, familyId: jonas.id, kind: "want", category: "clothing", size: "68", districtCode: jonas.districtCode });
-  say(`${nameOf(jonas.id)}'s agent found a match: ${found.matches[0]?.reason ?? "none"}`);
-  const deal = await negotiation.start({ offerItemId: offer.id, wantItemId: want.id, offerFamilyId: mia.id, wantFamilyId: jonas.id });
-  await negotiation.run(deal.id);
-  await cards.settled();
-  dealId = deal.id;
-  meta.dealId = deal.id;
-  meta.createdAt = new Date().toISOString();
-  }
+  if (saved) scope.restore(saved);
+  meta.createdAt ??= new Date().toISOString();
 
   // Saves are queued so two requests never write at once; a failed save is logged by name and does not fail the request.
   let tail: Promise<void> = Promise.resolve();
@@ -215,7 +154,7 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   await persist();
 
   return {
-    app, personas: who, byId, addMember, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake, dealId,
+    app, personas: who, byId, addMember, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake,
     createdAt: meta.createdAt!, persistence: (backend?.kind ?? "memory") as "memory" | "file" | "postgres", persist, restored: Boolean(saved),
     async wipe() {
       await tail;
@@ -230,11 +169,8 @@ export type Platform = Awaited<ReturnType<typeof build>>;
 const g = globalThis as unknown as { __agoraPlatforms?: Map<string, Promise<Platform>> };
 const platforms = () => (g.__agoraPlatforms ??= new Map());
 
-/** The app the demo runs on: `APP`, or kids-gear. */
-export const demoAppId = (): string => loadEnv().APP;
-
-/** The running platform of one app (default: the demo app), created on first use and kept for the life of the process. One per app, so stores never share data. */
-export function getPlatform(appId: string = demoAppId()): Promise<Platform> {
+/** The running platform of one app, created on first use and kept for the life of the process. One per app, so stores never share data. */
+export function getPlatform(appId: string): Promise<Platform> {
   const all = platforms();
   let p = all.get(appId);
   if (!p) {
@@ -244,7 +180,7 @@ export function getPlatform(appId: string = demoAppId()): Promise<Platform> {
     });
     all.set(appId, p);
   }
-  return isStoredApp(appId) ? p.then(syncMembers) : p;
+  return p.then(syncMembers);
 }
 
 /** Every membership of a stored app is a party of its platform (also after a restart, when only the identity store remembers them). */
@@ -253,8 +189,8 @@ async function syncMembers(p: Platform): Promise<Platform> {
   return p;
 }
 
-/** Start one app's scenario again from the beginning (its saved state is deleted and everything is replaced). Other apps are untouched. */
-export async function resetPlatform(appId: string = demoAppId()): Promise<Platform> {
+/** Start one app again from empty (its saved state is deleted and everything is replaced). Other apps are untouched. */
+export async function resetPlatform(appId: string): Promise<Platform> {
   const all = platforms();
   const old = all.get(appId);
   if (old) await old.then((p: Platform) => p.wipe()).catch(() => undefined);

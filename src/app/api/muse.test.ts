@@ -1,12 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { resetRateLimit } from "@/app/_composition/api";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore, useMuseKeyStore } from "@/app/_composition/identity";
+import { endWorld, resetWorld } from "./test-support";
 import { resetMuseRateLimits } from "@/app/_composition/muse-api";
 import { museOpenApi } from "@/app/_composition/muse-openapi";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
+import { loadApp } from "@/lib/app-config";
 import { sha256Hex } from "@/lib/crypto";
-import { createIdentityStore, createMuseKeyStore } from "@/lib/identity";
+import { createMuseKeyStore } from "@/lib/identity";
 import { POST as createApp } from "./apps/route";
 import { POST as join } from "./apps/[app]/join/route";
 import { GET as listKeys, POST as makeKey } from "./apps/[app]/muse-key/route";
@@ -50,13 +48,10 @@ const read = (mod: { GET: (r: Request, c: any) => Promise<Response> }, app: stri
 
 describe("read-only access for a person's own Muse (BR-44)", () => {
   afterEach(() => vi.useRealTimers());
+  afterEach(endWorld);
   beforeEach(() => {
     seen.length = 0;
-    resetRateLimit();
-    resetMuseRateLimits();
-    useIdentityStore(createIdentityStore());
-    useMuseKeyStore(createMuseKeyStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
+    resetWorld();
   });
 
   it("makes a key only for a signed-in person, shows it once, lists it without the key, and revokes it", async () => {
@@ -130,7 +125,7 @@ describe("read-only access for a person's own Muse (BR-44)", () => {
     const kcy = await keyFor("club-a", cy);
     expect((await (await read(statusRoute, "club-a", kcy.key)).json()).member).toMatchObject({ id: cy.memberId, name: "Cy" });
     expect((await (await read(statusRoute, "club-a", ka.key)).json()).member).toMatchObject({ id: a.member.memberId, name: "Bo" });
-    // A demo app has no members and no keys to open it.
+    // A repository example app is not a stored app: no members and no keys to open it.
     expect((await read(statusRoute, "kids-gear", ka.key)).status).toBe(401);
   });
 

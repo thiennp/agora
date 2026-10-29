@@ -1,10 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetRateLimit } from "@/app/_composition/api";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore } from "@/app/_composition/identity";
-import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
-import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
-import { createIdentityStore } from "@/lib/identity";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { useInterviewModel } from "@/app/_composition/interview";
+import { loadApp } from "@/lib/app-config";
+import { endWorld, resetWorld } from "./test-support";
 import { POST as interview } from "./interview/route";
 import { POST as build } from "./interview/build/route";
 import { GET as me } from "./apps/[app]/me/route";
@@ -25,14 +22,9 @@ const answers = [
   { step: "feel", choice: "friendly" },
 ];
 
-describe("create an app by interview, end to end in mock mode (BR-40, BR-41, BR-45)", () => {
-  beforeEach(() => {
-    resetRateLimit();
-    resetInterviewLimits();
-    useInterviewModel(undefined);
-    useIdentityStore(createIdentityStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
-  });
+describe("create an app by interview, end to end with the model stood in (BR-40, BR-41, BR-45)", () => {
+  afterEach(endWorld);
+  beforeEach(() => resetWorld()); // the interview model is the model double, which answers nothing useful: the interview runs on code alone
 
   it("walks the questions, shows the summary, and on yes stores the app and makes the caller its creator", async () => {
     for (let i = 0; i < answers.length; i++) {

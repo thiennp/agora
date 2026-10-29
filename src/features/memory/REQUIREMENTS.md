@@ -16,7 +16,7 @@ Learning; negotiation; platform operator.
 | ID | Requirement | Priority | Acceptance |
 |---|---|---|---|
 | MEM-01 | Expose one MemoryProvider interface for context, lessons and deal outcomes. | Must | No slice calls a provider directly. |
-| MEM-02 | Work fully without AgentWitch. | Must | Mock mode runs end to end with only a Meta key. |
+| MEM-02 | Work fully without AgentWitch. | Must | The app runs end to end with only the Meta key and the two secrets. |
 | MEM-03 | Keep each family memory isolated. | Must | No cross-family reads in tests. |
 | MEM-04 | A memory failure never blocks a deal. | Must | Failures are logged and retried. |
 | MEM-05 | Providers share one contract suite (empty start, replace by id, delete, family isolation, copies, erasure). | Must | Contract tests run for local and AgentWitch. |

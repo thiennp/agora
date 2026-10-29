@@ -1,7 +1,6 @@
 import { AppStoreError, type AppConfig } from "@/lib/app-config";
-import { loadEnv } from "@/lib/env";
 import { advance, createInterviewModel, InterviewError, validateDraft, type InterviewModel } from "@/lib/interview";
-import { createMetaClientFromEnv } from "@/lib/meta";
+import { metaClientFor } from "./meta";
 import { getAppStore } from "./apps";
 import { LIGHT_IDENTITY_NOTICE, getIdentityStore, sessionCookie } from "./identity";
 import { appSummary } from "./app-views";
@@ -11,8 +10,7 @@ import { createRateLimiter } from "@/lib/rate-limit";
 const g = globalThis as unknown as { __agoraInterviewModel?: InterviewModel };
 
 /**
- * The interviewer's model: Muse Spark in live mode, the offline mock otherwise. The mock answers nothing useful, so in mock mode
- * the interview runs on code alone (static examples, code-drafted app), which is what tests and offline demos see.
+ * The interviewer's model: Muse Spark on the Meta Model API. Code validates everything it drafts (src/lib/interview).
  */
 export function getInterviewModel(): InterviewModel {
   if (g.__agoraInterviewModel) return g.__agoraInterviewModel;
@@ -20,9 +18,8 @@ export function getInterviewModel(): InterviewModel {
   const placeholder = {
     id: "interview", name: "Agora", region: { name: "Anywhere" }, participant: { noun: "person", fields: [] },
     policies: { languages: ["en"], pricing: { mode: "free_or_agreement" } },
-  } as unknown as Parameters<typeof createMetaClientFromEnv>[0];
-  const env = loadEnv();
-  return (g.__agoraInterviewModel = createInterviewModel(createMetaClientFromEnv(placeholder, env)));
+  } as unknown as Parameters<typeof metaClientFor>[0];
+  return (g.__agoraInterviewModel = createInterviewModel(metaClientFor(placeholder)));
 }
 
 /** Replace the model (tests). */

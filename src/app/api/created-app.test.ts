@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -15,15 +15,8 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-import { resetRateLimit } from "@/app/_composition/api";
-import { useAppStore } from "@/app/_composition/apps";
-import { useIdentityStore, useMuseKeyStore } from "@/app/_composition/identity";
-import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
 import { memberStatusView } from "@/app/_composition/member-status";
-import { getPlatform } from "@/app/_composition/platform";
-import { resetMuseRateLimits } from "@/app/_composition/muse-api";
-import { appAgentBrief, appVocabulary, createAppStore, createMemoryBackend, describeApp, loadApp, repoAppIds } from "@/lib/app-config";
-import { createIdentityStore, createMuseKeyStore } from "@/lib/identity";
+import { appAgentBrief, appVocabulary, describeApp, loadApp } from "@/lib/app-config";
 import AppLayout from "@/app/app/[app]/layout";
 import ItemsPage from "@/app/app/[app]/items/page";
 import CardsPage from "@/app/app/[app]/cards/page";
@@ -31,9 +24,6 @@ import DealsPage from "@/app/app/[app]/deals/page";
 import DealPage from "@/app/app/[app]/deals/[dealId]/page";
 import AppPage from "@/app/app/[app]/page";
 import StatusPage from "@/app/app/[app]/muse/[id]/page";
-import DemoItemsPage from "@/app/(owner)/items/page";
-import DemoCardsPage from "@/app/(owner)/cards/page";
-import DemoDealsPage from "@/app/(owner)/deals/page";
 import { GET as agentMd } from "@/app/app/[app]/agent.md/route";
 import { Nav } from "@/components/Nav";
 import { POST as interview } from "./interview/route";
@@ -45,12 +35,12 @@ import { POST as answerQuestion } from "./owner-questions/[questionId]/answer/ro
 import { POST as decide } from "./deals/[dealId]/confirm/route";
 import { POST as relay } from "./deals/[dealId]/relay/route";
 import { GET as dealGet } from "./deals/[dealId]/route";
+import { endWorld, resetWorld } from "./test-support";
 
 /**
- * A created app is usable end to end in mock mode (docs/PLAN.md §2c-quater): interview draft, build, two people post, the matcher finds
+ * A created app is usable end to end with the model stood in (docs/PLAN.md §2c-quater): interview draft, build, two people post, the matcher finds
  * the match, a deal is proposed, each owner answers their own cards with their own session, both confirm, and the deal room works.
- * Every page is rendered the way a person sees it. Strangers and other members are refused, an unknown app is a 404, and the repository
- * app's demo pages are unchanged.
+ * Every page is rendered the way a person sees it. Strangers and other members are refused, an unknown app is a 404.
  */
 (globalThis as { React?: typeof React }).React = React;
 
@@ -84,15 +74,10 @@ const appId = "walk-club";
 const EXCHANGE_WORDS = /\b(swap|swapped|free|handover|hand over|giving|looking for|family|families|city)\b/i;
 
 describe("a created app is usable end to end", () => {
+  afterEach(endWorld);
   beforeEach(() => {
     cookie = "";
-    resetRateLimit();
-    resetInterviewLimits();
-    resetMuseRateLimits();
-    useInterviewModel(undefined);
-    useIdentityStore(createIdentityStore());
-    useMuseKeyStore(createMuseKeyStore());
-    useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
+    resetWorld();
   });
 
   async function create() {
@@ -226,20 +211,15 @@ describe("a created app is usable end to end", () => {
     expect(ex.features.join(" ")).toContain("Handover by");
   });
 
-  it("leaves the repository app's demo pages and routes as they were", async () => {
-    const p = await getPlatform();
-    expect(p.app.id).toBe("kids-gear");
-    for (const page of [DemoItemsPage, DemoCardsPage, DemoDealsPage]) {
-      const html = await render(await page({ searchParams: Promise.resolve({ as: "b" }) } as any));
-      expect(html).toContain("Jonas");
+  it("has no site navigation inside an app (the app's own bar replaces it) and no demo persona switch anywhere", () => {
+    expect(renderToStaticMarkup(React.createElement(Nav))).not.toContain("<nav");
+    path = "/dashboard";
+    try {
+      const outside = renderToStaticMarkup(React.createElement(Nav));
+      expect(outside).toMatch(/Dashboard[\s\S]*Docs[\s\S]*Styleguide/);
+      expect(outside).not.toMatch(/Mia|Jonas|Items|Deals|Cards/);
+    } finally {
+      path = "/app/walk-club";
     }
-    expect(await render(await DemoItemsPage({ searchParams: Promise.resolve({ as: "a" }) }))).toContain("Your items");
-    expect(await render(await DemoDealsPage({ searchParams: Promise.resolve({}) }))).toContain("Open the deal room");
-    // The demo navigation is for the demo; inside an app it is replaced by the app's own bar.
-    const inApp = renderToStaticMarkup(React.createElement(Nav));
-    expect(inApp).not.toMatch(/Mia|Jonas|Dashboard|Styleguide|Items|Deals/);
-    path = "/items";
-    expect(renderToStaticMarkup(React.createElement(Nav))).toMatch(/Mia[\s\S]*Jonas/);
-    path = "/app/walk-club";
   });
 });

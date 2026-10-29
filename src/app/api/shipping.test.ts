@@ -1,32 +1,29 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { resetRateLimit } from "@/app/_composition/api";
-import { getPlatform } from "@/app/_composition/platform";
-import { POST as reset } from "./demo/reset/route";
+import { afterEach, describe, expect, it } from "vitest";
 import { GET as getDeal } from "./deals/[dealId]/route";
 import { POST as confirm } from "./deals/[dealId]/confirm/route";
 import { POST as handoff } from "./deals/[dealId]/handoff/route";
 import { POST as answer } from "./owner-questions/[questionId]/answer/route";
+import { createTestApp, ctx, endWorld, j, resetWorld, startJacketDeal, type TestApp } from "./test-support";
 
-const post = (body: unknown) => new Request("http://localhost/x", { method: "POST", body: JSON.stringify(body) });
-const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) });
-const j = async (r: Response) => (await r.json()) as any;
+let t: TestApp;
 
 async function confirmedDeal() {
-  resetRateLimit();
-  const { dealId } = await j(await reset(post({}), ctx({})));
-  const p = await getPlatform();
+  resetWorld();
+  t = await createTestApp();
+  const { dealId } = await startJacketDeal(t);
+  const p = t.platform;
   for (let i = 0; i < 4; i++) {
-    for (const who of ["demo-mia", "demo-jonas"] as const) for (const q of p.cards.questionsFor(who)) await answer(post({ as: who === "demo-mia" ? "a" : "b", answer: "yes" }), ctx({ questionId: q.id }));
+    for (const m of [t.a, t.b]) for (const q of p.cards.questionsFor(m.id)) await answer(t.post(m, "/x", { answer: "yes" }), ctx({ questionId: q.id }));
   }
-  await confirm(post({ as: "a", cardId: p.cards.confirmationsFor("demo-mia")[0]!.id, decision: "confirm" }), ctx({ dealId }));
-  await confirm(post({ as: "b", cardId: p.cards.confirmationsFor("demo-jonas")[0]!.id, decision: "confirm" }), ctx({ dealId }));
-  return dealId as string;
+  await confirm(t.post(t.a, "/x", { cardId: p.cards.confirmationsFor(t.a.id)[0]!.id, decision: "confirm" }), ctx({ dealId }));
+  await confirm(t.post(t.b, "/x", { cardId: p.cards.confirmationsFor(t.b.id)[0]!.id, decision: "confirm" }), ctx({ dealId }));
+  return dealId;
 }
-const act = (dealId: string, body: unknown) => handoff(post(body), ctx({ dealId }));
-const card = async (dealId: string, as: "a" | "b") => (await j(await getDeal(new Request(`http://localhost/x?as=${as}`), ctx({ dealId })))).handoff;
+const act = (dealId: string, body: { as: "a" | "b" } & Record<string, unknown>) => handoff(t.post(t[body.as], "/x", body), ctx({ dealId }));
+const card = async (dealId: string, as: "a" | "b") => (await j(await getDeal(t.get(t[as], `/api/deals/${dealId}`), ctx({ dealId })))).handoff;
 
 describe("shipping from the deal room", () => {
-  beforeEach(() => resetRateLimit());
+  afterEach(endWorld);
 
   it("switches to shipping, collects the address from the recipient only, and shows the label to the sender only", async () => {
     const id = await confirmedDeal();

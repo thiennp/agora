@@ -1,38 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Links() {
   const path = usePathname();
-  const as = useSearchParams().get("as") === "b" ? "b" : "a";
-  // The QR home page and the start page are for a first-time visitor: no demo navigation, no persona switch.
-  // Inside an app (`/app/...`) the app's own bar replaces the demo links and the Mia/Jonas switch.
+  // The QR home page, the start page and every app have their own look: no site navigation there.
   if (path === "/" || path.startsWith("/start") || path.startsWith("/app/")) return null;
-  const q = `?as=${as}`;
-  const item = (href: string, label: string, match: (p: string) => boolean) => (
-    <Link href={`${href}${["/dashboard", "/docs", "/styleguide"].includes(href) ? "" : q}`} aria-current={match(path) ? "page" : undefined}>{label}</Link>
+  const item = (href: string, label: string) => (
+    <Link href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</Link>
   );
-  const here = path.startsWith("/dashboard") ? "/dashboard" : path.startsWith("/docs") ? "/docs" : path.startsWith("/styleguide") ? "/styleguide" : path.startsWith("/deals") ? "/deals" : path.startsWith("/items") ? "/items" : "/cards";
   return (
-    <>
-      <nav className="nav" aria-label="Main">
-        {item("/cards", "Cards", (p) => p.startsWith("/cards"))}
-        {item("/items", "Items", (p) => p.startsWith("/items"))}
-        {item("/deals", "Deals", (p) => p.startsWith("/deals"))}
-        {item("/dashboard", "Dashboard", (p) => p.startsWith("/dashboard"))}
-        {item("/docs", "Docs", (p) => p.startsWith("/docs"))}
-        {item("/styleguide", "Styleguide", (p) => p.startsWith("/styleguide"))}
-      </nav>
-      {here !== "/dashboard" && here !== "/docs" && here !== "/styleguide" ? (
-        <div className="persona" role="group" aria-label="Act as">
-          <Link href={`${path}?as=a`} aria-current={as === "a" ? "true" : undefined}>Mia · EN</Link>
-          <Link href={`${path}?as=b`} aria-current={as === "b" ? "true" : undefined}>Jonas · DE</Link>
-        </div>
-      ) : null}
-    </>
+    <nav className="nav" aria-label="Main">
+      {item("/dashboard", "Dashboard")}
+      {item("/docs", "Docs")}
+      {item("/styleguide", "Styleguide")}
+    </nav>
   );
 }
 

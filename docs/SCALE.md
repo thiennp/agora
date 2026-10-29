@@ -11,7 +11,7 @@ from what is **reasoning**.
 | **Designed** | A decision with a reason, not yet implemented. |
 | **Assumed** | An input to a calculation. Change it in `evals/capacity-model.ts` and the tables change. |
 
-Nothing beyond one in-memory process is built today. The demo runs in a single Node process with in-memory state
+Nothing beyond one in-memory process is built today. The app runs in a single Node process, state kept in memory and saved as one document
 (`CLAUDE.md`, Status). Everything in sections 4 to 8 is therefore a design to adopt in stages, with triggers (section 3) that
 say when each stage is worth its cost.
 
@@ -120,7 +120,7 @@ thumb to be replaced by your own measurements; they are **assumed**, not measure
 
 | Stage | Members (order of) | Architecture | Move on when |
 |---|---:|---|---|
-| 0. Demo | < 10k | One process, in-memory (today) | You need persistence or a second user |
+| 0. Single process | < 10k | One process, in-memory (today) | You need persistence or a second user |
 | 1. One durable region | 10k – 1M | Stateless API ×2+, one Postgres primary + replica, one queue, auth, outbox | Postgres primary CPU > 60% for a week, or write latency p99 > 50 ms, or one region is not enough for latency or law |
 | 2. Horizontal workers | 1M – 10M | Autoscaled API and workers, read replicas, separate matching service, model gateway with queues | Matching p99 > 100 ms in the busiest district, or queue lag > 1 minute at peak, or model spend per member above plan |
 | 3. Cells | 10M – 100M | Several independent cells per region, global control plane, event log, sharded Postgres per cell | A single cell's blast radius is unacceptable, or one database cannot take the writes of its members |
@@ -381,7 +381,7 @@ Each step is shippable on its own and reuses a test that already exists. Order m
 | # | Step | Reuses (Built) | Done when |
 |---|---|---|---|
 | 1 | Postgres repositories behind the existing repository ports (deals, items, lessons, handoffs) | The in-memory repositories and migrations 0001–0010; the shared contract suites for ports | The contract suites pass against Postgres and in-memory |
-| 2 | Authentication and per-request authorization (replace the two demo personas) | `route()` in `src/app/_composition/api.ts`, ownership checks in slices | Every route rejects a request for another member's card or deal |
+| 2 | Authentication and per-request authorization (light identity per app exists; real accounts do not; the demo personas are gone) | `route()` in `src/app/_composition/api.ts`, ownership checks in slices | Every route rejects a request for another member's card or deal |
 | 3 | Outbox + durable event log behind `DealEvents` | The hub API and idempotent handler shape | Kill the process mid-deal and the deal resumes without duplicate cards |
 | 4 | Distributed rate limiting and budgets (leases) | `rate-limit.ts`, `CostMeter` | A second instance shares limits and the global breaker still holds |
 | 5 | Matching service with density-aware buckets | `npm run bench:matching` as the acceptance test | metro p99 under 100 ms at 1M items |

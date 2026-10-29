@@ -22,7 +22,7 @@ All pages.
 
 | CMP-JOIN | `JoinForm` (join on the invite page, then the recovery code once) and `CopyLink` (share or copy the invite link) hold no secret and call only the join API. | Must | `src/app/api/app-page.test.ts`. |
 | CMP-MUSEKEY | `MuseKeyPanel` makes, shows once and revokes the member's read-only Muse key through the session-only key API; it never stores the key. | Should | `src/app/api/muse.test.ts` (API). |
-| CMP-SCOPE | `ScopeProvider`/`useScope` (`ScopeContext.tsx`, `scope.ts`) tell the shared owner components which app they run in: API calls get `?app=` (the person comes from the session cookie, never from the URL or body), links go under `/app/{app}`, wording (`Vocabulary`) and the name for the other side come from the app. Demo pages run in `demoScope` and read exactly as before. `AppNav` is the bar inside an app; `SiteFooter` hides the demo notice there. | Must | `created-app.test.ts`. |
+| CMP-SCOPE | `ScopeProvider`/`useScope` (`ScopeContext.tsx`, `scope.ts`) tell the shared owner components which app they run in: API calls get `?app=` (the person comes from the session cookie, never from the URL or body), links go under `/app/{app}`, wording (`Vocabulary`) and the name for the other side come from the app. `AppNav` is the bar inside an app; `SiteFooter` is hidden there. (The `(owner)` demo pages and `demoScope`'s only users are removed.) | Must | `created-app.test.ts`. |
 
 ## Out of scope
 

@@ -94,14 +94,14 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | **Owner approval**: the agent always asks before commitments, money terms, identity or location reveals, shipping, safety exceptions; unknown topics ask; standing rules only for low-risk topics and they expire | built |
 | **Records**: app-defined things people create (an item, event, task, request, poll) with a lifecycle | partly built (items only) |
 | **Time**: availability, calendars, deadlines, reminders | designed |
-| **Workflows**: propose, agree, confirm processes and "when X do Y" rules; negotiation is one workflow | partly built (deal state machine, handoff and logistics with a simulated carrier) |
+| **Workflows**: propose, agree, confirm processes and "when X do Y" rules; negotiation is one workflow | partly built (deal state machine, handoff and logistics with a simulated carrier, labelled "not connected yet") |
 | **Matching and ranking**: find the best person or thing | built for items |
 | **Notifications**: push, email, voice so the owner gets the question | designed |
 | **Language**: detection and translation of cards, notes and posts | built (first version) |
 | **Trust and moderation**: scam signals, reports with evidence, bans, abuse limits, export for Meta | built for 1:1 conversations (screening, scam signals, reputation, hash-chained reports, `agora.report.v1` export); not yet applied to community posts; review tooling not built |
 | **Moderation and roles**: members and admins; a member can report a post, an admin can hide a post or remove a member; screening applies to posts as to 1:1 messages | designed (minimal, tier 2) |
 | **Meta client**: model routing, cost meter, per-member and global budgets, schema-validated output | built |
-| **Photo intake**: originals discarded, crops only | built in the demo (items page; simulated offline, real models with `AGORA_INTAKE=meta`) |
+| **Photo intake**: originals discarded, crops only | built (items page; always the real models, Muse Spark vision and SAM 3.1) |
 | **Voice intake** | designed |
 | **Dashboard**: live feed, learning curve, cost, privacy, safety | built in part (learning curves, live counters, failures; no map, cost or privacy-test panel) |
 
@@ -140,7 +140,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 
 | App | Built from |
 |---|---|
-| Kids' gear exchange (`kids-gear`, hackathon demo) | 1:1 agents with relay, geo, records (items), matching, workflows (handoff), trust, learning, owner approval, logs |
+| Kids' gear exchange (`kids-gear`, example app for the simulation and the docs) | 1:1 agents with relay, geo, records (items), matching, workflows (handoff), trust, learning, owner approval, logs |
 | Garden tools swap (`garden-tools`) | same, with swap-only pricing |
 | Marathon association (example) | community communication, time, circles (pace groups), voting (route), notifications, logs |
 | Office app (example) | community communication, circles (teams), time (desk and room booking), records (requests), workflows |
@@ -161,7 +161,7 @@ reputation, reports and export), logistics (handoff modes, encrypted places and 
 Also built: the simulation slice (sandbox city, simulated owners, held-out benchmark, CSV export).
 
 Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
-windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice intake. A demo web app exists (owner cards, deal room, judge dashboard) in demo mode only.
+windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice intake. A web app exists: `/start` interview, per-app pages (owner cards, deal room, items), member status, the Muse read API and the judge dashboard; it needs a real Meta key (no demo or mock mode).
 
 Scaffold only: the `safety` and `voice` slices are empty files (the `intake` slice is built except its sub-feature `capture`, whose upload lives in the page); their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
 per-primitive sections as each primitive lands, and existing apps must keep working.

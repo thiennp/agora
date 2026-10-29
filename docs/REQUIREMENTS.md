@@ -4,7 +4,7 @@ Folder: `docs/`  ·  Top level: [REQUIREMENTS.md](../REQUIREMENTS.md)
 
 ## Purpose
 
-Plan, architecture, protocol, security, privacy and demo script.
+Plan, architecture, protocol, security, privacy and the Muse-first demo script.
 
 ## Who it serves
 

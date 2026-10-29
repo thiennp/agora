@@ -17,7 +17,7 @@ Quickest way in: **ask**. Run `npm run dev` and open `/docs`, or let your AI ass
 | Security status and controls | `docs/SECURITY.md`, `docs/ARCHITECTURE.md` section 12b |
 | The wire format for reports | `docs/PROTOCOL.md` |
 | The plan, scope tiers and deadlines | `docs/PLAN.md` |
-| The demo | `docs/DEMO-SCRIPT.md` |
+| The Muse-first walkthrough and demo script | `docs/DEMO-SCRIPT.md` |
 | Connect a person's own Muse (read only) | `docs/MUSE-CONNECTOR.md` |
 | How to ask the docs (chat, MCP, API) | `docs/DOCS-PLATFORM.md` |
 

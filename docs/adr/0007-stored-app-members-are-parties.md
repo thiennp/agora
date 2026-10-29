@@ -35,3 +35,5 @@ The simplest path that keeps one platform per app:
   the API (`?app=`), the member status page and the person's own Muse; a deal-room screen for stored apps is not built.
 - Translation between members of different languages is not exercised: all members of a stored app start with the app's first
   language (no per-member language is collected at join).
+
+> Superseded in part (Oct 29): the two built-in demo personas, repository apps served as demo apps and the `(owner)` demo pages are removed; every platform route now needs a stored app and its session.

@@ -6,7 +6,7 @@ Planning notes written Oct 26 ET. Names and file layout may shift once code star
 
 1. Privacy by construction: originals are never stored; only item crops and coarse location are persisted.
 2. Owners decide: no agent action that commits an owner happens without an explicit confirm.
-3. The platform runs without AgentWitch (mock mode), so judges can run it end to end.
+3. The platform runs without AgentWitch (it is an optional provider); there is no mock mode, and a real Meta key is required.
 4. Every model call goes through one metered, routed client; cost is a first-class output.
 5. Untrusted text (other agents' messages, listings) is data, never instructions.
 6. Humans never talk to each other directly: human → own agent → other agent → other human, always relayed,
@@ -39,7 +39,7 @@ flowchart LR
     VT[Voice Transcribe / Voice]
   end
   AW[(AgentWitch\nprivate, optional)]
-  LOCAL[(Local memory\nmock mode)]
+  LOCAL[(Local memory)]
 
   UI --> API
   VOICE --> API
@@ -96,12 +96,11 @@ entry layer (`src/app/_composition/apps.ts`) creates the store from the environm
 repository apps first, then the registered store, so `src/` still never imports `apps/` beyond the registry line.
 `POST /api/apps` creates one, `GET /api/apps/{app}` returns the public summary (name, tagline, region, noun, languages), and
 `/app/{app}` (`/agora/app/{app}` in production) is its page. **Per-app scoping:** `getPlatform(appId)` builds one platform per
-app (own catalog, deals, cards, relay, audit, feed) and every API route takes `?app={id}` (default: the demo app `APP`). Only the
-demo app is seeded with the Mia and Jonas scenario; other apps start empty. Saved state is per app (`app_state` row `platform:<app>`
-or file `<AGORA_STATE_FILE>.<app>`; the demo app keeps its original name). Not yet: members and personas of their own (the two demo personas still stand in for owners in every app), the member status page (step 5).
-**Muse read API (step 6, BR-44):** a person's own Muse reads, never decides. `src/lib/identity/muse-keys.ts` keeps per-member keys (`agmk_` + 256 random bits; only the SHA-256 is stored, in the `muse-keys` row/file next to identity; shown once; revocable; at most 3 active). Only a signed-in person (cookie session, `assertHuman`) makes or revokes keys (`/api/apps/{app}/muse-key`). `src/app/_composition/muse-api.ts` is the one reader behind two doors: `GET /api/muse/{app}/overview|status|actions|cards` (Bearer or `X-Api-Key`, never a URL) and the same four tools over stateless MCP streamable HTTP (`/api/muse/{app}/mcp`, POST, JSON replies). `authorizeMuse` returns the same 401 for a missing, wrong, revoked, other-app or demo-app key. It reuses `memberStatusFor` and the new `memberActionsFor`, taking the member from the key so no input can name another member. No route exports POST/PUT/PATCH/DELETE under `/api/muse`, no tool writes, and card routes accept only cookie sessions, so a key cannot answer a card (BR-07). Rate limits: 60/min per key, 120/min and 20 wrong keys per 15 min per address (`src/lib/rate-limit.ts`). Replies carry a `notice` that the text is data. `docs/MUSE-CONNECTOR.md` says honestly that a real Muse has not been tried (MCP in the consumer app unconfirmed, §2d of the plan).
+app (own catalog, deals, cards, relay, audit, feed) and every API route needs `?app={id}` (400 `app_required` without it; no default app). Every app starts empty (the Mia and Jonas demo scenario and the seeded demo app were removed Oct 29). Saved state is per app (`app_state` row `platform:<app>`
+or file `<AGORA_STATE_FILE>.<app>`). Members are the app's own people (§2b).
+**Muse read API (step 6, BR-44):** a person's own Muse reads, never decides. `src/lib/identity/muse-keys.ts` keeps per-member keys (`agmk_` + 256 random bits; only the SHA-256 is stored, in the `muse-keys` row/file next to identity; shown once; revocable; at most 3 active). Only a signed-in person (cookie session, `assertHuman`) makes or revokes keys (`/api/apps/{app}/muse-key`). `src/app/_composition/muse-api.ts` is the one reader behind two doors: `GET /api/muse/{app}/overview|status|actions|cards` (Bearer or `X-Api-Key`, never a URL) and the same four tools over stateless MCP streamable HTTP (`/api/muse/{app}/mcp`, POST, JSON replies). `authorizeMuse` returns the same 401 for a missing, wrong, revoked, other-app or repository-app key. It reuses `memberStatusFor` and the new `memberActionsFor`, taking the member from the key so no input can name another member. No route exports POST/PUT/PATCH/DELETE under `/api/muse`, no tool writes, and card routes accept only cookie sessions, so a key cannot answer a card (BR-07). Rate limits: 60/min per key, 120/min and 20 wrong keys per 15 min per address (`src/lib/rate-limit.ts`). Replies carry a `notice` that the text is data. `docs/MUSE-CONNECTOR.md` says honestly that a real Muse has not been tried (MCP in the consumer app unconfirmed, §2d of the plan).
 
-**Member status page (step 5, BR-43):** `/app/{app}/muse/{id}` is built by `memberStatusView` (`src/app/_composition/member-status.ts`). It authenticates the app's session cookie and requires `memberId === {id}`; every other case (other member, creator, stranger, forged cookie, unknown id or app, demo app) is the same 404, so ids cannot be probed. The data comes from the app's own platform (`getPlatform(appId)`) through the existing read views keyed by member id: owner cards, deals, catalog items, learning lessons and suggestions, standing rules. "What the agent did alone" is derived from the member's own deals (rounds, agreements, a 7-day step count per day) because the audit store is still a stub, and the page says so. Nothing in it is message text. A stored app's members are not yet wired into the app's platform as parties (no items or deals can be created for them), so today the groups are empty for them; they fill as soon as that wiring lands. The page is read-only; step 6 reuses `memberStatusFor` for the Muse read API.
+**Member status page (step 5, BR-43):** `/app/{app}/muse/{id}` is built by `memberStatusView` (`src/app/_composition/member-status.ts`). It authenticates the app's session cookie and requires `memberId === {id}`; every other case (other member, creator, stranger, forged cookie, unknown id or app, repository app) is the same 404, so ids cannot be probed. The data comes from the app's own platform (`getPlatform(appId)`) through the existing read views keyed by member id: owner cards, deals, catalog items, learning lessons and suggestions, standing rules. "What the agent did alone" is derived from the member's own deals (rounds, agreements, a 7-day step count per day) because the audit store is still a stub, and the page says so. Nothing in it is message text. A stored app's members are not yet wired into the app's platform as parties (no items or deals can be created for them), so today the groups are empty for them; they fill as soon as that wiring lands. The page is read-only; step 6 reuses `memberStatusFor` for the Muse read API.
 
 **Public page, overview and share link (step 4, BR-42, reframed in docs/PLAN.md §2c-ter):** an app is for all Muse users, not a closed group. `/app/{app}` is one address with three views, chosen by `appPageView` (`src/app/_composition/app-views.ts`) from the app's session cookie only: stranger (the public page: name, purpose, features and rules from `describeApp`, `src/lib/app-config/describe.ts`, plus `UseAppForm`, which makes the person's record on first use through the join call, and the assistant brief), user, creator (private overview, share QR from `src/lib/qr.ts`, list of people using the app). The same public page is markdown at `/app/{app}/agent.md` (`appAgentBrief`, `src/lib/app-config/agent-page.ts`; `Accept: text/markdown` and `?format=md` are rewritten to it in `next.config.ts`): config only, so no secret, user or message text. The share link is `appUrl(id)` (`https://agentwitch.com/agora/app/{app}`): the app's own address, no secret, so anything a forwarded link or screenshot can show is the public page. Anyone with the link can use the app (an invite secret that the creator can rotate is a later hardening); the member cap and light identity still apply. Repository apps get a public page without invite. Creating an app is still open to anyone (rate limited, capped) but now makes the caller its creator (light identity, below).
 
@@ -114,7 +113,7 @@ any other. The member id may appear in URLs (`/app/{app}/muse/{id}`) because it 
 that member (`assertSelf`). **Authorization:** `route()` (all platform routes) demands a valid session for the app when it is a
 stored app, and a human session for every write (`assertHuman`: a principal that came in as `via: "muse"` can read and never write,
 so it can never answer an owner card, BR-07); `authorize(req, app, role?)` gives creator-only routes (`GET /api/apps/{app}/members`).
-Repository apps (kids-gear, garden-tools) keep the two personas and need no session. **Recovery:** each membership gets a 100-bit
+Repository apps (kids-gear, garden-tools) are not served as running apps (every platform route needs a stored app); they feed the simulation and the docs. **Recovery:** each membership gets a 100-bit
 recovery code, shown once. `POST /api/apps/{app}/recover` (code in the body, 8 tries per 15 minutes per address) opens a session
 on the new phone, ends every older session and replaces the code, so a copied or used code is dead. Storage: one document
 (`app_state` row `identity`, or `<AGORA_STATE_FILE>.identity.json`, else memory), replaced on every change. **What it is not:**
@@ -131,7 +130,7 @@ default to ask; the relay channel, trust screening, relevance filtering and priv
 `APP=<id>` selects the active app; apps are registered in `load-app.ts`. Creating a new app is covered in
 `docs/CREATE-AN-APP.md`.
 
-Planned for the Muse-first demo (decided Oct 28, not built; `docs/PLAN.md` §2c, BR-39 to BR-45): apps also become data. A
+Built for the Muse-first flow (decided Oct 28; `docs/PLAN.md` §2c, BR-39 to BR-45): apps also become data. A
 config created by the interview is stored by the platform, validated by the same `schema.ts` at load, and served at
 `/agora/app/{app}`; several apps run in one process with their stores scoped per app, and repository apps stay
 registered as today. A person's own Muse is a client (read-only MCP, if it can connect), never the deciding agent: agents
@@ -188,7 +187,7 @@ agora/
 │   └── kids-gear/                        # example app: app.config.ts, sandbox-city/, REQUIREMENTS.md
 ├── src/
 │   ├── app/                              # entry layer: Next.js routes only
-│   │   ├── (owner)/                      # onboarding, items, matches, deals/[id], cards
+│   │   ├── app/[app]/                    # a created app's items, cards, deals, deals/[id], muse/[id]
 │   │   ├── (judge)/dashboard/            # judge-facing dashboard
 │   │   ├── styleguide/                   # public read-only design-system page
 │   │   └── api/**/route.ts               # thin: auth → call a slice's public-api/infrastructure
@@ -401,7 +400,7 @@ as harmless, and replaced by a per-language template on any failure. Starting a 
 cannot be promised twice; declined and expired deals release them; confirmed deals reserve them for that deal.
 
 Not built yet: the expiry timer, and a relational Postgres repository (the in-memory repository matches migration
-0004; the demo is saved as one document instead, see Demo persistence). Per-owner translation of notes and the relay channel are built (see Language and Relay below).
+0004; state is saved as one document instead, see State persistence). Per-owner translation of notes and the relay channel are built (see Language and Relay below).
 
 ## 6. Agents and model routing
 
@@ -521,9 +520,9 @@ propose another allowed mode (clears approvals, at most 3 changes). When both ow
   test scans the code for payment identifiers.
 
 Carrier port (`src/features/logistics/features/carriers`): `createLabel`, `bookAppointment`, `track`, always zero cost.
-`simulated` (default everywhere; deterministic, watermarked, tracking driven by the clock) passes the shared contract suite;
+`simulated` (the only carrier; no real carrier is connected and the UI labels its labels "not connected yet"; deterministic, watermarked, tracking driven by the clock) passes the shared contract suite;
 a real test-mode carrier is not built. Exact places and addresses use AES-256-GCM with an application secret of at least 16
-characters (`FIELD_ENCRYPTION_SECRET`, required in live mode together with `REPORT_EXPORT_SECRET`) and a fresh IV per value. Tracking changes publish `ShipmentUpdated`; delivery or an
+characters (`FIELD_ENCRYPTION_SECRET`, required together with `REPORT_EXPORT_SECRET`; the app fails at start naming the missing one, `requireRuntimeEnv`) and a fresh IV per value. Tracking changes publish `ShipmentUpdated`; delivery or an
 owner marking the outcome (completed, or not completed with a reason: no_show, item_mismatch, changed_mind, other) calls
 `finishHandoff`, completes or releases both items and publishes `HandoffFinished`. Every handoff card shows a short safety
 checklist (logistics only, plus the app's safety lines for the item). Not built yet: owner-card screens for the handoff
@@ -617,32 +616,30 @@ Full description, how to run it and the measured results are in `docs/SIMULATION
 
 ## 11. Dashboard (judge-facing)
 
-Built (demo mode): a single page at `/dashboard` that reads `reports/simulation/<scenario>/*.csv` through `loadDashboard` (generated by `npm run simulate`, or on first open). It shows a SIMULATED banner, KPI tiles, owner approval by round with min–max bands over seeds, confirmed deals per 100 wants with the oracle ceiling, owner cards per confirmed deal, failures, what is not measured, a map of where the simulated families live (synthetic grid, never real places), the safety checks (the repository's red-team, topic and screening sets run in the page, `src/app/_composition/safety-checks.ts`), and live demo counters (agent decisions, screening, cards). Charts are hand-written SVG with a table fallback. The scenario switch covers stable and changing preferences.
-Not built: cost per deal (needs live model calls), and leak tests on photos (there is no photo intake).
+Built: a single page at `/dashboard` that reads `reports/simulation/<scenario>/*.csv` through `loadDashboard` (generated by `npm run simulate`, or on first open). It shows a SIMULATED banner, KPI tiles, owner approval by round with min–max bands over seeds, confirmed deals per 100 wants with the oracle ceiling, owner cards per confirmed deal, failures, what is not measured, a map of where the simulated families live (synthetic grid, never real places), the safety checks (the repository's red-team, topic and screening sets run in the page, `src/app/_composition/safety-checks.ts`). (A live activity card that read the demo platform was removed Oct 29.) Charts are hand-written SVG with a table fallback. The scenario switch covers stable and changing preferences.
+Not built: cost per deal (needs live model calls), and leak tests on photos (photo intake exists but has no leak test yet).
 
 **Look and styleguide.** Styling is Tailwind 4 (`@tailwindcss/postcss`, `postcss.config.mjs`) with Agora's own design tokens in `src/app/globals.css` (Tailwind's default palette plus one purple `brand` scale, a type scale, radii and shadows in `@theme`; semantic colours such as `--surface`, `--text`, `--border` exposed as `bg-surface`, `text-ink`, `border-line`; dark mode as a `dark` class on `<html>`). Agora's own page classes (`.btn`, `.card`, `.muted`, ...) live in the `components` layer and read the same tokens, so existing pages follow the palette while Tailwind utilities still win. All of it is original code written for this repository (see `THIRD_PARTY_LICENSES.md`). Generic components are in `src/components/ui/` (one file per family, re-exported from `index.ts`); `/styleguide` (slice `src/features/styleguide`, presentation only) shows them. Fonts are the system stack; no image files are used.
 
-The owner and deal pages use the same entry layer: `src/app/_composition` is the composition root (wires slices, seeds the demo, builds read views); route handlers only validate (zod), rate limit (120/min/IP), call it and answer with `{error:{code,message}}` on failure.
+The owner and deal pages use the same entry layer: `src/app/_composition` is the composition root (wires slices for one app, builds read views); route handlers only validate (zod), rate limit (120/min/IP), call it and answer with `{error:{code,message}}` on failure.
 
-## 11b. Demo persistence
+## 11b. State persistence
 
 Stores create their in-memory containers with `tracked(name, value)` (`src/lib/state.ts`). Inside the composition root's
 scope every tracked Map, Set, array and object is part of one snapshot. After each successful non-GET request the entry
 layer writes the snapshot (`src/app/_composition/persistence.ts`) to Postgres (`DATABASE_URL`, table `app_state`,
-migration 0011) or to a file (`AGORA_STATE_FILE`), else nowhere; on start the platform restores it in place and skips
-seeding. `POST /api/demo/reset` deletes it. A test restarts the platform mid-journey and checks every deal view is
+migration 0011) or to a file (`AGORA_STATE_FILE`), else nowhere; on start the platform restores it in place (one snapshot per app). There is no reset route (removed Oct 29 with the demo). A test restarts the platform mid-journey and checks every deal view is
 identical and the journey finishes.
 
 What this is not: the relational tables in migrations 0001–0010 (the target schema, with retention and erasure per
 row) are still unused, there is one writer (no multi-process or multi-instance), the whole document is rewritten on each
-change (fine for a demo, not for scale), and retention jobs do not exist. The snapshot holds the screened relay text, its
+change (fine for now, not for scale), and retention jobs do not exist. The snapshot holds the screened relay text, its
 translation and hash, agent notes and encrypted handoff fields. It never holds what an owner typed before screening (the saved
 copy substitutes the screened text, so after a restart the sender sees that), nor a plaintext address (the shipping label is
-stored encrypted). Encrypted fields use the demo's hard-coded key, so they are not protected against anyone who has the
-repository and the saved state. It is demo data, deleted with the reset.
+stored encrypted). Encrypted fields use `FIELD_ENCRYPTION_SECRET` (the former hard-coded demo key is removed), so the saved state is only as private as that secret and the database. Deleting an app's data is not built yet.
 
 
-## 11c. Photo intake (demo)
+## 11c. Photo intake
 
 `POST /api/intake/photo` takes one photo (data URL; the page shrinks it to 1600 px and re-encodes it first) and returns item drafts. The steps, all in `src/features/intake`:
 
@@ -653,9 +650,9 @@ repository and the saved state. It is demo data, deleted with the reset.
 5. **Crop and check.** Boxes are scaled, clamped, de-duplicated and padded 3 percent; a pair side by side is one item, several of a thing get one draft each when the count matches, and boxes far apart are not merged (the most confident is kept). Each crop is cut from the shrunk copy, shrunk to 480 px, and then looked at once more on its own by a separate Muse Spark call (person or readable text?, "when unsure, true"); a flagged crop is dropped, and if the check cannot run nothing is kept. Surviving crops are held by draft id.
 6. **Discard.** The original bytes are overwritten with zeros as soon as the shrunk copy exists, and the shrunk copy before the call returns.
 
-The owner then checks each draft (name, category, size, condition; anything guessed or low confidence says "please check") and lists the ones they want through `POST /api/items` with the draft id, which moves the picture to the item. Crops live in an in-memory store (`crops/internal/infrastructure/store-crops.ts`): drafts for 30 minutes, items until withdrawn. They are not in the saved demo state, so after a restart items work but show no picture.
+The owner then checks each draft (name, category, size, condition; anything guessed or low confidence says "please check") and lists the ones they want through `POST /api/items` with the draft id, which moves the picture to the item. Crops live in an in-memory store (`crops/internal/infrastructure/store-crops.ts`): drafts for 30 minutes, items until withdrawn. They are not in the saved state, so after a restart items work but show no picture.
 
-`AGORA_INTAKE` picks the models: `simulated` (default, offline: three sample items from the app's own categories cut from fixed places on the photo, always "please check", and the page says no model looked at it) or `meta` (Muse Spark and SAM 3.1 through `META_API_KEY`; a separate Meta client with its own budget, so the rest of the demo stays on the mock client). Failures never reach the owner as errors: `retake`, `unreadable` and `unavailable` are answers the page explains, and the form below always still works.
+Intake always uses the real models (Muse Spark and SAM 3.1 through `META_API_KEY`, via `metaClientFor`). The earlier `AGORA_INTAKE=simulated` mode and its sample-items ports were removed Oct 29 (superseded). Failures never reach the owner as errors: `retake`, `unreadable` and `unavailable` are answers the page explains, and the form below always still works.
 
 ### Measured (the intake eval)
 
@@ -692,18 +689,18 @@ Not built: voice answers ("something else" is typed), the real-model quality of 
 
 ## 11e. Members as parties, and the Muse-first flow end to end
 
-A member of a stored app is a **party** of that app's platform (docs/adr/0007-stored-app-members-are-parties.md): `getPlatform(app)` registers every membership of the app (`Platform.addMember`: language, shared coarse district, default limits, an agent) before it returns, and `route()` makes the session the persona, so the member's items, deals, cards, lessons and rules are real and show on the status page (BR-43) and through the Muse read API (BR-44). The two demo apps keep the built-in personas.
+A member of a stored app is a **party** of that app's platform (docs/adr/0007-stored-app-members-are-parties.md): `getPlatform(app)` registers every membership of the app (`Platform.addMember`: language, shared coarse district, default limits, an agent) before it returns, and `route()` makes the session the acting member, so the member's items, deals, cards, lessons and rules are real and show on the status page (BR-43) and through the Muse read API (BR-44). There are no built-in personas any more.
 
-The whole flow is tested in mock mode through the real routes (`src/app/api/muse-first-flow.test.ts`): QR home page, interview, build, overview and share link, a second person starts using the app, both list items and the wanting member's agent opens a deal, the status page and the read API show it, and the member key is refused on every write route. What it does not cover: a browser (no Playwright), a real model, a real Muse.
+The whole flow is tested through the real routes with test doubles for the model (`src/app/api/muse-first-flow.test.ts`): QR home page, interview, build, overview and share link, a second person starts using the app, both list items and the wanting member's agent opens a deal, the status page and the read API show it, and the member key is refused on every write route. What it does not cover: a browser (no Playwright), a real model, a real Muse.
 
-**Per-app experience (step 8, BR-46, docs/PLAN.md §2c-quater).** A person's pages in a created app are `/app/{app}/items|cards|deals|deals/{id}`. They are thin routes over the same bodies the demo uses (`src/app/_pages/ItemsBody|CardsBody|DealsBody|DealRoomBody.tsx`, called by `(owner)/*` with `demoScope(as)` and by `app/[app]/*` with the member's scope). `memberScope(app, cookie)` (`src/app/_composition/member-scope.ts`) authenticates by the app's session cookie, finds the member's party in `getPlatform(app)` and returns that platform with both persona keys resolving to the member, exactly what `route()` does for the API, so the views (`ownerView`, `itemsView`, `dealList`, `dealView`) run unchanged and nobody can act as another party; any other case (repository app, unknown app, no or foreign session) is `none` and the page is `notFound()`. Client components get the app from `ScopeContext` (`components/scope.ts`): `post()` adds `?app=` and `href()` puts links under `/app/{app}`, so there is one copy of `ItemForm`, `QuestionCard`, `ConfirmCard`, `ChatBox`, `HandoffPanel`, `ReportForm` and `StartDealButton`. Words come from `appVocabulary(config)` (`src/lib/app-config/vocabulary.ts`): style `exchange` or `board`, decided by `appStyle` (free-only and pick-up-only is a board). The layout `app/[app]/layout.tsx` makes an unknown app a 404 and renders `AppNav`; there is deliberately no `loading.tsx` above `/app`, since a Suspense boundary streams a 200 before `notFound()` runs. Tested end to end in `src/app/api/created-app.test.ts`.
+**Per-app experience (step 8, BR-46, docs/PLAN.md §2c-quater).** A person's pages in a created app are `/app/{app}/items|cards|deals|deals/{id}`. They are thin routes over shared bodies (`src/app/_pages/ItemsBody|CardsBody|DealsBody|DealRoomBody.tsx`, called by `app/[app]/*` with the member's scope; the `(owner)` demo pages that also called them were removed Oct 29). `memberScope(app, cookie)` (`src/app/_composition/member-scope.ts`) authenticates by the app's session cookie, finds the member's party in `getPlatform(app)` and returns that platform with the route's `as` keys both resolving to the member, exactly what `route()` does for the API, so the views (`ownerView`, `itemsView`, `dealList`, `dealView`) run unchanged and nobody can act as another party; any other case (repository app, unknown app, no or foreign session) is `none` and the page is `notFound()`. Client components get the app from `ScopeContext` (`components/scope.ts`): `post()` adds `?app=` and `href()` puts links under `/app/{app}`, so there is one copy of `ItemForm`, `QuestionCard`, `ConfirmCard`, `ChatBox`, `HandoffPanel`, `ReportForm` and `StartDealButton`. Words come from `appVocabulary(config)` (`src/lib/app-config/vocabulary.ts`): style `exchange` or `board`, decided by `appStyle` (free-only and pick-up-only is a board). The layout `app/[app]/layout.tsx` makes an unknown app a 404 and renders `AppNav`; there is deliberately no `loading.tsx` above `/app`, since a Suspense boundary streams a 200 before `notFound()` runs. Tested end to end in `src/app/api/created-app.test.ts`.
 
 ## 12. Deployment
 
 - Web + API on Railway (Node, Postgres). Config via env; no secrets in the repo.
-- Demo state survives restarts when `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE` is set (section 11b).
-- Mock mode (`AGORA_MODE=mock`, the default): `npm run dev` seeds the demo scenario, uses the local memory provider and a simulated model and carrier; needs no Meta key.
-- Hosted public demo kept running through judging (Nov 5–8) with a spend cap.
+- State survives restarts when `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE` is set (section 11b).
+- `npm run dev` needs `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` and `REPORT_EXPORT_SECRET` (no mock mode; removed Oct 29, superseded); it uses the local memory provider and the simulated carrier (not connected to a real one). Tests use test doubles for the model and set test secrets.
+- Hosted public app kept running through judging (Nov 5–8) with a spend cap.
 
 ## 12b. Scale, isolation, testing and security
 
@@ -712,7 +709,7 @@ Kubernetes for the hackathon. Every item below is either built now (marked **NOW
 
 > **Status check (2026-10-27).** Several items below were marked **NOW** at planning time and are not in the code. Verified
 > absent: the Postgres queue with idempotency keys and the outbox; feature flags and kill switches; a persisted append-only
-> audit log (the demo keeps in-memory counters); the retention job; real accounts (the demo has two personas for the seeded apps; stored apps have light identity, §2b);
+> audit log (in-memory counters only); the retention job; real accounts (stored apps have light identity, §2b);
 > Postgres row-level security; CSRF, CSP and upload validation; secret scanning in CI; the Playwright end-to-end flows;
 > structure validation (`structure-validation.config.json` is an empty placeholder; the import boundaries are enforced by
 > ESLint only); nightly eval runs. What is built and tested: the model client, router and cost meter with budgets, the ports and

@@ -1,11 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { metaClientFor, useAdapterForTests } from "@/app/_composition/meta";
 import { z } from "zod";
 import { loadApp } from "../app-config";
 import { createMockAdapter } from "./adapters/mock";
 import { createBasetenAdapter } from "./adapters/baseten";
 import { createMetaApiAdapter } from "./adapters/meta-api";
 import { createHttpAdapter } from "./adapters/openai-compatible";
-import { createMetaClient, createMetaClientFromEnv } from "./client";
+import { createMetaClient } from "./client";
 import { BudgetExceededError, CostMeter } from "./cost-meter";
 import { createRouter } from "./router";
 import type { ModelRequest } from "./types";
@@ -97,10 +98,31 @@ describe("meta client", () => {
     expect(seen[0]?.model).toBe("muse-spark-open");
   });
 
-  it("works offline in mock mode", async () => {
-    const app = await loadApp("kids-gear");
-    const client = createMetaClientFromEnv(app, { MODE: "mock", AGORA_INTAKE: "simulated", APP: "kids-gear" });
-    expect(await client.call({ role: "translator", prompt: "hello" })).toContain("mock");
+  describe("the app's model client (metaClientFor)", () => {
+    afterEach(() => {
+      useAdapterForTests(undefined);
+      vi.unstubAllEnvs();
+    });
+
+    it("answers through the injected test double when a test installs one", async () => {
+      const app = await loadApp("kids-gear");
+      useAdapterForTests(createMockAdapter(() => "from the double"));
+      expect(await metaClientFor(app).call({ role: "translator", prompt: "hello" })).toBe("from the double");
+    });
+
+    it("has no fake fallback: without the Meta key and the two secrets it fails by name", async () => {
+      const app = await loadApp("kids-gear");
+      for (const k of ["META_API_KEY", "FIELD_ENCRYPTION_SECRET", "REPORT_EXPORT_SECRET"]) vi.stubEnv(k, undefined);
+      expect(() => metaClientFor(app)).toThrow(/META_API_KEY/);
+    });
+
+    it("builds a real client once the key and secrets are set (no call is made here)", async () => {
+      const app = await loadApp("kids-gear");
+      vi.stubEnv("META_API_KEY", "k");
+      vi.stubEnv("FIELD_ENCRYPTION_SECRET", "a".repeat(16));
+      vi.stubEnv("REPORT_EXPORT_SECRET", "b".repeat(16));
+      expect(typeof metaClientFor(app).call).toBe("function");
+    });
   });
 
   it("http adapter posts chat completions and reads usage", async () => {
