@@ -57,8 +57,8 @@ export async function createAppFor(draft: unknown, req: Request): Promise<Reply>
 }
 
 /** Each interview call can cost a model call, and a build stores an app, so both have tighter limits than the other routes (per address). */
-export const interviewLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
-export const buildLimiter = createRateLimiter({ limit: 10, windowMs: 60_000 });
+export const interviewLimiter = createRateLimiter({ limit: 60, windowMs: 60_000, liftable: true });
+export const buildLimiter = createRateLimiter({ limit: 10, windowMs: 60_000, liftable: true });
 export const resetInterviewLimits = () => {
   interviewLimiter.reset();
   buildLimiter.reset();

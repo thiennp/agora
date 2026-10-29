@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetRateLimit } from "@/app/_composition/api";
 import { POST as reset } from "./demo/reset/route";
 import { GET as listDeals } from "./deals/route";
@@ -27,6 +27,7 @@ const deals = async (as: "a" | "b") => (await j(await listDeals(get(`/api/deals?
 const view = async (id: string, as: "a" | "b") => j(await getDeal(get(`/api/deals/${id}?as=${as}`), ctx({ dealId: id })));
 
 describe("demo API", () => {
+  afterEach(() => vi.useRealTimers());
   beforeEach(() => resetRateLimit());
 
   it("starts a real scenario: a match, an offer, and the agent pausing to ask the owner who has free hours", async () => {
@@ -133,6 +134,8 @@ describe("demo API", () => {
   });
 
   it("limits how fast one caller can hit the API, and tells them when to retry", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T00:00:00Z")); // the limits are lifted until the end of November 2026
     await fresh();
     let last: Response | undefined;
     for (let i = 0; i < 125; i++) last = await listDeals(get("/api/deals?as=a"), ctx({}));

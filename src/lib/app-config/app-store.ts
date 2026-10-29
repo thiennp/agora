@@ -1,3 +1,4 @@
+import { limitsLifted } from "../rate-limit";
 import { appConfigSchema, type AppConfig } from "./schema";
 
 /**
@@ -64,7 +65,7 @@ export function createAppStore(backend: AppBackend, opts: { reserved?: string[] 
     async create(raw) {
       const cfg = parse(raw);
       if (reserved.has(cfg.id)) throw new AppStoreError("reserved_id", `The app id "${cfg.id}" is reserved.`);
-      if ((await backend.list()).length >= MAX_STORED_APPS) throw new AppStoreError("too_many_apps", "This platform has reached its limit of stored apps.");
+      if (!limitsLifted() && (await backend.list()).length >= MAX_STORED_APPS) throw new AppStoreError("too_many_apps", "This platform has reached its limit of stored apps.");
       if (!(await backend.insert(cfg))) throw new AppStoreError("app_exists", `The app id "${cfg.id}" is taken.`);
       return cfg;
     },

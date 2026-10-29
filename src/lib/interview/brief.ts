@@ -19,7 +19,7 @@ export function agentBrief(baseUrl: string): string {
     return `${i + 1}. **${s.ask}** \`${PARAM(id)}\`\n   ${answersFor(id)}`;
   }).join("\n");
   const example = `${baseUrl}/start?draft=exchange~Offer%20and%20ask%20for%20clothes%20and%20shoes~People%20post%20what%20they%20have%2C%20others%20ask%2C%20then%20they%20agree~none~Clothes%20Swap~friendly`;
-  return `# You are Muse: a person wants to create an app
+  return `# You are Muse (or Meta AI): a person wants to create an app
 
 A person scanned a QR code because they want to create an app that any Muse user can use (for example to swap or lend things, learn a skill, organise a run or a volunteer shift). The person you talk to is the app's creator. Do not ask who may join, where people live or which languages: the app is open to any Muse user and Muse handles languages. **You do the interview yourself, in this chat, by typing.** You do not need to click, tap or submit anything on this page: you only read it and talk to the person. Nothing is built until the person opens a link at the end and taps a button themselves.
 

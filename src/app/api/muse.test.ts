@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetRateLimit } from "@/app/_composition/api";
 import { useAppStore } from "@/app/_composition/apps";
 import { useIdentityStore, useMuseKeyStore } from "@/app/_composition/identity";
@@ -49,6 +49,7 @@ const read = (mod: { GET: (r: Request, c: any) => Promise<Response> }, app: stri
   mod.GET(get(`/api/muse/${app}/x${query}`, { ...(key ? bearer(key) : {}), ...headers }), ctx({ app })).then(keep);
 
 describe("read-only access for a person's own Muse (BR-44)", () => {
+  afterEach(() => vi.useRealTimers());
   beforeEach(() => {
     seen.length = 0;
     resetRateLimit();
@@ -177,6 +178,8 @@ describe("read-only access for a person's own Muse (BR-44)", () => {
   });
 
   it("rate limits a key, and wrong keys", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-12-01T00:00:00Z")); // the limits are lifted until the end of November 2026
     const { member } = await makeApp("club-l");
     const { key } = await keyFor("club-l", member);
     const codes: number[] = [];
