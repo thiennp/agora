@@ -9,11 +9,11 @@ export default function DocsPage() {
   const docs = getDocsKb().outline();
   return (
     <div className="stack-lg">
-      <section className="hero">
+      <section className="page-head">
         <h1>Ask the docs</h1>
-        <p className="lead">Questions about how Agora works, why it was built that way, and how it scales, answered from the project&apos;s own documents with the source shown. The same knowledge base is available to AI assistants through MCP (see docs/DOCS-PLATFORM.md).</p>
+        <p className="lead">Ask how Agora works, why it is built this way and how it scales. Answers come from the project&apos;s own documents, with the source shown. AI assistants can use the same knowledge base through MCP (see docs/DOCS-PLATFORM.md).</p>
       </section>
-      <Card title="Chat"><DocsChat /></Card>
+      <Card title="Ask a question"><DocsChat /></Card>
       <Card title={`All ${docs.length} documents`}>
         <ul className="small">
           {docs.map((d) => (

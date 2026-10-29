@@ -51,8 +51,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <div className="stack-lg">
       <AutoRefresh seconds={8} />
-      <div>
-        <h1>Judge dashboard</h1>
+      <div className="stack">
+        <h1>Simulation dashboard</h1>
         <Banner tone="warn"><strong>SIMULATED.</strong> {d.label.replace(/^SIMULATED: /, "")} Numbers are means over {d.seeds.length} seeds, measured on held-out scenarios only; the hidden owner rules are stand-ins for real preferences.</Banner>
       </div>
 

@@ -17,19 +17,19 @@ export default async function Start({ searchParams }: { searchParams: Promise<Re
   const { answers, problem } = answersFromQuery(await searchParams);
   return (
     <div className="stack-lg">
-      <div>
+      <header className="page-head">
         <h1>Let&apos;s create your app</h1>
-        <p className="muted">{INTERVIEW_PURPOSE} You only tap your answers, or write your own.</p>
-      </div>
+        <p className="lead">{INTERVIEW_PURPOSE} Tap an answer or write your own.</p>
+      </header>
       {problem ? <Banner tone="warn">{problem} Please answer the questions below instead.</Banner> : null}
       <noscript>
-        <Banner tone="warn">This page needs JavaScript to show the questions. Turn it on, or ask your assistant (Muse) to interview you and give you a link.</Banner>
+        <Banner tone="warn">This page needs JavaScript to show the questions. Turn it on, or ask Muse to interview you in the chat and give you a link.</Banner>
       </noscript>
       <Interview initial={answers} />
       <section aria-labelledby="assistant-title" className="stack">
-        <h2 id="assistant-title" className="small">For an AI assistant (Muse) reading this page</h2>
+        <h2 id="assistant-title" className="small">For AI assistants</h2>
         <p className="small muted">
-          Your task is below, also as plain markdown at <a href={`${PUBLIC_BASE_URL}/start/agent.md`}>{PUBLIC_BASE_URL}/start/agent.md</a>.
+          The person on this page wants to create an app. Your instructions are below, and also as plain markdown at <a href={`${PUBLIC_BASE_URL}/start/agent.md`}>{PUBLIC_BASE_URL}/start/agent.md</a>.
         </p>
         <pre className="small" style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{agentBrief(PUBLIC_BASE_URL)}</pre>
       </section>

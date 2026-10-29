@@ -1,5 +1,6 @@
 /** The parts of the page, in order. `id` is the URL fragment, so it stays lower-case letters and dashes. */
 export const SECTIONS = [
+  { id: "logo", label: "Logo" },
   { id: "colors", label: "Colors" },
   { id: "surfaces", label: "Surfaces" },
   { id: "buttons", label: "Buttons" },

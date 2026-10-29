@@ -9,6 +9,7 @@ import {
   ColorsSection,
   FormsSection,
   ImagesSection,
+  LogoSection,
   ModalsSection,
   StyleguideFrame,
   SurfacesSection,
@@ -17,12 +18,13 @@ import {
 
 export const metadata: Metadata = {
   title: "Design system | Agora",
-  description: "Agora design system reference: colors, surfaces, buttons, alerts, forms, tables and charts.",
+  description: "Agora design system reference: logo, colors, surfaces, buttons, alerts, forms, tables and charts.",
 };
 
 export default function StyleguidePage() {
   return (
     <StyleguideFrame>
+      <LogoSection />
       <ColorsSection />
       <SurfacesSection />
       <ButtonsSection />
