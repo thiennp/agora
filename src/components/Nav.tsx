@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Logo } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Links() {
@@ -40,7 +41,7 @@ export function Nav() {
   return (
     <header className="site-header">
       <div className="wrap">
-        <Link href="/" className="brand">Ag<span>o</span>ra</Link>
+        <Link href="/" className="brand" aria-label="Agora home"><Logo /></Link>
         <Suspense fallback={null}>
           <Links />
         </Suspense>

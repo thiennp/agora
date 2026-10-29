@@ -173,8 +173,8 @@ main.wrap { padding-top: 16px; padding-bottom: 48px; }
 
 .site-header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
 .site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding-top: 10px; padding-bottom: 10px; }
-.brand { font-weight: 700; text-decoration: none; color: var(--text); font-size: 1.1rem; }
-.brand span { color: var(--accent); }
+.brand { font-weight: 700; text-decoration: none; color: var(--text); font-size: 1.1rem; min-height: 40px; display: inline-flex; align-items: center; }
+.logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.02em; }
 .nav { display: flex; flex-wrap: wrap; gap: 4px 4px; flex: 1; }
 .nav a { text-decoration: none; color: var(--muted); padding: 8px 10px; border-radius: 8px; min-height: 40px; display: inline-flex; align-items: center; }
 .nav a[aria-current="page"] { background: var(--accent-soft); color: var(--text); font-weight: 600; }
@@ -263,11 +263,32 @@ ol { list-style: decimal; }
 .list { padding: 0; }
 img, svg { vertical-align: middle; }
 }
-.qr-home { display: grid; justify-items: center; gap: 16px; text-align: center; padding: 24px 0; }
-.qr-home h1 { font-size: 1.75rem; }
-.qr-home .qr-frame { background: #fff; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); line-height: 0; }
-.qr-home .qr-frame svg { width: min(72vw, 320px); height: auto; display: block; }
-.qr-home .qr-url { word-break: break-all; }
+/* Home page (/): the QR code is the one thing on the page; the words sit beside it on a laptop and above it on a phone. */
+.qr-home { display: grid; gap: 40px; padding: 24px 0 8px; }
+.qr-hero { display: grid; gap: 28px; align-items: center; }
+.qr-copy { display: grid; gap: 12px; max-width: 46ch; }
+.qr-copy h1 { font-size: clamp(2rem, 1.4rem + 2.2vw, 2.75rem); line-height: 1.08; margin: 0; }
+.qr-copy .lead { font-size: 1.125rem; line-height: 1.5; color: var(--muted); margin: 0; }
+.qr-steps { list-style: none; counter-reset: step; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.qr-steps li { counter-increment: step; display: grid; grid-template-columns: 1.5rem 1fr; gap: 8px; align-items: baseline; }
+.qr-steps li::before { content: counter(step); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.qr-card { margin: 12px 0; display: grid; gap: 12px; justify-items: center; }
+.qr-hero .qr-card { margin: 0; }
+.qr-frame { background: #fff; border: 1px solid var(--border-strong); border-radius: var(--radius-card); padding: 16px; box-shadow: var(--shadow-card); line-height: 0; }
+.dark .qr-frame { border-color: transparent; box-shadow: none; }
+.qr-frame svg { width: min(100%, 304px); height: auto; display: block; }
+.qr-url { text-align: center; overflow-wrap: anywhere; margin: 0; }
+.qr-fallback { display: grid; gap: 16px; padding-top: 32px; border-top: 1px solid var(--border); }
+.qr-fallback-copy h2 { font-size: 1.125rem; margin: 0 0 4px; }
+.qr-fallback-copy p { margin: 0; }
+.qr-notes { display: grid; gap: 4px; }
+.qr-notes p { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 840px) {
+  .qr-home { padding-top: 40px; gap: 48px; }
+  .qr-hero { grid-template-columns: minmax(0, 1fr) auto; gap: 56px; }
+  .qr-hero .qr-card { justify-self: end; }
+  .qr-fallback { grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: 40px; align-items: start; }
+}
 
 /* Create-an-app interview (/start): big tap answers, readable on a phone. */
 .options { display: grid; gap: 8px; margin: 12px 0; }
@@ -277,5 +298,10 @@ img, svg { vertical-align: middle; }
 .summary dd { margin: 0; overflow-wrap: anywhere; }
 .said { padding: 0 4px; }
 .recovery { font-size: 1.1rem; word-break: break-all; user-select: all; }
-.copy-prompt { display: grid; gap: 8px; width: min(100%, 36rem); }
-.copy-prompt textarea { width: 100%; font: inherit; font-size: 0.875rem; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text); resize: none; }
+.copy-prompt { display: grid; gap: 8px; width: 100%; }
+.copy-prompt textarea { width: 100%; min-height: 0; font: inherit; font-size: 0.9rem; line-height: 1.5; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface); color: var(--text); resize: none; field-sizing: content; }
+.copy-prompt .btn { gap: 8px; }
+.copy-prompt p { grid-column: 1 / -1; margin: 0; }
+@media (min-width: 640px) {
+  .copy-prompt { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+}
