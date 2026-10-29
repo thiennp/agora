@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { CopyPrompt } from "@/components/CopyPrompt";
 import { QrCode } from "@/components/QrCode";
 import { startUrl } from "./_composition/public-url";
