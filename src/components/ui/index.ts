@@ -1,5 +1,6 @@
 export { cn } from "./cn";
 export { Icon, type IconName } from "./icons";
+export { AgoraMark, Logo, MARK_PATH } from "./Logo";
 export { Button, buttonClass, type ButtonProps, type ButtonVariant, type ButtonSize } from "./Button";
 export { Badge, type BadgeProps, type BadgeTone } from "./Badge";
 export { Alert, type AlertTone } from "./Alert";

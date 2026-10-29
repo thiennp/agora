@@ -1,4 +1,5 @@
 export { default as StyleguideFrame } from "../StyleguideFrame";
+export { LogoSection } from "../sections/LogoSection";
 export { ColorsSection } from "../sections/ColorsSection";
 export { SurfacesSection } from "../sections/SurfacesSection";
 export { ButtonsSection } from "../sections/ButtonsSection";

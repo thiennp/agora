@@ -8,7 +8,7 @@ The kids' gear deal-room demo is the fallback, not the main path.
 
 | Time | Shot | What runs (real unless marked) |
 |---|---|---|
-| 0:00–0:20 | The home page on a laptop: one QR code, "Scan to make an app". A person points a phone at it. | QR home page (`/`), opens `https://agentwitch.com/agora/start` |
+| 0:00–0:20 | The home page on a laptop: one QR code, "Scan to create an app". A person points a phone at it. | QR home page (`/`), opens `https://agentwitch.com/agora/start` |
 | 0:20–1:05 | On the phone, Muse says it is creating their app, then interviews them one question at a time, each worded as part of creating the app with tap answers (what the app is for, what a person can do in it, how it works, what it should never do or share, name, feel: six questions, nothing about who joins, place, languages or price). The last card: "Here is your app: … Build it?" They tap yes. | `/start` interview; code sets the rules and validates; the model only offers examples and drafts wording (**simulated offline unless a Meta key is set; never run against real Muse Spark**) |
 | 1:05–1:30 | The app exists: private overview with the share QR, list of people using it, what the app does in plain words and its always-ask promise. | `/app/{app}` as creator; app stored as data, no redeploy |
 | 1:30–1:55 | A friend scans the share QR, sees the public page (name, purpose, rules), is set up on first use with no form, sees the recovery-code notice (light identity, not a real account). | `/app/{app}` as stranger, `POST …/join` |

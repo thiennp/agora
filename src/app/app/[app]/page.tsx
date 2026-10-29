@@ -88,10 +88,10 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
         </div>
         <Card title="Share your app" prominent>
           <p>Show this code or send the link. Anyone who opens it, and any Muse that reads it, sees what the app is for and its rules, and can use it.</p>
-          <div className="qr-home">
+          <figure className="qr-card">
             <div className="qr-frame"><QrCode text={url} label={`QR code that opens ${url}`} /></div>
-          </div>
-          <p className="small qr-url"><a href={url}>{url}</a></p>
+            <figcaption className="small qr-url"><a href={url}>{url}</a></figcaption>
+          </figure>
           <CopyLink url={url} title={`Use ${app.name}`} />
           <p className="small muted">The link holds no password and opens a public page. Anyone who has it can use the app.</p>
         </Card>
