@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Banner, Card } from "./Card";
 import { Button } from "./Button";
-import { postJson } from "./post";
+import { postJson, putJsonQuietly } from "./post";
 
 interface Option { id: string; label: string }
 interface Question { step: string; n: number; of: number; ask: string; hint?: string; options: Option[]; otherLabel: string; freeText: boolean; maxLength: number }
@@ -25,6 +25,22 @@ const read = (): Answer[] => {
     return [];
   }
 };
+const PROJECT_KEY = "agora.interview.project";
+const readProject = (): string | null => {
+  try {
+    return sessionStorage.getItem(PROJECT_KEY);
+  } catch {
+    return null;
+  }
+};
+const saveProject = (id: string | null) => {
+  try {
+    if (id) sessionStorage.setItem(PROJECT_KEY, id);
+    else sessionStorage.removeItem(PROJECT_KEY);
+  } catch {
+    // Private mode: the project is simply opened again after a reload.
+  }
+};
 const save = (a: Answer[]) => {
   try {
     sessionStorage.setItem(KEY, JSON.stringify(a));
@@ -34,7 +50,7 @@ const save = (a: Answer[]) => {
 };
 
 /** The create-an-app interview on the phone (BR-40): one question card at a time with tap answers, then one yes. */
-export function Interview({ initial = NONE }: { initial?: Answer[] }) {
+export function Interview({ initial = NONE, projectId }: { initial?: Answer[]; projectId?: string }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [turn, setTurn] = useState<Turn | null>(null);
   const [busy, setBusy] = useState(true);
@@ -44,6 +60,19 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
   const [built, setBuilt] = useState<Built | null>(null);
   const top = useRef<HTMLDivElement>(null);
   const first = useRef(true);
+  const project = useRef<string | null>(null);
+
+  /** The project id (BR-48) is opened as soon as the questions open, and every answer is recorded under it. Never blocks or fails the interview. */
+  const record = useCallback(async (next: Answer[]) => {
+    project.current ??= projectId ?? readProject();
+    if (!project.current) {
+      const r = await postJson<{ projectId: string }>("/api/interview/projects", { source: "phone" });
+      if (!r.ok) return;
+      project.current = r.data.projectId;
+    }
+    saveProject(project.current);
+    await putJsonQuietly(`/api/interview/projects/${project.current}`, { answers: next });
+  }, [projectId]);
 
   const go = useCallback(async (next: Answer[]) => {
     setBusy(true);
@@ -53,6 +82,7 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
     if (!r.ok) return setError(r.message), false;
     setAnswers(next);
     save(next);
+    void record(next);
     setTurn(r.data);
     setTyping(false);
     setText("");
@@ -60,7 +90,7 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
     if (!first.current) top.current?.focus();
     first.current = false;
     return true;
-  }, []);
+  }, [record]);
 
   useEffect(() => {
     // Resume where the person left off; if the saved answers no longer fit, start from the first question.
@@ -80,10 +110,11 @@ export function Interview({ initial = NONE }: { initial?: Answer[] }) {
     if (turn?.kind !== "review") return;
     setBusy(true);
     setError(null);
-    const r = await postJson<Built>("/api/interview/build", { draft: turn.draft });
+    const r = await postJson<Built>("/api/interview/build", { draft: turn.draft, projectId: project.current ?? undefined });
     setBusy(false);
     if (!r.ok) return setError(r.message);
     save([]);
+    saveProject(null);
     setBuilt(r.data);
   }
 

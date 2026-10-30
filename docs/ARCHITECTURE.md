@@ -676,6 +676,8 @@ Known limits of the pipeline: crops are rectangles, not masks (masks are base85 
 
 ## 11d. Create-an-app interview (BR-40)
 
+**Interview projects (BR-48).** `src/lib/interview/projects.ts` keeps one document of projects (same backend choice as identity: `DATABASE_URL` row `projects`, else `<AGORA_STATE_FILE>.projects.json`, else memory). A project id is opened by the phone page on mount or by an assistant (`/api/interview/projects`), answers are recorded by step (replace or merge) after the same `parseAnswer` check, and `createAppFor` marks the project built. The operator reads it through the `ADMIN_TOKEN` routes (BR-47). Unbuilt projects expire after 30 days, built ones after 90, and the store is capped at 20,000.
+
 `/start` runs the interview behind the home page QR code (docs/PLAN.md §2c step 3). **Code decides, the model drafts.**
 
 - **Script in code** (`src/lib/interview/script.ts`): six steps about the app only: purpose (what it is for, with examples across kinds of apps), actions (what a person can do in it), how (how it works, step by step), care points, name, feel. An app is open to any Muse user, so who joins, place, languages, handover and pricing are not asked (their step ids are in `REMOVED_STEPS`: an answer for one is refused with a plain sentence, and an old draft link is told so and the current questions are asked). Wording, order and the 2–3 tap answers are fixed; the model may only offer example answers for actions and name (static examples when it fails; `how` has static examples only). Typed words for a step with fixed answers (purpose, feel) are read by code into the nearest value; the purpose kind (swap/lend, learn, organise) also picks examples and the defaults below.

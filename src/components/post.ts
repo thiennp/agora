@@ -5,6 +5,15 @@ export type PostResult<T = unknown> = { ok: true; data: T } | { ok: false; messa
 /** Sub-path the app is served under (build-time AGORA_BASE_PATH, e.g. "/agora"); empty at the domain root. */
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
+/** PUT JSON, ignoring the answer: used for records the page must never wait on or fail because of. */
+export async function putJsonQuietly(url: string, body: unknown): Promise<void> {
+  try {
+    await fetch(`${BASE_PATH}${url}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  } catch {
+    // Recording progress is for the operator; the interview works without it.
+  }
+}
+
 /** POST JSON and read the stable error shape ({ error: { code, message } }) the API uses. */
 export async function postJson<T = unknown>(url: string, body: unknown): Promise<PostResult<T>> {
   try {
