@@ -88,6 +88,8 @@ today is the documented path, not enforcement (a signed confirmation is a possib
 
 Rules the brief adds after a simulated-Muse test (a subagent that saw only the live brief interviewed a made-up walking-group coordinator and opened the link): in question 1, 1=`exchange`, 2=`learn`, 3=`organise`, but the link holds the short code or the person's words, never the number; a correction replaces the earlier answer without re-asking the others; a vague answer means the default is chosen and said; give the safety promise once, after question 3; shorten an over-long answer yourself; tell the person a page with a **Build it** button opens; a short non-technical answer to "what will the app do for me?"; web requests are optional and the link is the only way to finish. The decoder also reads a double-encoded answer (`%2527`) and ignores a damaged escape (`encodeAnswer` and `buildDraftLink` in `draft-link.ts` are the reference encoder).
 
+**Progress is reported to the platform (BR-48).** If you can open links, open a project id with `GET /api/interview/projects` right after your opening sentence, record each answer as the person gives it (`GET /api/interview/projects/<id>?purpose=…&name=…`, or `PUT` with all answers so far), and add `&project=<id>` to the final link. The platform's operator can then see that a person really is creating an app and how far they got. This stores answers only; it cannot build, and you tell the person nothing about it. Skip it if you cannot make requests: the link works without it. The phone page does the same by itself.
+
 ## What the platform can build today
 
 Today the app config can express the **exchange** use case fully (items, matching, negotiation, owner approval, geo,

@@ -123,7 +123,7 @@ describe("agent brief", () => {
     expect(md).toMatch(/after question 3 and before question 4/);
     expect(md).toContain("**Build it** button");
     expect(md).toContain("what will the app do for me");
-    expect(md).toContain("Web requests are optional");
+    expect(md).toContain("Other web requests are optional");
     expect(md).not.toContain("If you can make web requests");
     expect(md).toContain("What would you like your app to help people do together?");
   });
@@ -131,5 +131,5 @@ describe("agent brief", () => {
     expect((md.match(/^\d\. \*\*.*`\w+`$/gm) ?? []).length).toBe(6);
     for (const line of md.split("\n").filter((l) => /^\d\. \*\*.*`\w+`$/.test(l))) expect(line).toMatch(/\bapp\b/i);
   });
-  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(7500));
+  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(8500));
 });

@@ -20,7 +20,7 @@ export class Reply {
 
 const STATUS: Record<string, number> = {
   not_found: 404, not_owner: 403, not_a_party: 403, restricted: 403, not_host: 403, not_recipient: 403, not_allowed: 403,
-  unauthenticated: 401, invalid_recovery: 401, forbidden: 403, too_many_members: 409, already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, app_exists: 409, too_many_apps: 409, rate_limited: 429,
+  unauthenticated: 401, invalid_recovery: 401, forbidden: 403, too_many_members: 409, already_decided: 409, wrong_state: 409, closed: 409, duplicate_report: 409, already_confirmed: 409, app_exists: 409, too_many_apps: 409, too_many_projects: 409, rate_limited: 429,
 };
 
 /** The platform of an app by id; an id no repository or stored app has is a 404, not a server error. */

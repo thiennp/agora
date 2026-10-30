@@ -36,6 +36,7 @@ not built yet; until they exist these are the rules the code must meet, not beha
 | Pending stretch offers (item and counterpart references, reasons) | until answered or 30 days (proposed) | deleted |
 | Reports (hash-chained evidence, pseudonyms) | 12 months after filing (proposed) | reports about the person stay for the retention period; reports they filed are unlinked from them |
 | Community posts (tier 2) | while the community exists (proposed) | the member's own posts are removed; a post that was not delivered to someone leaves no copy for them beyond a count |
+| App-creation interview answers (project id, the words given for the six questions, source, times; no name or contact) | 30 days if no app was built, 90 days after Build it (decided with BR-48; proposed lengths) | not linked to any person: there is no account to erase; the operator can see them |
 | Filtered-post review list (tier 2) | 30 days (proposed) | deleted |
 
 Members can see and export their own audit entries ("my activity"), their lessons, and the posts filtered for them.

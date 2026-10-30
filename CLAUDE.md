@@ -95,6 +95,8 @@ free pick-up-only app is a board of posts and conversations). Every member of a 
 platform (`Platform.addMember`, ADR 0007). The member status page `/app/{app}/muse/{id}` is visible only to that member.
 Read-only access for a person's own Muse (BR-44, `docs/MUSE-CONNECTOR.md`): per-member keys, `GET /api/muse/{app}/…`,
 OpenAPI and stateless MCP; no write method exists and a key cannot answer a card. Confirming is the person's own tap.
+Operator list of all created apps: `/admin/apps` and `GET /api/admin/apps`, gated by the `ADMIN_TOKEN` env var (404 when unset; counts only, BR-39).
+Interview projects (BR-48): a project id is opened when the interview starts (phone page, or an assistant via `/api/interview/projects`), each answer is recorded under it, and `/admin/apps` shows who is in progress, who built, and their answers. Reminder notifications are not built.
 Each app has its own stores and saved state (Postgres `DATABASE_URL` or file `AGORA_STATE_FILE`, restored on start;
 `docs/ARCHITECTURE.md` §11b; with neither it is memory only, development only).
 Limits: request rate limits, the interview/build limits and the 200-stored-apps cap are lifted until 2026-12-01
@@ -123,7 +125,7 @@ Also built (Oct 29): home page redesigned, Agora logo (`src/components/ui/Logo.t
 
 ## Working here
 
-- Env (`.env.example`): `META_API_KEY`, `FIELD_ENCRYPTION_SECRET`, `REPORT_EXPORT_SECRET` (required; at least 16 characters for the secrets), `DATABASE_URL` or `AGORA_STATE_FILE` (state), `APP` only for the simulation and the dashboard city map.
+- Env (`.env.example`): optional `ADMIN_TOKEN` (opens `/admin/apps`), `META_API_KEY`, `FIELD_ENCRYPTION_SECRET`, `REPORT_EXPORT_SECRET` (required; at least 16 characters for the secrets), `DATABASE_URL` or `AGORA_STATE_FILE` (state), `APP` only for the simulation and the dashboard city map.
 - `npm run typecheck`, `npm run lint`, `npm test`, `npm run dev`, `npm run db:check`, `npm run evals`, `npm run evals:intake` (needs a Meta key; makes 24 photos, about $0.60 in Muse Spark calls), `npm run bench:matching` (lookup latency at N items), `npm run capacity` (the tables in `docs/SCALE.md`), `npm run mcp:docs`, `npm run simulate` (the benchmark; writes `reports/simulation/<scenario>`, which the dashboard reads; the dashboard also runs it on first open). `APP=<id>` picks the app (default `kids-gear`).
 - In a git worktree under `.claude/worktrees/`, vitest can fail on the parent checkout's empty `package.json`; run the
   tests from a copy of the repo outside the worktree if so.

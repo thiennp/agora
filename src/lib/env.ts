@@ -10,6 +10,8 @@ const schema = z.object({
   OPEN_MODEL_KEY: z.string().optional(),
   FIELD_ENCRYPTION_SECRET: z.string().min(16).optional(),
   REPORT_EXPORT_SECRET: z.string().min(16).optional(),
+  /** Turns on the operator page /admin/apps and /api/admin/apps (at least 16 characters). Unset: they do not exist. */
+  ADMIN_TOKEN: z.string().min(16).optional(),
   /** The app the simulation and the dashboard's city map use. */
   APP: z.string().default("kids-gear"),
   /** Saved state goes here between restarts when DATABASE_URL is empty (development). */

@@ -26,8 +26,9 @@ export interface DraftLink {
 export const encodeAnswer = (text: string): string =>
   encodeURIComponent(text.replace(/~/g, " ").replace(/\s+/g, " ").trim()).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 
-/** The whole link for answers in interview order. */
-export const buildDraftLink = (baseUrl: string, answers: string[]): string => `${baseUrl}/start?draft=${answers.map(encodeAnswer).join("~")}`;
+/** The whole link for answers in interview order, with the project id the assistant opened (BR-48) when it has one. */
+export const buildDraftLink = (baseUrl: string, answers: string[], projectId?: string): string =>
+  `${baseUrl}/start?draft=${answers.map(encodeAnswer).join("~")}${projectId ? `&project=${projectId}` : ""}`;
 
 /**
  * The page's query reader has already decoded the link once. An assistant that encodes twice leaves `%20`, `%27` … in the words:
@@ -101,4 +102,16 @@ export function answersFromQuery(query: Query): DraftLink {
     answers.push(answer);
   }
   return old ? { answers, problem: OLD_LINK } : { answers };
+}
+
+/** Answers named one per step, in any order and with gaps (`?purpose=…&name=…`): for recording progress as each answer arrives (BR-48). Unknown names and non-strings are ignored. */
+export function stepAnswersFromQuery(query: Query): Answer[] {
+  const out: Answer[] = [];
+  for (const id of STEP_ORDER) {
+    const raw = first(query[id]);
+    if (raw === undefined) continue;
+    const v = tidy(raw).trim();
+    out.push(stepOf(id).options.some((o) => o.id === v) ? { step: id, choice: v } : { step: id, text: v });
+  }
+  return out;
 }

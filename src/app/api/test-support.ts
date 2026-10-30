@@ -4,6 +4,7 @@ import { getAppStore, useAppStore } from "@/app/_composition/apps";
 import { getIdentityStore, sessionCookie, useIdentityStore, useMuseKeyStore } from "@/app/_composition/identity";
 import { resetInterviewLimits, useInterviewModel } from "@/app/_composition/interview";
 import { useAdapterForTests } from "@/app/_composition/meta";
+import { resetProjectLimits, useProjectStore } from "@/app/_composition/projects";
 import { resetMuseRateLimits } from "@/app/_composition/muse-api";
 import { getPlatform, type Platform } from "@/app/_composition/platform";
 import { createAppStore, createMemoryBackend, loadApp, repoAppIds } from "@/lib/app-config";
@@ -49,6 +50,8 @@ export function resetWorld(adapter = simulatedTranslation()): void {
   useInterviewModel(undefined);
   useIdentityStore(createIdentityStore());
   useMuseKeyStore(createMuseKeyStore());
+  useProjectStore(undefined);
+  resetProjectLimits();
   useAppStore(createAppStore(createMemoryBackend(), { reserved: repoAppIds() }));
   useAdapterForTests(adapter);
   (globalThis as unknown as { __agoraPlatforms?: Map<string, unknown> }).__agoraPlatforms?.clear();

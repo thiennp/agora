@@ -1,7 +1,7 @@
 import { Banner } from "@/components/Card";
 import { Interview } from "@/components/Interview";
 import { PUBLIC_BASE_URL } from "@/app/_composition/public-url";
-import { agentBrief, answersFromQuery, INTERVIEW_PURPOSE } from "@/lib/interview";
+import { agentBrief, answersFromQuery, INTERVIEW_PURPOSE, PROJECT_ID } from "@/lib/interview";
 
 export const metadata = {
   title: "Create your app · Agora",
@@ -14,7 +14,10 @@ export const metadata = {
  * the summary with the answers filled in. The person's tap on "Build it" is the only thing that creates an app (docs/PLAN.md §2c).
  */
 export default async function Start({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const { answers, problem } = answersFromQuery(await searchParams);
+  const query = await searchParams;
+  const { answers, problem } = answersFromQuery(query);
+  // An assistant that opened a project id for this person puts it in the link (BR-48); anything that is not an id is ignored.
+  const project = Array.isArray(query.project) ? query.project[0] : query.project;
   return (
     <div className="stack-lg">
       <header className="page-head">
@@ -25,7 +28,7 @@ export default async function Start({ searchParams }: { searchParams: Promise<Re
       <noscript>
         <Banner tone="warn">This page needs JavaScript to show the questions. Turn it on, or ask Muse to interview you in the chat and give you a link.</Banner>
       </noscript>
-      <Interview initial={answers} />
+      <Interview initial={answers} projectId={project && PROJECT_ID.test(project) ? project : undefined} />
       <section aria-labelledby="assistant-title" className="stack">
         <h2 id="assistant-title" className="small">For AI assistants</h2>
         <p className="small muted">
