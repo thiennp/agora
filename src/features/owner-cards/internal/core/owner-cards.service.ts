@@ -12,7 +12,7 @@ import type { OwnerQuestion, QuestionStore, TermsFact } from "../../features/que
 import { tracked } from "@/lib/state";
 
 /** What owner cards need from negotiation; its service satisfies this. */
-export interface DealOps {
+interface DealOps {
   get(dealId: string): Promise<Deal | null>;
   transcript(dealId: string): Message[];
   answerOwner(dealId: string, familyId: string, proceed: boolean): Promise<Deal>;
@@ -25,7 +25,7 @@ export class OwnerCardError extends Error {
   }
 }
 
-export interface CardAudit {
+interface CardAudit {
   kind: "owner_card";
   action: "question_opened" | "question_answered" | "confirmation_opened" | "confirmation_decided" | "rule_created";
   familyId: string;
@@ -214,4 +214,3 @@ export function createOwnerCards(deps: {
   };
 }
 
-export type OwnerCards = ReturnType<typeof createOwnerCards>;

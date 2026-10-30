@@ -4,7 +4,7 @@ import type { AppConfig } from "@/lib/app-config";
 /** FAM-05: the platform collects no health, sleep or feeding data, whatever an app asks for. */
 const HEALTH_WORDS = /(health|sleep|feeding|feed|diet|medical|diagnos|illness|weight|allerg)/i;
 
-export function assertNoHealthFields(app: Pick<AppConfig, "participant">): void {
+function assertNoHealthFields(app: Pick<AppConfig, "participant">): void {
   for (const f of app.participant.fields) {
     if (HEALTH_WORDS.test(f.id) || HEALTH_WORDS.test(f.label)) {
       throw new Error(`profile field "${f.id}" looks like health data, which the platform does not collect`);
@@ -36,9 +36,3 @@ export function buildProfileSchema(app: Pick<AppConfig, "participant" | "policie
     })
     .strict();
 }
-
-export type ProfileInput = {
-  language: string;
-  district: { lat: number; lon: number } | { name: string };
-  profile: Record<string, string | number>;
-};

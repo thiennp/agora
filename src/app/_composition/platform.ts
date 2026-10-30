@@ -35,12 +35,12 @@ export interface Persona {
   availability: { from: string; to: string }[];
 }
 
-export interface FeedItem {
+interface FeedItem {
   at: string;
   text: string;
 }
 
-export interface Audit {
+interface Audit {
   gatekeeper: Record<string, number>;
   screening: Record<string, number>;
   relay: Record<string, number>;

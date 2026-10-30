@@ -1,1 +1,1 @@
-export { createForecastService, forecast, stageValue } from "../internal/core/forecast";
+export { createForecastService } from "../internal/core/forecast";

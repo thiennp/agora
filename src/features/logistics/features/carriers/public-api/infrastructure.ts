@@ -1,1 +1,1 @@
-export { createSimulatedCarrier, simulatedDropPoints, WATERMARK } from "../internal/infrastructure/simulated.carrier";
+export { createSimulatedCarrier, simulatedDropPoints } from "../internal/infrastructure/simulated.carrier";

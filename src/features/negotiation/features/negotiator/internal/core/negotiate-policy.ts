@@ -16,7 +16,7 @@ export interface NegotiationMandate {
   opening?: Pick<Offer, "terms" | "price" | "swapFor">;
 }
 
-export type TurnAction =
+type TurnAction =
   | { kind: "accept" }
   | { kind: "counter"; offer: Offer }
   | { kind: "decline"; reason: string }

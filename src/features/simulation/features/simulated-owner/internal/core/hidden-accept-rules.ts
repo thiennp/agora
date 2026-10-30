@@ -14,14 +14,14 @@ export interface HiddenRules {
   exactSize: boolean;
 }
 
-export type Reason = "too_far" | "condition" | "wrong_size";
-export interface Facts {
+type Reason = "too_far" | "condition" | "wrong_size";
+interface Facts {
   distanceKm: number | null;
   offerCondition?: string;
   offerSize?: string;
   wantSize?: string;
 }
-export type Verdict = { confirm: true } | { confirm: false; reason: Reason };
+type Verdict = { confirm: true } | { confirm: false; reason: Reason };
 
 type App = Pick<AppConfig, "catalog">;
 

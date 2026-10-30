@@ -1,7 +1,7 @@
-export const REASON_CODES = ["too_far", "wrong_size", "condition", "price", "timing", "other"] as const;
-export type ReasonCode = (typeof REASON_CODES)[number];
+const REASON_CODES = ["too_far", "wrong_size", "condition", "price", "timing", "other"] as const;
+type ReasonCode = (typeof REASON_CODES)[number];
 
-export interface DecisionFacts {
+interface DecisionFacts {
   decision: "confirm" | "decline";
   reasonCode?: string;
   category?: string;

@@ -3,7 +3,7 @@ export interface Answer {
   answer: "yes" | "no";
 }
 
-export interface Proposal {
+interface Proposal {
   topic: string;
   /** How many identical yes-answers in a row led to it. */
   evidenceCount: number;

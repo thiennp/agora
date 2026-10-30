@@ -24,7 +24,7 @@ export function districtFromName(name: string): string {
   return `n:${slug}`;
 }
 
-export type DistrictInput = { lat: number; lon: number } | { name: string };
+type DistrictInput = { lat: number; lon: number } | { name: string };
 
 export function toDistrictCode(input: DistrictInput): string {
   return "name" in input ? districtFromName(input.name) : districtFromCoords(input.lat, input.lon);

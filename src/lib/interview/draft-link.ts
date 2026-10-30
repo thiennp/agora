@@ -12,7 +12,7 @@ export const MAX_DRAFT_CHARS = 2000;
 
 const OLD_LINK = "That link was made for an older version of the questions, which asked about who joins, a place and languages. An app is open to any Muse user now, so those answers are not used.";
 
-export interface DraftLink {
+interface DraftLink {
   /** The answers the link holds, in interview order, up to the first step it does not answer or answers unusably. */
   answers: Answer[];
   /** Plain words for the person when part of the link could not be used; undefined when it was all fine (or there was no link). */

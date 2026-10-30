@@ -25,4 +25,3 @@ export function createCatalogService(deps: {
   };
 }
 
-export type CatalogService = ReturnType<typeof createCatalogService>;

@@ -1,1 +1,1 @@
-export { createAgentWitchProvider, createAgentWitchHttpClient, AgentWitchFatalError } from "../internal/infrastructure/agentwitch.provider";
+export { createAgentWitchProvider, AgentWitchFatalError } from "../internal/infrastructure/agentwitch.provider";

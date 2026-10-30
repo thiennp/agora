@@ -31,4 +31,3 @@ export function createReputation(deps: { now?: () => Date } = {}) {
   };
 }
 
-export type Reputation = ReturnType<typeof createReputation>;

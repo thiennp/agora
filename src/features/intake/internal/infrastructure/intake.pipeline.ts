@@ -109,4 +109,3 @@ export function createIntake(deps: { catalog: Catalog; ports: IntakePorts; crops
 
   return { analyze, crops, simulated: ports.simulated };
 }
-export type Intake = ReturnType<typeof createIntake>;

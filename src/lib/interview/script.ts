@@ -19,7 +19,7 @@ export interface Option {
   label: string;
 }
 
-export interface Step {
+interface Step {
   id: StepId;
   ask: string;
   /** One friendly line under the question: why it matters, in the person's terms. */
@@ -36,19 +36,19 @@ export interface Step {
 export const INTERVIEW_PURPOSE =
   "I'm going to ask you a few quick questions to create your own app, for example an app to swap things, learn a skill or organise a run. It takes about two minutes, and nothing is built until you say yes.";
 
-export const PURPOSE: Option[] = [
+const PURPOSE: Option[] = [
   { id: "exchange", label: "Swap or lend things people no longer need" },
   { id: "learn", label: "Learn a skill together with others" },
   { id: "organise", label: "Organise a run or a volunteer shift" },
 ];
 
-export const FEEL: Option[] = [
+const FEEL: Option[] = [
   { id: "friendly", label: "Friendly and warm" },
   { id: "serious", label: "Calm and serious" },
   { id: "playful", label: "Playful and bright" },
 ];
 
-export const CARE: Option[] = [
+const CARE: Option[] = [
   { id: "none", label: "Nothing special" },
   { id: "safe", label: "Nothing dangerous or illegal" },
 ];

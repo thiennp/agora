@@ -23,7 +23,6 @@ import { POST as startDeal } from "./matches/start/route";
 export const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const j = async (r: Response): Promise<any> => await r.json();
-export const cookieOf = (r: Response) => r.headers.get("set-cookie")!.split(";")[0]!;
 
 export interface Member {
   cookie: string;

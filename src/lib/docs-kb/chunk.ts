@@ -14,7 +14,7 @@ export interface DocChunk {
   endLine: number;
 }
 
-export interface ChunkOptions {
+interface ChunkOptions {
   /** Longest passage in characters before it is split at a blank line. */
   maxChars?: number;
 }

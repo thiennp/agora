@@ -12,7 +12,7 @@ import type { Offer } from "../../features/offers/public-api/types";
 import { tracked } from "@/lib/state";
 
 /** What negotiation needs from the catalog; the catalog's item service satisfies it. */
-export interface ItemOps {
+interface ItemOps {
   markInDeal(itemId: string): Promise<unknown>;
   releaseFromDeal(itemId: string): Promise<unknown>;
   reserve(itemId: string, dealId: string): Promise<unknown>;
@@ -32,7 +32,7 @@ export interface Message {
 }
 
 /** A message as one owner reads it: the original and, when it is in another language, a translation (LNG-02, NEG-03). */
-export interface ViewedMessage extends Message {
+interface ViewedMessage extends Message {
   translatedNote?: { text: string; language: string; uncertain: boolean };
   translationFailed?: boolean;
 }
@@ -340,4 +340,3 @@ export function createNegotiationService(deps: {
   return service;
 }
 
-export type NegotiationService = ReturnType<typeof createNegotiationService>;

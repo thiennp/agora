@@ -6,12 +6,12 @@
  */
 type Container = object;
 
-export interface TrackOptions {
+interface TrackOptions {
   /** When saving, write the value of the second field in place of the first (`{ original: "screenedOriginal" }`), so a field that must stay in memory never reaches the saved copy. */
   swap?: Record<string, string>;
 }
 
-export interface StateScope {
+interface StateScope {
   track<T extends Container>(name: string, value: T, opts?: TrackOptions): T;
   snapshot(): string;
   restore(json: string): void;

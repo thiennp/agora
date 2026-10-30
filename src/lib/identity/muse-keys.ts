@@ -8,8 +8,8 @@ import type { IdentityBackend } from "./identity";
  * its SHA-256 is stored (like session tokens), so a leaked store cannot be replayed. The key carries a fixed prefix so secret scanners
  * and a person pasting it into Muse can tell what it is; the prefix adds no entropy and is not secret.
  */
-export const MUSE_KEY_PREFIX = "agmk_";
-export const MAX_ACTIVE_KEYS_PER_MEMBER = 3;
+const MUSE_KEY_PREFIX = "agmk_";
+const MAX_ACTIVE_KEYS_PER_MEMBER = 3;
 
 export class MuseKeyError extends Error {
   constructor(readonly code: "too_many_keys" | "not_found", message: string) {

@@ -12,7 +12,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 
 const WIDTH = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" } as const;
 
-export interface ModalProps {
+interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;

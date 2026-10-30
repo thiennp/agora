@@ -15,7 +15,7 @@ const TEMPLATES: Record<string, { propose: string; counter: string; accept: stri
 
 export type NoteKind = "propose" | "counter" | "accept";
 
-export const templateNote = (language: string, kind: NoteKind): string => (TEMPLATES[language] ?? TEMPLATES.en!)[kind];
+const templateNote = (language: string, kind: NoteKind): string => (TEMPLATES[language] ?? TEMPLATES.en!)[kind];
 
 /**
  * A short, friendly note in the owner's language. The structured offer carries the substance; the note is decoration.

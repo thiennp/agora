@@ -8,7 +8,7 @@ must run offline for judges and CI, and must not let a runaway loop spend withou
 
 ## Decision
 - All model calls go through `src/lib/meta` (`createMetaClient`). Nothing else talks to a model.
-- Providers sit behind a `ModelAdapter` port (`meta-api`, `baseten`, `modal`, `mock`); a table-driven **router** maps each
+- Providers sit behind a `ModelAdapter` port (`meta-api`, `baseten`, `mock`); a table-driven **router** maps each
   agent role to a model and provider. Mock mode is fully offline and deterministic.
 - Structured calls take a zod schema: output is parsed and validated, with one retry, and never returned if invalid.
 - A **cost meter** records every call and enforces a per-participant budget and a global breaker before the call is made.

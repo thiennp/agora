@@ -1,7 +1,7 @@
 import { inStage, type AppConfig } from "@/lib/app-config";
 import { tracked } from "@/lib/state";
 
-export interface Suggestion {
+interface Suggestion {
   /** Stable id so a dismissal sticks: kind, category and stage. */
   id: string;
   kind: "outgrown" | "needed";
@@ -14,7 +14,7 @@ export interface Suggestion {
 type App = Pick<AppConfig, "catalog" | "participant">;
 
 /** Where the participant is in the app's stages, or undefined when the app or profile cannot say. */
-export function stageValue(app: App, profile: Record<string, string | number>, now: Date): number | undefined {
+function stageValue(app: App, profile: Record<string, string | number>, now: Date): number | undefined {
   const field = app.catalog.stageField;
   if (field) {
     const v = Number(profile[field]);

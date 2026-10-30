@@ -21,7 +21,7 @@ export class BudgetExceededError extends Error {
   }
 }
 
-export interface Budget {
+interface Budget {
   perParticipantUsd: number;
   globalUsd: number;
 }

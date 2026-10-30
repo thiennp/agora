@@ -6,7 +6,7 @@ export interface ModelProposal {
   confidence: number;
 }
 
-export interface Classification {
+interface Classification {
   /** Every topic detected in the message. Empty means unknown. */
   topics: string[];
   /** Topics that came only from a model proposal (for audit and evals). */

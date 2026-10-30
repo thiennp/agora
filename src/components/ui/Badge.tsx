@@ -22,7 +22,7 @@ const SOLID: Record<BadgeTone, string> = {
   info: "bg-sky-600 text-white dark:bg-sky-400 dark:text-sky-950",
 };
 
-export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: BadgeTone;
   solid?: boolean;
   size?: "sm" | "md";

@@ -1,2 +1,2 @@
-export { createIntake, MAX_ITEMS, type Intake } from "../internal/infrastructure/intake.pipeline";
-export { createMetaPorts, createSimulatedPorts, type IntakePorts } from "../internal/infrastructure/ports";
+export { createIntake, MAX_ITEMS } from "../internal/infrastructure/intake.pipeline";
+export { createMetaPorts } from "../internal/infrastructure/ports";

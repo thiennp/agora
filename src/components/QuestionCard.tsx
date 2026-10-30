@@ -6,7 +6,7 @@ import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { useScope } from "./ScopeContext";
 
-export interface QuestionProps {
+interface QuestionProps {
   id: string;
   as: "a" | "b";
   text: string;

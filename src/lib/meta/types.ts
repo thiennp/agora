@@ -5,7 +5,7 @@ export type Role = (typeof ROLES)[number];
 /** Meta models only (LIB-META-01). */
 export type ModelId = "muse-spark" | "muse-spark-open";
 
-export type Provider = "meta-api" | "baseten" | "modal" | "mock";
+export type Provider = "meta-api" | "baseten" | "mock";
 
 export interface ModelRequest {
   model: ModelId;

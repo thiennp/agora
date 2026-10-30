@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn";
 
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
-export type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
   "inline-flex select-none items-center justify-center gap-2 rounded-control font-semibold no-underline " +
@@ -25,12 +25,12 @@ const SIZE: Record<ButtonSize, string> = {
 };
 
 /** Class string for anything that should look like a button, for example a `next/link` anchor. */
-export function buttonClass(opts: { variant?: ButtonVariant; size?: ButtonSize; fullWidth?: boolean; className?: string } = {}): string {
+function buttonClass(opts: { variant?: ButtonVariant; size?: ButtonSize; fullWidth?: boolean; className?: string } = {}): string {
   const { variant = "primary", size = "md", fullWidth, className } = opts;
   return cn(BASE, VARIANT[variant], SIZE[size], fullWidth && "w-full", className);
 }
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;

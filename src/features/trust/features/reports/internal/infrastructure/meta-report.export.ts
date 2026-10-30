@@ -5,7 +5,7 @@ import type { Report } from "./report.repository";
  * Export format `agora.report.v1`, documented in docs/PROTOCOL.md. It is a format designed for Meta; nothing here
  * claims Meta consumes or acts on it (TRU-RPT-03, TRU-05). People appear only as keyed pseudonyms.
  */
-export interface MetaReportV1 {
+interface MetaReportV1 {
   format: "agora.report.v1";
   designedFor: "Meta";
   disclaimer: "Format only. Delivery to or action by Meta is not confirmed.";

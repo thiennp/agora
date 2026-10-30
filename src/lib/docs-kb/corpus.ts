@@ -5,14 +5,14 @@ import { buildIndex, type Index } from "./search";
 
 const SKIP_DIRS = new Set(["node_modules", ".next", ".git", ".claude", "reports", "coverage", "dist"]);
 
-export interface DocFile {
+interface DocFile {
   /** Repo-relative, forward slashes. */
   path: string;
   markdown: string;
   mtimeMs: number;
 }
 
-export interface DocOutline {
+interface DocOutline {
   path: string;
   title: string;
   headings: string[];
@@ -20,7 +20,7 @@ export interface DocOutline {
 }
 
 /** Every markdown file under `root` (docs, ADRs, README, per-folder REQUIREMENTS), skipping build output and dependencies. */
-export function loadDocFiles(root: string): DocFile[] {
+function loadDocFiles(root: string): DocFile[] {
   const files: DocFile[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {

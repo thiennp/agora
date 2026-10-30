@@ -13,7 +13,7 @@ const g = globalThis as unknown as { __agoraInterviewModel?: InterviewModel };
 /**
  * The interviewer's model: Muse Spark on the Meta Model API. Code validates everything it drafts (src/lib/interview).
  */
-export function getInterviewModel(): InterviewModel {
+function getInterviewModel(): InterviewModel {
   if (g.__agoraInterviewModel) return g.__agoraInterviewModel;
   // The client is bound to an app for its preamble; before an app exists it is a neutral placeholder.
   const placeholder = {

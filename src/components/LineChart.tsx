@@ -1,4 +1,4 @@
-export interface Series {
+interface Series {
   key: string;
   label: string;
   /** A CSS color, normally a variable such as var(--c-learning). */

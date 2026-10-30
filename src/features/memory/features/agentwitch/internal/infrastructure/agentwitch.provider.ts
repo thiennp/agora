@@ -2,7 +2,7 @@ import type { Context, Lesson, Outcome } from "../../../../internal/core/context
 import type { MemoryProvider } from "../../../../internal/core/memory-provider.port";
 import { createLocalProvider } from "../../../local/public-api/infrastructure";
 
-/** What the AgentWitch mirror needs. The HTTP client below implements it against the local AgentWitch bridge. */
+/** What the AgentWitch mirror needs. */
 export interface AgentWitchClient {
   knowledgeUpdate(projectId: string, lesson: string): Promise<void>;
   mirrorOutcome(projectId: string, outcome: Outcome): Promise<void>;
@@ -11,24 +11,7 @@ export interface AgentWitchClient {
 /** An error the mirror must not retry (not paired, no access). */
 export class AgentWitchFatalError extends Error {}
 
-export function createAgentWitchHttpClient(deps: { baseUrl: string; fetchImpl?: typeof fetch }): AgentWitchClient {
-  const doFetch = deps.fetchImpl ?? fetch;
-  const post = async (path: string, body: unknown) => {
-    const res = await doFetch(`${deps.baseUrl.replace(/\/$/, "")}${path}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-    // 409 means not paired and 404 no access: tell the user once, never retry in a loop.
-    if (res.status === 409 || res.status === 404) throw new AgentWitchFatalError(`agentwitch ${res.status}`);
-    if (!res.ok) throw new Error(`agentwitch ${res.status}`);
-  };
-  return {
-    // Documented endpoint: POST /knowledge/update {projectId, lesson}.
-    knowledgeUpdate: (projectId, lesson) => post("/knowledge/update", { projectId, lesson }),
-    // ASSUMPTION: tasks are created through POST /aw/invoke with the create_project_task tool; unverified against a running bridge.
-    mirrorOutcome: (projectId, o) =>
-      post("/aw/invoke", { name: "create_project_task", arguments: { projectId, title: `deal ${o.dealId}: ${o.result}${o.reasonCode ? ` (${o.reasonCode})` : ""}`, autoClaim: false, status: "in_progress" } }),
-  };
-}
-
-export interface MirrorFailure {
+interface MirrorFailure {
   what: "lesson" | "outcome";
   familyId: string;
   attempts: number;

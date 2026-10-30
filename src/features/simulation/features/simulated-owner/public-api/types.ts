@@ -1,1 +1,1 @@
-export type { HiddenRules, Facts, Verdict, Reason } from "../internal/core/hidden-accept-rules";
+export type { HiddenRules } from "../internal/core/hidden-accept-rules";

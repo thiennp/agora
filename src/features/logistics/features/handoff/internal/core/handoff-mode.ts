@@ -16,7 +16,7 @@ export interface Constraints {
   allowedModes?: HandoffMode[];
 }
 
-export interface Proposal {
+interface Proposal {
   mode: HandoffMode;
   /** Agreed meeting window for in-person modes, when both sides have one. */
   window?: Window;

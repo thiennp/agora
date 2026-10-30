@@ -8,7 +8,7 @@ import { tracked } from "@/lib/state";
 export { MandateError } from "../features/policy/public-api/infrastructure";
 export { classify } from "../features/classifier/public-api/infrastructure";
 
-export interface GatekeeperVerdict {
+interface GatekeeperVerdict {
   outcome: Outcome;
   /** Topics found, for the owner card. */
   topics: string[];

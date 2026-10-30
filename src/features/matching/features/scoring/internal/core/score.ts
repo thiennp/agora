@@ -17,13 +17,13 @@ export interface Factor {
   note: string;
 }
 
-export interface Score {
+interface Score {
   total: number;
   band: DistanceBand;
   factors: Factor[];
 }
 
-export interface ScoreContext {
+interface ScoreContext {
   now: Date;
   distanceKm: number | null;
   /** Earlier declines of this pattern (same category, same counterpart). */

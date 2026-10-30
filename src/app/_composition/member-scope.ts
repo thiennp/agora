@@ -11,7 +11,7 @@ import { getPlatform, type Platform } from "./platform";
  * someone else. A repository app, an unknown app and a person without a session for this app all give `none`: the pages answer 404 and
  * never reveal whether the app or the member exists beyond the public page.
  */
-export type MemberScope =
+type MemberScope =
   | { kind: "none" }
   | { kind: "member"; platform: Platform; scope: Scope; me: { id: string; name: string; role: "creator" | "member" } };
 

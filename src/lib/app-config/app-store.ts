@@ -5,7 +5,7 @@ import { appConfigSchema, type AppConfig } from "./schema";
  * Apps as data (BR-41): an app config stored by the platform instead of an `apps/<id>/` folder. Every config is validated by
  * `appConfigSchema` before it is stored and again when it is read back, so the always-ask rules cannot be relaxed by data either.
  */
-export type AppStoreErrorCode = "invalid_app" | "reserved_id" | "app_exists" | "too_many_apps";
+type AppStoreErrorCode = "invalid_app" | "reserved_id" | "app_exists" | "too_many_apps";
 
 export class AppStoreError extends Error {
   constructor(readonly code: AppStoreErrorCode, message: string) {
