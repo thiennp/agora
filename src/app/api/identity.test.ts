@@ -6,6 +6,10 @@ import { POST as join } from "./apps/[app]/join/route";
 import { GET as me } from "./apps/[app]/me/route";
 import { GET as members } from "./apps/[app]/members/route";
 import { POST as recover } from "./apps/[app]/recover/route";
+import { POST as pairStart } from "./apps/[app]/pair/route";
+import { POST as pairClaim } from "./apps/[app]/pair/claim/route";
+import { POST as pairInfo } from "./apps/[app]/pair/info/route";
+import { POST as pairApprove } from "./apps/[app]/pair/approve/route";
 import { POST as signout } from "./apps/[app]/signout/route";
 import { GET as getApp } from "./apps/[app]/route";
 import { GET as listDeals } from "./deals/route";
@@ -125,6 +129,29 @@ describe("light identity over HTTP (BR-42, BR-45)", () => {
     const rec = () => recover(as(undefined, "/api/apps/club-a/recover", { code: "AAAAA-AAAAA-AAAAA-AAAAA" }), ctx({ app: "club-a" }));
     for (let i = 0; i < 8; i++) expect((await rec()).status).toBe(401);
     expect((await rec()).status).toBe(429);
+  });
+
+  it("signs a new computer in when a signed-in device approves it with the four digits", async () => {
+    const { member } = await setup();
+    const c = ctx({ app: "club-a" });
+    const start = await pairStart(new Request(url("/api/apps/club-a/pair"), { method: "POST", body: "{}", headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0 Safari/537.36" } }), c);
+    const p = await j(start);
+    expect(p.approveUrl).toContain(`/app/club-a/pair/${p.code}`);
+    const claim = () => pairClaim(as(undefined, "/api/apps/club-a/pair/claim", { code: p.code, secret: p.secret }), c);
+    expect(await j(await claim())).toEqual({ status: "pending" });
+    // A stranger cannot look at or approve it.
+    expect((await pairInfo(as(undefined, "/api/apps/club-a/pair/info", { code: p.code }), c)).status).toBe(401);
+    expect((await pairApprove(as(undefined, "/api/apps/club-a/pair/approve", { code: p.code, verify: p.verify }), c)).status).toBe(401);
+    expect(await j(await pairInfo(as(member.cookie, "/api/apps/club-a/pair/info", { code: p.code }), c))).toMatchObject({ label: "Chrome on Mac" });
+    expect((await pairApprove(as(member.cookie, "/api/apps/club-a/pair/approve", { code: p.code, verify: "abcd" }), c)).status).toBe(400);
+    expect((await pairApprove(as(member.cookie, "/api/apps/club-a/pair/approve", { code: p.code, verify: p.verify }), c)).status).toBe(200);
+    const done = await claim();
+    expect(await j(done)).toMatchObject({ status: "approved", memberId: member.memberId });
+    const fresh = cookieOf(done);
+    expect(fresh).not.toBe(member.cookie);
+    expect((await me(as(fresh, "/api/apps/club-a/me"), c)).status).toBe(200);
+    expect((await me(as(member.cookie, "/api/apps/club-a/me"), c)).status).toBe(200); // old device stays in
+    expect((await claim()).status).toBe(400); // once only
   });
 
   it("signs out one phone and clears the cookie", async () => {
