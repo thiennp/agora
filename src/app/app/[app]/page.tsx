@@ -55,7 +55,7 @@ function ForAssistant({ view }: { view: Described }) {
  * `/app/{app}` (served at `/agora/app/{app}`), docs/PLAN.md §2c step 4 and §2c-ter, BR-42. One address, public by default: anyone, including
  * an assistant (Muse) that opens the link, sees the same public page (name, purpose, what it does, rules) in server HTML, also as markdown
  * at `/app/{app}/agent.md`. A person who opens it in a browser is set up on first use (no form). The creator, with their session, gets the
- * private overview with the share link. The share link is this address, so it carries no secret. A person's status page is `/muse/{id}`.
+ * admin dashboard (only they see it; `/app/{app}/admin` is the recovery-code door to it) with the share link. The share link is this address, so it carries no secret. A person's status page is `/muse/{id}`.
  */
 export default async function AppPage({ params }: { params: Promise<{ app: string }> }) {
   const id = (await params).app;
@@ -73,6 +73,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
         </div>
         <About view={view} />
         <UseAppForm appId={app.id} appName={app.name} />
+        <p className="small muted">Created this app? <Link href={`/app/${app.id}/admin`}>Open the admin dashboard</Link>.</p>
         <ForAssistant view={view} />
       </div>
     );
@@ -83,7 +84,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
     return (
       <div className="stack-lg">
         <div>
-          <p className="small muted">Your app</p>
+          <p className="small muted">Admin dashboard · only you and your assistant can see this</p>
           <h1>{app.name}</h1>
         </div>
         <Card title="Share your app" prominent>

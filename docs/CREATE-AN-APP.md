@@ -53,8 +53,7 @@ you before it agrees to anything"), not as a question.
 
 ## The phone interview (the main path)
 
-The QR code on the home page opens `/start`, where the platform runs this same interview itself as question cards with tap
-answers (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what the app is for,
+The QR code on the home page opens `/start/agent.md`; the person's assistant runs this same interview in chat (the platform's own tap-card page was removed). The question logic (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what the app is for,
 what a person can do in it, how it works, what it should never do or share, name, feel (six questions). Code asks;
 the model only offers example answers and drafts the wording (tagline, what to call a user, categories, forbidden things);
 code sets every rule, validates the config against the schema, and shows the plain-words summary with one yes. On yes the app
@@ -74,17 +73,7 @@ In short: you are Muse; **open with one sentence that says what is happening** (
 quick replies; the owner's real-Muse test found none, unverified, to be confirmed in the Muse app, so the brief never relies on
 buttons and never asks Muse to click or submit anything on our page): one plain question at a time in their language, the 2 to 3
 examples as a numbered list ("1) … 2) … 3) …, or tell me in your own words") so the person can reply with a number or their own
-words, about 6 questions, no technical words; write the summary paragraph and ask the person to agree ("yes", "yeah", "ok", "looks good"; anything else is a correction); only then give them
-**a draft link**, `/start?draft=exchange~Offer%20clothes~People%20post%2C%20others%20ask~none~My%20App~friendly` (answers in interview order
-joined by `~`, each answer URL-encoded: space `%20`, comma `%2C`, apostrophe `%27`, ampersand `%26`, question mark `%3F`, hash `%23`, a typed tilde becomes a space, other characters percent-encoded as UTF-8; one value per step as `?purpose=…&actions=…`, or `?draft=<JSON object>`, also work). If Muse damages
-the link, the page keeps the answers before the damage and asks the rest itself, including the app name. The link opens
-the summary "Here is your app: … Build it?" with the answers filled in; **the person's own tap on "Build it" is what stores the app
-and makes them its creator in their browser.** The link holds answers only (max 2000 characters), read by the same code as a tap
-(`src/lib/interview/draft-link.ts`) and checked by the app schema: it cannot set a rule, relax an always-ask topic or carry an
-instruction, and unusable parts are dropped with a plain sentence while the page asks those questions itself. A link or saved answer made for the older, longer interview (which asked who joins, place, languages, handover and price) is not read in the new order: the page says so in one sentence and asks the current questions (old keyed answers that still fit, such as the purpose, are kept). An assistant that can
-make web requests may `POST /api/interview` to check its answers (stateless, stores nothing); it must not call `/api/interview/build`,
-which is the page's own call after the tap. The server cannot tell a person's browser from a script on that route; the guarantee
-today is the documented path, not enforcement (a signed confirmation is a possible hardening). Not yet tried with a real Muse.
+words, about 6 questions, no technical words; write the summary paragraph and ask the person to agree ("yes", "yeah", "ok", "looks good"; anything else is a correction); only then **create the app**: `POST /api/interview` with the answers (checked, returns the draft), then `POST /api/interview/build` with that draft. **The person's typed yes in the chat is the approval.** The build call re-checks the draft against the app schema, so it cannot set a rule, relax an always-ask topic or carry an instruction. The assistant then gives the person the public address `/app/{app}` (to share), the admin address `/app/{app}/admin` (where only the person gets in, with the one-time recovery code, to the admin dashboard at `/app/{app}`) and the code.
 
 Rules the brief adds after a simulated-Muse test (a subagent that saw only the live brief interviewed a made-up walking-group coordinator and opened the link): in question 1, 1=`exchange`, 2=`learn`, 3=`organise`, but the link holds the short code or the person's words, never the number; a correction replaces the earlier answer without re-asking the others; a vague answer means the default is chosen and said; give the safety promise once, after question 3; shorten an over-long answer yourself; tell the person a page with a **Build it** button opens; a short non-technical answer to "what will the app do for me?"; web requests are optional and the link is the only way to finish. The decoder also reads a double-encoded answer (`%2527`) and ignores a damaged escape (`encodeAnswer` and `buildDraftLink` in `draft-link.ts` are the reference encoder).
 

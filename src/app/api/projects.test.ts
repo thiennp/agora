@@ -80,9 +80,9 @@ describe("interview projects (BR-48)", () => {
     expect((await adminProjects(new Request(url("/api/admin/projects")), ctx())).status).toBe(401);
   });
 
-  it("tells an assistant how to open a project, record answers and put the id in the link", () => {
+  it("tells an assistant how to open a project, record answers and send the id with the build", () => {
     const md = agentBrief("https://example.test");
     expect(md).toContain("/api/interview/projects");
-    expect(md).toContain("&project=<projectId>");
+    expect(md).toContain("Send the `projectId` with the build request");
   });
 });
