@@ -10,7 +10,7 @@ seeing anything technical and without the model deciding any rule.
 
 ## Who it serves
 
-A person who scans the home page QR code and wants to create an app. The app is open to any Muse user; this person is its creator.
+A person who pastes the home page prompt into their assistant and wants to create an app. The app is open to any Muse user; this person is its creator.
 
 ## Requirements
 

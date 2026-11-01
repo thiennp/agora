@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Banner, Card } from "@/components/Card";
 import { CopyLink } from "@/components/CopyLink";
 import { UseAppForm } from "@/components/UseAppForm";
-import { QrCode } from "@/components/QrCode";
 import { appPageView, type AppPageView } from "@/app/_composition/app-views";
 import { PUBLIC_BASE_URL, appUrl } from "@/app/_composition/public-url";
 import { appAgentBrief, appVocabulary, loadApp } from "@/lib/app-config";
@@ -88,11 +87,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <h1>{app.name}</h1>
         </div>
         <Card title="Share your app" prominent>
-          <p>Show this code or send the link. Anyone who opens it, and any Muse that reads it, sees what the app is for and its rules, and can use it.</p>
-          <figure className="qr-card">
-            <div className="qr-frame"><QrCode text={url} label={`QR code that opens ${url}`} /></div>
-            <figcaption className="small qr-url"><a href={url}>{url}</a></figcaption>
-          </figure>
+          <p>Send the link. Anyone who opens it, and any Muse that reads it, sees what the app is for and its rules, and can use it.</p>
           <CopyLink url={url} title={`Use ${app.name}`} />
           <p className="small muted">The link holds no password and opens a public page. Anyone who has it can use the app.</p>
         </Card>

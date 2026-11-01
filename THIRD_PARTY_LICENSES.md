@@ -22,7 +22,6 @@ tokens and icons are original to this repository.
 | @modelcontextprotocol/sdk | 1.32.2 | MIT |
 | pg | 8.23.1 | MIT |
 | sharp | 0.35.5 | Apache-2.0 |
-| qrcode-generator | 2.0.4 | MIT |
 
 ## Direct dev dependencies (`devDependencies`, build, test and lint only)
 

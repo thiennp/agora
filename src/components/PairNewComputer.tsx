@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Banner, Card } from "./Card";
 import { Button } from "./Button";
-import { QrOrPrompt } from "./QrOrPrompt";
+import { CopyPrompt } from "./CopyPrompt";
 import { postJson } from "./post";
 
 interface Started { code: string; secret: string; verify: string; expiresAt: string; approveUrl: string }
 
 /**
- * "Sign in on this computer": asks for a pairing, shows it as a QR or a prompt plus four digits to read out, and waits for the person
+ * "Sign in on this computer": asks for a pairing, shows it as a prompt plus four digits to read out, and waits for the person
  * to approve it on a device where they are already signed in. The secret stays in this component's memory, never in a URL, and the
  * session arrives as an HttpOnly cookie when the claim succeeds.
  */
@@ -73,14 +73,16 @@ export function PairNewComputer({ appId, appName }: { appId: string; appName: st
   const prompt = `Someone wants to sign in to ${appName} on a new computer. Open ${pair.approveUrl} on the device where you are already signed in, check that it shows the computer you expect, and type these four digits when it asks: ${pair.verify}. Only approve if you started this yourself.`;
   return (
     <Card title={`Sign in to ${appName} on this computer`} prominent>
-      <QrOrPrompt url={pair.approveUrl} prompt={prompt} label={`QR code that opens ${pair.approveUrl}`}>
-        <div className="stack" style={{ gridColumn: "1 / -1", width: "100%" }}>
+      <div className="stack">
+        <p className="small muted">Copy this message and paste it into your assistant&apos;s chat on the device where you are signed in.</p>
+        <CopyPrompt text={prompt} />
+        <div className="stack">
           <p className="small muted">Type these four digits on the other device when it asks:</p>
           <p className="verify-digits" aria-label={`Four digits ${pair.verify.split("").join(" ")}`}>{pair.verify}</p>
           <p className="small muted" aria-live="polite">Waiting for you to approve it there. This request ends in five minutes.</p>
           <p className="small muted">Lost every device? Use your recovery code instead.</p>
         </div>
-      </QrOrPrompt>
+      </div>
     </Card>
   );
 }

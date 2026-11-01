@@ -104,7 +104,7 @@ describe("sliding session expiry", () => {
   });
 });
 
-describe("pairing a new computer (QR or prompt)", () => {
+describe("pairing a new computer (prompt)", () => {
   const setup = async () => {
     let t = 1_000;
     const ids = createIdentityStore(undefined, () => t);
@@ -144,7 +144,7 @@ describe("pairing a new computer (QR or prompt)", () => {
     expect(await ids.claimPairing("club-a", q.code, q.secret)).toBeUndefined();
   });
 
-  it("burns a request after too many wrong digits, so a photographed QR cannot be brute forced", async () => {
+  it("burns a request after too many wrong digits, so a photographed link cannot be brute forced", async () => {
     const { ids, a } = await setup();
     const p = await ids.startPairing("club-a");
     const wrong = p.verify === "0000" ? "1111" : "0000";

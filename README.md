@@ -57,7 +57,7 @@ interviewer use Muse Spark and SAM 3.1) and two secrets of at least 16 character
 addresses, `REPORT_EXPORT_SECRET` signs report exports); without them it fails and names the missing variable. State survives
 restarts with `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE=./state.json`; with neither it is memory only.
 
-The home page `/` shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to the assistant brief `/start/agent.md` (the assistant runs the interview in chat and builds the app after the person types yes), the create-an-app
+The home page `/` shows a copy-paste prompt for Muse or Meta AI that leads to the assistant brief `/start/agent.md` (the assistant runs the interview in chat and builds the app after the person types yes), the create-an-app
 interview (the code always points at `https://agentwitch.com/agora/start`, so scanning only works once that is deployed;
 locally open `/start/agent.md` directly). Creating an app makes you its creator; the app then lives at `/app/{app}` with its own items,
 cards and deals pages. Every platform API route needs `?app=<id>` and that app's session cookie. Photos are never kept, only a
@@ -67,8 +67,8 @@ no test calls Meta.
 
 ## Muse-first walkthrough
 
-A person scans the QR code on the home page (or pastes the prompt into Muse), answers a short interview on their phone and gets
-an app: an overview with an invite QR, a join page for friends, and a status page per member showing what their agent works on.
+A person pastes the prompt from the home page into Muse, answers a short interview on their phone and gets
+an app: an overview with a share link, a join page for friends, and a status page per member showing what their agent works on.
 A person's own Muse can read that status through a read-only connector (`docs/MUSE-CONNECTOR.md`); it can never answer a card.
 `npm test` covers the whole flow with test doubles (`src/app/api/muse-first-flow.test.ts`). Not tried with a real Muse. The
 script, the fallback and the list of what is not connected are in [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md).

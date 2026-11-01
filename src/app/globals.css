@@ -269,31 +269,19 @@ ol { list-style: decimal; }
 .list { padding: 0; }
 img, svg { vertical-align: middle; }
 }
-/* Home page (/): the QR code is the one thing on the page; the words sit beside it on a laptop and above it on a phone. */
-.qr-home { display: grid; gap: 40px; padding: 24px 0 8px; }
-.qr-hero { display: grid; gap: 28px; align-items: center; }
-.qr-copy { display: grid; gap: 12px; max-width: 46ch; }
-.qr-copy h1 { font-size: clamp(2rem, 1.4rem + 2.2vw, 2.75rem); line-height: 1.08; margin: 0; }
-.qr-copy .lead { font-size: 1.125rem; line-height: 1.5; color: var(--muted); margin: 0; }
-.qr-steps { list-style: none; counter-reset: step; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
-.qr-steps li { counter-increment: step; display: grid; grid-template-columns: 1.5rem 1fr; gap: 8px; align-items: baseline; }
-.qr-steps li::before { content: counter(step); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-.qr-card { margin: 12px 0; display: grid; gap: 12px; justify-items: center; }
-.qr-hero .qr-card { margin: 0; }
-.qr-frame { background: #fff; border: 1px solid var(--border-strong); border-radius: var(--radius-card); padding: 16px; box-shadow: var(--shadow-card); line-height: 0; }
-.dark .qr-frame { border-color: transparent; box-shadow: none; }
-.qr-frame svg { width: min(100%, 304px); height: auto; display: block; }
-.qr-url { text-align: center; overflow-wrap: anywhere; margin: 0; }
-.qr-fallback { display: grid; gap: 16px; padding-top: 32px; border-top: 1px solid var(--border); }
-.qr-fallback-copy h2 { font-size: 1.125rem; margin: 0 0 4px; }
-.qr-fallback-copy p { margin: 0; }
-.qr-notes { display: grid; gap: 4px; }
-.qr-notes p { margin: 0; overflow-wrap: anywhere; }
-@media (min-width: 840px) {
-  .qr-home { padding-top: 40px; gap: 48px; }
-  .qr-hero { grid-template-columns: minmax(0, 1fr) auto; gap: 56px; }
-  .qr-hero .qr-card { justify-self: end; }
-  .qr-fallback { grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: 40px; align-items: start; }
+/* Home page (/): the copy-and-paste message is the one thing on the page. */
+.home { display: grid; gap: 40px; padding: 24px 0 8px; }
+.home-hero { display: grid; gap: 28px; max-width: 46rem; }
+.home-copy { display: grid; gap: 12px; }
+.home-copy h1 { font-size: clamp(2rem, 1.4rem + 2.2vw, 2.75rem); line-height: 1.08; margin: 0; }
+.home-copy .lead { font-size: 1.125rem; line-height: 1.5; color: var(--muted); margin: 0; }
+.home-steps { list-style: none; counter-reset: step; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.home-steps li { counter-increment: step; display: grid; grid-template-columns: 1.5rem 1fr; gap: 8px; align-items: baseline; }
+.home-steps li::before { content: counter(step); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.home-notes { display: grid; gap: 4px; }
+.home-notes p { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 720px) {
+  .home { padding-top: 40px; gap: 48px; }
 }
 
 /* Create-an-app interview (/start): big tap answers, readable on a phone. */
@@ -311,10 +299,4 @@ img, svg { vertical-align: middle; }
 @media (min-width: 640px) {
   .copy-prompt { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
 }
-.qr-or-prompt { display: grid; gap: 20px; justify-items: center; }
-.qr-or-prompt-alt { display: grid; gap: 8px; width: 100%; }
-.qr-or-prompt-alt p { margin: 0; }
 .verify-digits { font-size: 2.25rem; letter-spacing: 0.3em; font-variant-numeric: tabular-nums; font-weight: 700; text-align: center; margin: 0; }
-@media (min-width: 720px) {
-  .qr-or-prompt { grid-template-columns: auto minmax(0, 1fr); gap: 32px; align-items: start; justify-items: stretch; }
-}

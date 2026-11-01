@@ -53,7 +53,7 @@ you before it agrees to anything"), not as a question.
 
 ## The phone interview (the main path)
 
-The QR code on the home page opens `/start/agent.md`; the person's assistant runs this same interview in chat (the platform's own tap-card page was removed). The question logic (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what the app is for,
+The copy-paste prompt on the home page points at `/start/agent.md`; the person's assistant runs this same interview in chat (the platform's own tap-card page was removed). The question logic (`src/lib/interview`, `docs/ARCHITECTURE.md` §11d). It follows the list above in a fixed order: what the app is for,
 what a person can do in it, how it works, what it should never do or share, name, feel (six questions). Code asks;
 the model only offers example answers and drafts the wording (tagline, what to call a user, categories, forbidden things);
 code sets every rule, validates the config against the schema, and shows the plain-words summary with one yes. On yes the app
@@ -62,9 +62,9 @@ without calling the choice unsupported: people post what they offer or look for 
 match them and agree details with each person deciding; dates and times, sign-ups for an event and group reminders are not there yet
 (`CLOSEST_FIT` in `src/lib/interview/draft.ts`).
 
-## If you are an assistant that opened `/start` (the QR path)
+## If you are an assistant that opened `/start` (the pasted-prompt path)
 
-A real Muse that scans the QR code reads `https://agentwitch.com/agora/start` and must know its task without running any
+A real Muse that is given the pasted prompt reads `https://agentwitch.com/agora/start` and must know its task without running any
 script. A single index for an assistant, `/agent.md` (also `/llms.txt`), names every entry point: this brief, the per-app brief, the read-only API and the rules. The page therefore carries a brief in its HTML, and the same text is plain markdown at `/start/agent.md` (also served
 for `Accept: text/markdown` or `text/plain`, or `/start?format=md`). It is generated from the interview script
 (`src/lib/interview/brief.ts`), so the questions, tap answers and order are the ones in this document and cannot drift.

@@ -115,7 +115,7 @@ Status: audit entries are produced by the built slices through a sink; no store,
 | Geo | district codes in `family`, distance in `matching` | optional per app |
 | Circles and criteria | none yet | criteria evaluated over members; field allow-list |
 | Logs | audit sinks in `gatekeeper`, `owner-cards`, `trust`, `relay`; no store yet | `lib/audit` is still a stub |
-| Members, roles, consent | `family` (profile, consent); `lib/identity` (membership, sessions, recovery code, pairing a new computer) | rename to `members` when the community section lands; roles not built. **QR or prompt** (`components/QrOrPrompt`) is the shared way to hand a link to another device or to a person's bot; new uses must not carry a standing secret in the link |
+| Members, roles, consent | `family` (profile, consent); `lib/identity` (membership, sessions, recovery code, pairing a new computer) | rename to `members` when the community section lands; roles not built. **Copy-paste prompt** (`components/CopyPrompt`) is the shared way to hand a link to another device or to a person's bot; new uses must not carry a standing secret in the link |
 | Records | `catalog` (items only) | generalise to app-defined record types later |
 | Matching and ranking | `matching` (items) | relevance scoring should share one ranking core with it: factors, weights and an explanation per score |
 | Workflows | `negotiation/deal-state`, `logistics` | |

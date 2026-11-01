@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/ui/icons";
 
-/** The text to paste into Muse or Meta AI when the QR code does not work, with a copy button; the text stays selectable if the clipboard is blocked. */
+/** The text to paste into Muse or Meta AI, with a copy button; the text stays selectable if the clipboard is blocked. */
 export function CopyPrompt({ text }: { text: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const copy = async () => {

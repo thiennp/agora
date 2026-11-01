@@ -8,7 +8,7 @@ export function agentIndex(baseUrl: string): string {
 Agora lets a person create a small app by chatting with you (Muse), and lets any Muse user use such an app. You read pages and talk to the person; you create the app yourself, but only after the person typed yes in the chat.
 
 ## To create an app with the least effort
-1. Read ${baseUrl}/start/agent.md (what the QR code opens).
+1. Read ${baseUrl}/start/agent.md (what the home page prompt opens).
 2. Interview the person in typed chat, about 6 plain questions, and write the app back in one paragraph.
 3. After they type yes, create the app with the two requests that page describes, then give them the app's address and recovery code.
 

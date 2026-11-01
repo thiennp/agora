@@ -8,10 +8,10 @@ There is no separate demo mode or demo app any more (removed Oct 29): the walkth
 
 | Time | Shot | What runs (real unless marked) |
 |---|---|---|
-| 0:00–0:20 | The home page on a laptop: one QR code, "Scan to create an app". A person points a phone at it. | QR home page (`/`), opens `https://agentwitch.com/agora/start` |
+| 0:00–0:20 | The home page on a laptop: one copy-paste prompt, "Copy, paste, create an app". A person pastes it into Muse. | Prompt home page (`/`), opens `https://agentwitch.com/agora/start` |
 | 0:20–1:05 | On the phone, Muse says it is creating their app, then interviews them one question at a time, each worded as part of creating the app with tap answers (what the app is for, what a person can do in it, how it works, what it should never do or share, name, feel: six questions, nothing about who joins, place, languages or price). The last card: "Here is your app: … Build it?" They tap yes. | `/start` interview; code sets the rules and validates; the model (real Muse Spark through the Meta Model API) only offers examples and drafts wording |
-| 1:05–1:30 | The app exists: private overview with the share QR, list of people using it, what the app does in plain words and its always-ask promise. | `/app/{app}` as creator; app stored as data, no redeploy |
-| 1:30–1:55 | A friend scans the share QR, sees the public page (name, purpose, rules), is set up on first use with no form, sees the recovery-code notice (light identity, not a real account). | `/app/{app}` as stranger, `POST …/join` |
+| 1:05–1:30 | The app exists: private overview with the share link, list of people using it, what the app does in plain words and its always-ask promise. | `/app/{app}` as creator; app stored as data, no redeploy |
+| 1:30–1:55 | A friend opens the share link, sees the public page (name, purpose, rules), is set up on first use with no form, sees the recovery-code notice (light identity, not a real account). | `/app/{app}` as stranger, `POST …/join` |
 | 1:55–2:25 | Both people use the app on their own phones: one posts what they offer (`/app/{app}/items`), the friend posts what they need and sees the match, taps "Ask my agent to reach out"; the agents negotiate and pause to ask the other owner, who answers the card in the app with their own tap; both confirm and the conversation room opens with the screened, relayed chat (`/app/{app}/deals/{id}`). The friend's status page shows it grouped and charted: waiting on you, deals, items, what the agent did alone. | member parties (ADR 0007), matching, negotiation, owner cards, `/app/{app}/items|cards|deals`, `/app/{app}/muse/{id}` (**translation is real Muse Spark; no carrier is connected; a board app has posts and conversations only: no events, RSVPs or group chat, say so**) |
 | 2:25–2:50 | The friend opens their own Muse and asks "what is waiting for me in the clothes club?". Muse answers from the read-only connector. Then the person asks Muse to approve the card: Muse cannot; the card waits for their tap in the app. | `GET /api/muse/{app}/status|cards` or MCP (**not yet tried with a real Muse; see the manual checks below**) |
 | 2:50–3:00 | Close: one platform, any community app; kids' gear and garden tools are two more apps on it. Sandbox city and cost numbers on screen. | judge dashboard (simulation numbers, labelled simulated) |
@@ -27,7 +27,7 @@ never say Muse connected unless the manual checks below passed; rehearse three t
   was not shown to use it.
 - **Muse does not understand `/start`.** Tell it to read `https://agentwitch.com/agora/start/agent.md`; if it still does not,
   do the interview with the tap cards on the page. Say plainly that the Muse-run interview was not shown.
-- **The phone cannot reach the host or the QR fails.** Open `/start` by hand on the laptop; the flow is identical.
+- **The phone cannot reach the host or the paste fails.** Open `/start` by hand on the laptop; the flow is identical.
 - **The model for the interview is down or slow.** The questions, the rules and the build are code; only example answers and
   wording come from the model, with fixed examples as the fallback for the examples. (There is no offline mock any more; the
   Meta key must be valid.)
