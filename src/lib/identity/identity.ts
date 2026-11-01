@@ -22,7 +22,7 @@ export interface Principal {
 }
 
 export class IdentityError extends Error {
-  constructor(readonly code: "unauthenticated" | "forbidden" | "too_many_members" | "invalid_recovery", message: string) {
+  constructor(readonly code: "unauthenticated" | "forbidden" | "too_many_members" | "invalid_recovery" | "invalid_pairing", message: string) {
     super(message);
   }
 }
@@ -45,13 +45,30 @@ interface SessionRow {
   appId: string;
   expiresAt: number;
 }
+/** A new computer asking to be signed in. Both secrets are stored hashed; `memberId` is set once a signed-in device approves. */
+interface PairingRow {
+  appId: string;
+  secretHash: string;
+  verify: string;
+  label: string;
+  expiresAt: number;
+  attempts: number;
+  memberId?: string;
+}
 interface Doc {
   members: Record<string, MemberRow>;
   sessions: Record<string, SessionRow>;
+  /** Keyed by the hash of the pairing code. Absent in documents saved before pairing existed. */
+  pairings?: Record<string, PairingRow>;
 }
 
 export const SESSION_TTL_MS = 30 * 24 * 3600_000;
 export const MAX_MEMBERS_PER_APP = 500;
+/** A pairing code is for a person walking to another device, not for later. */
+export const PAIRING_TTL_MS = 5 * 60_000;
+/** Wrong check numbers allowed before a pairing is burned. */
+export const MAX_PAIRING_ATTEMPTS = 3;
+const MAX_PAIRINGS_PER_APP = 200;
 
 const b64 = (bytes: number) => randomBytes(bytes).toString("base64url");
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -69,6 +86,15 @@ const CODE_CHAR = (b: number) => CODE_ALPHABET[b % 32]!;
 export const normalizeRecoveryCode = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 const hashCode = (code: string) => sha256Hex(`agora.recovery.v1|${normalizeRecoveryCode(code)}`);
 const hashToken = (token: string) => sha256Hex(`agora.session.v1|${token}`);
+const hashPair = (secret: string) => sha256Hex(`agora.pair.v1|${secret}`);
+/** Four digits, shown on the new computer and typed on the approving device, so a QR photographed from over a shoulder cannot be approved blind. */
+const newVerify = () => String(randomBytes(4).readUInt32BE() % 10000).padStart(4, "0");
+
+/** What the approving device is told about the computer asking in. */
+export interface PairingInfo {
+  label: string;
+  expiresAt: string;
+}
 
 export interface IdentityStore {
   /** A new membership and its first session. The recovery code is returned once and never stored in the clear. */
@@ -79,6 +105,17 @@ export interface IdentityStore {
   revoke(appId: string, token: string): Promise<void>;
   /** Recovery on a new phone: the code replaces every old session and is itself replaced, so a copied code works once. */
   recover(appId: string, code: string): Promise<{ memberId: string; role: Role; sessionToken: string; recoveryCode: string } | undefined>;
+  /**
+   * A new computer asks to be signed in. Returns a `code` (goes in the QR or prompt, readable by anyone who sees it), a `secret` (stays
+   * on this computer and is needed to collect the session) and a four digit `verify` the approving person types. Valid for a few minutes.
+   */
+  startPairing(appId: string, label?: string): Promise<{ code: string; secret: string; verify: string; expiresAt: string }>;
+  /** What the approving device shows before the person taps: the computer's name and when the request ends. Undefined if unknown or ended. */
+  pairingInfo(appId: string, code: string): Promise<PairingInfo | undefined>;
+  /** The signed-in member approves. Needs the `verify` digits from the new computer's screen; three wrong tries burn the pairing. */
+  approvePairing(appId: string, code: string, memberId: string, verify: string): Promise<void>;
+  /** The new computer collects its session once approved: "pending" until then, undefined if unknown, ended or wrong secret. Works once. */
+  claimPairing(appId: string, code: string, secret: string): Promise<{ sessionToken: string; memberId: string; role: Role } | "pending" | undefined>;
   /** Names and roles for the creator's view; never a secret. */
   members(appId: string): Promise<{ memberId: string; role: Role; name: string; joinedAt: string }[]>;
   hasCreator(appId: string): Promise<boolean>;
@@ -106,6 +143,13 @@ export function createIdentityStore(backend?: IdentityBackend, now: () => number
   const sweep = (d: Doc) => {
     const t = now();
     for (const [h, s] of Object.entries(d.sessions)) if (s.expiresAt <= t) delete d.sessions[h];
+    for (const [h, p] of Object.entries(d.pairings ?? {})) if (p.expiresAt <= t) delete d.pairings![h];
+  };
+  const livePairing = (d: Doc, appId: string, code: string): [string, PairingRow] | undefined => {
+    if (!code || code.length > 128) return undefined;
+    const h = hashPair(`code|${code}`);
+    const p = d.pairings?.[h];
+    return p && p.appId === appId && p.expiresAt > now() ? [h, p] : undefined;
   };
   const openSession = (d: Doc, memberId: string, appId: string): string => {
     const token = b64(32);
@@ -131,6 +175,9 @@ export function createIdentityStore(backend?: IdentityBackend, now: () => number
       if (!s || s.appId !== appId || s.expiresAt <= now()) return undefined;
       const m = d.members[s.memberId];
       if (!m || m.appId !== appId) return undefined;
+      // Sliding expiry: a person who keeps using the app is never signed out. The row is only rewritten once it is past half its life,
+      // so a busy page does not save the whole document on every request.
+      if (s.expiresAt - now() < SESSION_TTL_MS / 2) await mutate((doc) => { const row = doc.sessions[hashToken(token)]; if (row) row.expiresAt = now() + SESSION_TTL_MS; });
       return { appId, memberId: s.memberId, role: m.role, via: "session" };
     },
     revoke: (appId, token) =>
@@ -149,6 +196,48 @@ export function createIdentityStore(backend?: IdentityBackend, now: () => number
         const recoveryCode = newRecoveryCode();
         m.recoveryHash = hashCode(recoveryCode);
         return { memberId, role: m.role, sessionToken: openSession(d, memberId, appId), recoveryCode };
+      }),
+    startPairing: (appId, label = "") =>
+      mutate((d) => {
+        sweep(d);
+        d.pairings ??= {};
+        if (Object.values(d.pairings).filter((p) => p.appId === appId).length >= MAX_PAIRINGS_PER_APP) {
+          throw new IdentityError("invalid_pairing", "Too many sign-in requests are open for this app. Try again in a few minutes.");
+        }
+        const code = b64(16);
+        const secret = b64(32);
+        const verify = newVerify();
+        const expiresAt = now() + PAIRING_TTL_MS;
+        d.pairings[hashPair(`code|${code}`)] = { appId, secretHash: hashPair(`secret|${secret}`), verify, label: label.trim().slice(0, 60), expiresAt, attempts: 0 };
+        return { code, secret, verify, expiresAt: new Date(expiresAt).toISOString() };
+      }),
+    async pairingInfo(appId, code) {
+      const hit = livePairing(await loaded(), appId, code);
+      return hit && !hit[1].memberId ? { label: hit[1].label, expiresAt: new Date(hit[1].expiresAt).toISOString() } : undefined;
+    },
+    approvePairing: (appId, code, memberId, verify) =>
+      mutate((d) => {
+        const hit = livePairing(d, appId, code);
+        const m = d.members[memberId];
+        if (!hit || hit[1].memberId || !m || m.appId !== appId) throw new IdentityError("invalid_pairing", "That sign-in request has ended. Ask the other computer for a new one.");
+        const [h, p] = hit;
+        if (p.verify !== verify.trim()) {
+          p.attempts += 1;
+          if (p.attempts >= MAX_PAIRING_ATTEMPTS) delete d.pairings![h];
+          throw new IdentityError("invalid_pairing", p.attempts >= MAX_PAIRING_ATTEMPTS ? "Too many wrong numbers. Ask the other computer for a new request." : "The four digits do not match the other computer's screen.");
+        }
+        p.memberId = memberId;
+      }),
+    claimPairing: (appId, code, secret) =>
+      mutate((d) => {
+        const hit = livePairing(d, appId, code);
+        if (!hit || !secret || secret.length > 128 || hit[1].secretHash !== hashPair(`secret|${secret}`)) return undefined;
+        const [h, p] = hit;
+        if (!p.memberId) return "pending" as const;
+        const m = d.members[p.memberId];
+        delete d.pairings![h];
+        if (!m) return undefined;
+        return { sessionToken: openSession(d, p.memberId, appId), memberId: p.memberId, role: m.role };
       }),
     async members(appId) {
       const d = await loaded();

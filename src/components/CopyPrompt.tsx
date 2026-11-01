@@ -16,7 +16,7 @@ export function CopyPrompt({ text }: { text: string }) {
   };
   return (
     <div className="copy-prompt">
-      <textarea readOnly value={text} rows={3} aria-label="Text to paste into Muse or Meta AI" onFocus={(e) => e.currentTarget.select()} />
+      <textarea readOnly value={text} rows={3} aria-label="Text to paste into your assistant" onFocus={(e) => e.currentTarget.select()} />
       <button type="button" className="btn" onClick={copy} aria-live="polite">
         <Icon name={state === "copied" ? "check" : "copy"} size={18} />
         {state === "copied" ? "Copied" : "Copy"}

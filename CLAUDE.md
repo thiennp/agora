@@ -88,7 +88,7 @@ index is at `/agent.md` and `/llms.txt`. The flow has not yet been tried with a 
 documents custom connectors built from an API, MCP in the consumer app is unconfirmed).
 
 Built, per app: `/app/{app}` public page (also markdown at `/app/{app}/agent.md`), the creator's private overview with the
-share QR, light identity (`src/lib/identity`: cookie session per app, recovery code, no sign-up form; real accounts are not
+share QR, light identity (`src/lib/identity`: cookie session per app that slides 30 days from last use, recovery code, pairing a new computer by QR or prompt with four digits and an approving tap, no sign-up form; real accounts are not
 built), and usable pages `/app/{app}/items`, `/cards`, `/deals`, `/deals/{id}` in the app's own words (`appVocabulary`: a
 free pick-up-only app is a board of posts and conversations). Every member of a stored app is a real party of that app's
 platform (`Platform.addMember`, ADR 0007). The member status page `/app/{app}/muse/{id}` is visible only to that member.

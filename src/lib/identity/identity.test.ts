@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertCreator, assertHuman, assertSelf, createIdentityStore, IdentityError, MAX_MEMBERS_PER_APP, SESSION_TTL_MS, type IdentityBackend } from "./index";
+import { assertCreator, assertHuman, assertSelf, createIdentityStore, IdentityError, MAX_MEMBERS_PER_APP, MAX_PAIRING_ATTEMPTS, PAIRING_TTL_MS, SESSION_TTL_MS, type IdentityBackend } from "./index";
 
 const memoryBackend = (): IdentityBackend & { json: string | null } => {
   const b = { json: null as string | null, load: async () => b.json, save: async (j: string) => void (b.json = j) };
@@ -87,5 +87,79 @@ describe("light identity store (BR-45)", () => {
     expect(() => assertSelf(creator, "m2")).toThrow(IdentityError); // the creator does not see another member's status page
     expect(() => assertHuman(member)).not.toThrow();
     expect(() => assertHuman(muse)).toThrow(/own session/);
+  });
+});
+
+describe("sliding session expiry", () => {
+  it("extends a session used past half its life, and still ends one left alone", async () => {
+    let t = 1_000;
+    const ids = createIdentityStore(undefined, () => t);
+    const a = await ids.join("club-a", "member");
+    t += SESSION_TTL_MS * 0.6;
+    expect(await ids.authenticate("club-a", a.sessionToken)).toBeDefined(); // renews
+    t += SESSION_TTL_MS * 0.6; // 1.2 lifetimes after sign-in, but only 0.6 since the renewal
+    expect(await ids.authenticate("club-a", a.sessionToken)).toBeDefined();
+    t += SESSION_TTL_MS + 1;
+    expect(await ids.authenticate("club-a", a.sessionToken)).toBeUndefined();
+  });
+});
+
+describe("pairing a new computer (QR or prompt)", () => {
+  const setup = async () => {
+    let t = 1_000;
+    const ids = createIdentityStore(undefined, () => t);
+    const a = await ids.join("club-a", "member", "Ana");
+    return { ids, a, advance: (ms: number) => void (t += ms) };
+  };
+
+  it("signs the new computer in as the approving member, once, without cutting off the old device", async () => {
+    const { ids, a } = await setup();
+    const p = await ids.startPairing("club-a", "Chrome on Mac");
+    expect(p.verify).toMatch(/^\d{4}$/);
+    expect(await ids.claimPairing("club-a", p.code, p.secret)).toBe("pending");
+    expect(await ids.pairingInfo("club-a", p.code)).toMatchObject({ label: "Chrome on Mac" });
+    await ids.approvePairing("club-a", p.code, a.memberId, p.verify);
+    const got = await ids.claimPairing("club-a", p.code, p.secret);
+    expect(got).toMatchObject({ memberId: a.memberId, role: "member" });
+    const token = (got as { sessionToken: string }).sessionToken;
+    expect(token).not.toBe(a.sessionToken);
+    expect(await ids.authenticate("club-a", token)).toMatchObject({ memberId: a.memberId });
+    expect(await ids.authenticate("club-a", a.sessionToken)).toBeDefined(); // the old device stays signed in
+    expect(await ids.claimPairing("club-a", p.code, p.secret)).toBeUndefined(); // works once
+  });
+
+  it("refuses the wrong secret, the wrong app, a stranger's member id and an ended request", async () => {
+    const { ids, a, advance } = await setup();
+    const other = await ids.join("club-b", "member");
+    const p = await ids.startPairing("club-a");
+    await expect(ids.approvePairing("club-b", p.code, other.memberId, p.verify)).rejects.toBeInstanceOf(IdentityError);
+    await expect(ids.approvePairing("club-a", p.code, other.memberId, p.verify)).rejects.toBeInstanceOf(IdentityError); // member of another app
+    await ids.approvePairing("club-a", p.code, a.memberId, p.verify);
+    expect(await ids.claimPairing("club-a", p.code, "nope")).toBeUndefined();
+    expect(await ids.claimPairing("club-b", p.code, p.secret)).toBeUndefined();
+    const q = await ids.startPairing("club-a");
+    advance(PAIRING_TTL_MS + 1);
+    expect(await ids.pairingInfo("club-a", q.code)).toBeUndefined();
+    await expect(ids.approvePairing("club-a", q.code, a.memberId, q.verify)).rejects.toBeInstanceOf(IdentityError);
+    expect(await ids.claimPairing("club-a", q.code, q.secret)).toBeUndefined();
+  });
+
+  it("burns a request after too many wrong digits, so a photographed QR cannot be brute forced", async () => {
+    const { ids, a } = await setup();
+    const p = await ids.startPairing("club-a");
+    const wrong = p.verify === "0000" ? "1111" : "0000";
+    for (let i = 0; i < MAX_PAIRING_ATTEMPTS; i++) await expect(ids.approvePairing("club-a", p.code, a.memberId, wrong)).rejects.toBeInstanceOf(IdentityError);
+    await expect(ids.approvePairing("club-a", p.code, a.memberId, p.verify)).rejects.toBeInstanceOf(IdentityError);
+    expect(await ids.claimPairing("club-a", p.code, p.secret)).toBeUndefined();
+  });
+
+  it("stores only hashes of the code and the secret", async () => {
+    const backend = memoryBackend();
+    const ids = createIdentityStore(backend);
+    const a = await ids.join("club-a", "member");
+    const p = await ids.startPairing("club-a");
+    await ids.approvePairing("club-a", p.code, a.memberId, p.verify);
+    expect(backend.json).not.toContain(p.code);
+    expect(backend.json).not.toContain(p.secret);
   });
 });

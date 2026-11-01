@@ -7,6 +7,7 @@ import { Banner, Card } from "@/components/Card";
 import { LineChart } from "@/components/LineChart";
 import { MuseKeyPanel } from "@/components/MuseKeyPanel";
 import { getMuseKeyStore } from "@/app/_composition/identity";
+import { appUrl } from "@/app/_composition/public-url";
 import { appVocabulary, loadApp } from "@/lib/app-config";
 import { memberStatusView } from "@/app/_composition/member-status";
 
@@ -101,6 +102,10 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
         {s.rules.length === 0 ? <p className="muted">None. Your agent asks every time. You can let it decide small things like a pickup time on its own.</p> : (
           <ul className="list">{s.rules.map((r) => <li key={r.id}>Decides {r.topic} on its own{r.expiresAt ? <span className="small muted"> · until {r.expiresAt.slice(0, 10)}</span> : null}</li>)}</ul>
         )}
+      </Card>
+
+      <Card title="Use another computer">
+        <p className="small muted">On the other computer, open <code>{appUrl(app)}/pair</code>. It shows a code; scan it with this phone, type the four digits, and tap Approve. Nothing signs in without your tap here.</p>
       </Card>
 
       <Card title="Connect your own Muse">

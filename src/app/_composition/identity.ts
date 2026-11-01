@@ -51,11 +51,14 @@ export function sessionTokenOf(req: Request, appId: string): string | undefined 
 
 const secure = (req: Request) => new URL(req.url).protocol === "https:" || req.headers.get("x-forwarded-proto") === "https";
 
-/** HttpOnly (scripts cannot read it), SameSite=Lax (a cross-site form post does not carry it), Secure over https, 30 days. */
+/**
+ * HttpOnly (scripts cannot read it), SameSite=Lax (a cross-site form post does not carry it), Secure over https. The cookie lasts a year
+ * and the server decides: a session ends 30 days after its last use (sliding, `SESSION_TTL_MS`), so the cookie never has to be re-sent.
+ */
 export function sessionCookie(req: Request, appId: string, token: string | null): string {
   const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "") || "/";
   const flags = `Path=${base}; HttpOnly; SameSite=Lax${secure(req) ? "; Secure" : ""}`;
-  return token === null ? `${cookieName(appId)}=; ${flags}; Max-Age=0` : `${cookieName(appId)}=${token}; ${flags}; Max-Age=${30 * 24 * 3600}`;
+  return token === null ? `${cookieName(appId)}=; ${flags}; Max-Age=0` : `${cookieName(appId)}=${token}; ${flags}; Max-Age=${365 * 24 * 3600}`;
 }
 
 /** Who is asking, for this app. Throws `unauthenticated` for a missing, forged, expired or other-app session. */
@@ -64,4 +67,12 @@ export async function authorize(req: Request, appId: string, role?: Role): Promi
   if (!p) throw new IdentityError("unauthenticated", "Open this app from your own phone, or recover your access with your recovery code.");
   if (role && p.role !== role) throw new IdentityError("forbidden", "Only the app's creator can do this.");
   return p;
+}
+
+/** A short, human name for the computer asking to sign in, from its user agent ("Chrome on Mac"). Shown to the approving person, never trusted. */
+export function deviceLabel(req: Request): string {
+  const ua = req.headers.get("user-agent") ?? "";
+  const browser = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "A browser";
+  const os = /Windows/.test(ua) ? "Windows" : /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iPhone or iPad" : /Mac OS X/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "";
+  return os ? `${browser} on ${os}` : browser;
 }
