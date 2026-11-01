@@ -1,15 +1,15 @@
 import type { FindingKind } from "../../../screening/public-api/types";
 
-export type SignalId = "off_platform_payment" | "contact_leak" | "pressure" | "address_harvesting" | "listing_mismatch" | "repeated_cancellations";
+type SignalId = "off_platform_payment" | "contact_leak" | "pressure" | "address_harvesting" | "listing_mismatch" | "repeated_cancellations";
 
-export interface Signal {
+interface Signal {
   id: SignalId;
   weight: number;
   /** Short plain-words explanation shown to the owner (TRU-SIG-02). */
   explanation: string;
 }
 
-export interface SignalReport {
+interface SignalReport {
   score: number;
   level: "none" | "watch" | "high";
   signals: Signal[];

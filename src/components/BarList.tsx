@@ -1,4 +1,4 @@
-export interface Bar {
+interface Bar {
   label: string;
   value: number;
   color: string;

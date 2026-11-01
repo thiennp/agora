@@ -5,7 +5,7 @@ import { districtDistanceKm, incompatibility, reasonLine, score } from "../../fe
 import type { DistanceBand, Factor } from "../../features/scoring/public-api/types";
 import { tracked } from "@/lib/state";
 
-export interface Match {
+interface Match {
   /** "<offerItemId>:<wantItemId>", stable so a dismissal sticks. */
   id: string;
   offerItemId: string;
@@ -18,13 +18,13 @@ export interface Match {
   factors: Factor[];
 }
 
-export interface MatchResult {
+interface MatchResult {
   matches: Match[];
   /** Plain-language explanation and next step when there is nothing to show (MAT-04). */
   emptyReason?: string;
 }
 
-export interface OwnerLimits {
+interface OwnerLimits {
   maxDistanceKm?: number;
   blockedCategories?: string[];
   /** Categories where only the exact size matches (learned from "wrong size" declines). */
@@ -133,4 +133,3 @@ export function createMatchService(deps: {
   };
 }
 
-export type MatchService = ReturnType<typeof createMatchService>;

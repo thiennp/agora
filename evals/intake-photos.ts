@@ -10,7 +10,7 @@ export interface ExpectedItem {
   words: string[];
 }
 
-export interface PhotoSpec {
+interface PhotoSpec {
   id: string;
   kind: "pile" | "person" | "text";
   prompt: string;

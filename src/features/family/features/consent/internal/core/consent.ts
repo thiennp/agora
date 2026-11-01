@@ -1,8 +1,8 @@
 import { tracked } from "@/lib/state";
-export const CONSENT_SCOPES = ["share_items", "learning_commons"] as const;
+const CONSENT_SCOPES = ["share_items", "learning_commons"] as const;
 export type ConsentScope = (typeof CONSENT_SCOPES)[number];
 
-export interface ConsentDecision {
+interface ConsentDecision {
   familyId: string;
   scope: ConsentScope;
   granted: boolean;
@@ -46,4 +46,3 @@ export function createConsentLedger(audit?: AuditSink, now: () => Date = () => n
   };
 }
 
-export type ConsentLedger = ReturnType<typeof createConsentLedger>;

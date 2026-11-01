@@ -1,1 +1,1 @@
-export { createConsentLedger, CONSENT_SCOPES } from "../internal/core/consent";
+export { createConsentLedger } from "../internal/core/consent";

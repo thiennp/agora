@@ -267,7 +267,6 @@ agora/
 ├── docs/                                 # PLAN.md, ARCHITECTURE.md, adr/
 ├── .github/workflows/ci.yml
 ├── eslint.config.mjs                     # boundary rules (no cross-slice internal imports)
-├── structure-validation.config.json      # allowed folders per level (empty placeholder; not built)
 └── README.md
 ```
 
@@ -713,7 +712,7 @@ Kubernetes for the hackathon. Every item below is either built now (marked **NOW
 > absent: the Postgres queue with idempotency keys and the outbox; feature flags and kill switches; a persisted append-only
 > audit log (in-memory counters only); the retention job; real accounts (stored apps have light identity, §2b);
 > Postgres row-level security; CSRF, CSP and upload validation; secret scanning in CI; the Playwright end-to-end flows;
-> structure validation (`structure-validation.config.json` is an empty placeholder; the import boundaries are enforced by
+> structure validation (the import boundaries are enforced by
 > ESLint only); nightly eval runs. What is built and tested: the model client, router and cost meter with budgets, the ports and
 > contract suites, the deal state machine and gatekeeper (unit, property and red-team tests), field encryption, a per-process
 > rate limiter, the CI workflow (typecheck, lint, tests), and the simulation as a regression test. The path from here to many

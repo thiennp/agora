@@ -41,8 +41,6 @@ export async function loadDashboard(s: Scenario) {
   return { scenario: s, rows: readSummaryCsv(dirOf(s)), unauthorizedCommitments: unauthorizedIn(dirOf(s)), ...readSimulationMeta(dirOf(s)) };
 }
 
-export type DashboardData = Awaited<ReturnType<typeof loadDashboard>>;
-
 /** The sandbox city as districts on its synthetic map: where the simulated families are (never real places). */
 export async function loadCityMap(appId: string) {
   const { loadCity } = await import("@/features/simulation/public-api/infrastructure");

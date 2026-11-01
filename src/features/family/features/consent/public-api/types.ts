@@ -1,1 +1,1 @@
-export type { ConsentScope, ConsentDecision, ConsentLedger, AuditSink } from "../internal/core/consent";
+export type { AuditSink } from "../internal/core/consent";

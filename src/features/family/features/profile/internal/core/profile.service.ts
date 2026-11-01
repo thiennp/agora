@@ -79,4 +79,3 @@ export function createProfileService(deps: {
   };
 }
 
-export type ProfileService = ReturnType<typeof createProfileService>;

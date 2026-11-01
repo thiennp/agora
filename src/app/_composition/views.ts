@@ -4,10 +4,8 @@ import type { Platform, Persona, PersonaKey } from "./platform";
 
 /** View models for the pages: plain data, no slice types leaking into components. */
 
-/** Which persona a page is shown as: anything but "b" is Mia. */
-export const asKey = (v: unknown): PersonaKey => (v === "b" ? "b" : "a");
 export const personaOf = (p: Platform, key: PersonaKey): Persona => p.personas[key];
-export const otherOf = (p: Platform, key: PersonaKey): Persona => p.personas[key === "a" ? "b" : "a"];
+const otherOf = (p: Platform, key: PersonaKey): Persona => p.personas[key === "a" ? "b" : "a"];
 
 const TRANSITION: Record<string, string> = {
   proposed: "an offer was made", countered: "the agents negotiated", agreed_by_agents: "the agents agreed (not binding)", awaiting_owner_input: "an owner was asked a question",
@@ -71,10 +69,6 @@ export async function dealView(p: Platform, dealId: string, key: PersonaKey) {
     offers, conversation, handoff: await p.logistics.handoffCard(dealId, me.id), modes: p.app.policies.handoffModes, dropPoints: simulatedDropPoints(p.personas.a.districtCode).map(({ id, name }) => ({ id, name })), signals,
   };
 }
-
-export type OwnerView = Awaited<ReturnType<typeof ownerView>>;
-export type DealView = NonNullable<Awaited<ReturnType<typeof dealView>>>;
-export type DealListItem = Awaited<ReturnType<typeof dealList>>[number];
 
 /** An item as the matcher indexes it. */
 export function indexedItem(p: Platform, i: { id: string; familyId: string; kind: "offer" | "want"; category: string; size?: string; condition?: string; createdAt: string }) {

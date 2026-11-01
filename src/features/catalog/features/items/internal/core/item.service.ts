@@ -14,7 +14,7 @@ export class ItemError extends Error {
 type App = Pick<AppConfig, "id" | "catalog" | "policies">;
 
 /** Flags from the app's safety rules when the facts they require are missing (advisory; the safety slice decides) . */
-export function safetyFlagsFor(app: Pick<AppConfig, "policies">, item: { category: string; attributes: Record<string, string> }): SafetyFlag[] {
+function safetyFlagsFor(app: Pick<AppConfig, "policies">, item: { category: string; attributes: Record<string, string> }): SafetyFlag[] {
   return app.policies.safetyRules
     .filter((r) => r.categories.includes(item.category))
     .flatMap((r) => {
@@ -120,4 +120,3 @@ export function createItemService(deps: {
   };
 }
 
-export type ItemService = ReturnType<typeof createItemService>;

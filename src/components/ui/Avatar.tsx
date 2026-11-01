@@ -1,7 +1,7 @@
 import { cn } from "./cn";
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
-export type Presence = "online" | "away" | "offline";
+type Presence = "online" | "away" | "offline";
 
 const BOX: Record<AvatarSize, string> = {
   xs: "h-6 w-6 text-[10px]",
@@ -30,7 +30,7 @@ const TINTS = [
 const PRESENCE: Record<Presence, string> = { online: "bg-green-500", away: "bg-amber-500", offline: "bg-slate-400" };
 
 /** First letters of the first and last word, upper case. */
-export function initialsOf(name: string): string {
+function initialsOf(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "?";
   const first = words[0]![0]!;

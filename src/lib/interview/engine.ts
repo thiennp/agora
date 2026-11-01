@@ -17,7 +17,7 @@ export interface InterviewModel {
 
 export const examplesSchema = z.object({ examples: z.array(z.string().min(2).max(60)).min(2).max(3) });
 
-export interface Question {
+interface Question {
   step: StepId;
   /** 1-based position and total, for "Question 3 of 6". */
   n: number;
@@ -31,18 +31,17 @@ export interface Question {
   maxLength: number;
 }
 
-export interface SummaryLine {
+interface SummaryLine {
   label: string;
   value: string;
 }
 
-export type Turn =
+type Turn =
   | { kind: "ask"; question: Question; said: SummaryLine[] }
   | { kind: "review"; draft: AppConfig; lines: SummaryLine[]; notes: string[]; promise: string; source: "model" | "code" };
 
-export const PROMISE = "Your agent will always check with you before it agrees to anything, gives money terms, shares who you are or where you live, chooses shipping, or makes a safety exception.";
+const PROMISE = "Your agent will always check with you before it agrees to anything, gives money terms, shares who you are or where you live, chooses shipping, or makes a safety exception.";
 const MAX_ANSWERS = STEP_ORDER.length;
-
 
 /** Read the answers so far in order. Throws `invalid_answer` for a wrong step, an unusable answer or too many answers. */
 function readAnswers(answers: Answer[]): { parsed: Parsed[]; map: AnswerMap } {
@@ -68,7 +67,7 @@ const careLine = (c: AppConfig) => {
 };
 
 /** The plain-words summary shown before the yes. Built from the checked config, not from the model's words. */
-export function summarize(a: AnswerMap, config: AppConfig): SummaryLine[] {
+function summarize(a: AnswerMap, config: AppConfig): SummaryLine[] {
   const d = defaultsFor(a);
   return [
     { label: "Name", value: config.name },

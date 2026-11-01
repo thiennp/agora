@@ -170,4 +170,3 @@ export function next(deal: Deal, event: DealEvent, now: Date): Deal {
 }
 
 export const isOpen = (d: Pick<Deal, "state">) => OPEN.includes(d.state);
-export const isTerminal = (d: Pick<Deal, "state">) => ["declined", "expired", "reported", "completed", "not_completed"].includes(d.state);

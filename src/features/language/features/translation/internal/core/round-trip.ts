@@ -1,5 +1,5 @@
 /** Digits, with separators kept, in order of appearance: numbers, sizes, dates and times must survive translation (LNG-TRN-02). */
-export const numbersIn = (t: string): string[] => (t.match(/\d+(?:[.,:/-]\d+)*/g) ?? []).map((n) => n.replace(",", "."));
+const numbersIn = (t: string): string[] => (t.match(/\d+(?:[.,:/-]\d+)*/g) ?? []).map((n) => n.replace(",", "."));
 
 export function numbersPreserved(source: string, translated: string): boolean {
   const a = numbersIn(source).sort();

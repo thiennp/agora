@@ -1,12 +1,12 @@
 import type { ModelId, Provider, Role } from "./types";
 
-export interface Route {
+interface Route {
   model: ModelId;
   provider: Provider;
 }
 
 /** Default table; reasoning-heavy roles use the API model, cheap structured roles use the open model. */
-export const DEFAULT_ROUTES: Record<Role, ModelId> = {
+const DEFAULT_ROUTES: Record<Role, ModelId> = {
   interviewer: "muse-spark",
   intake: "muse-spark",
   forecaster: "muse-spark-open",
@@ -18,7 +18,7 @@ export const DEFAULT_ROUTES: Record<Role, ModelId> = {
   trust: "muse-spark-open",
 };
 
-export type RoutingOverrides = Partial<Record<Role, ModelId>>;
+type RoutingOverrides = Partial<Record<Role, ModelId>>;
 
 /** Routing is configuration (LIB-META-02): overrides let benchmarks swap models per role. */
 export function createRouter(opts: {

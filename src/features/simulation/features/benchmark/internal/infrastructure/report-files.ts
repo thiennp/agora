@@ -42,7 +42,7 @@ export function writeSimulationFiles(run: SeedRun, out: string): string[] {
   return Object.keys(files);
 }
 
-export type SummaryRow = Record<(typeof SUMMARY_COLUMNS)[number], number | null>;
+type SummaryRow = Record<(typeof SUMMARY_COLUMNS)[number], number | null>;
 
 /** Read `summary.csv` back, so a chart is drawn from the file the benchmark wrote and not from memory. */
 export function readSummaryCsv(dir: string): SummaryRow[] {

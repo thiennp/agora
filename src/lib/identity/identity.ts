@@ -83,7 +83,7 @@ function newRecoveryCode(): string {
 const CODE_CHAR = (b: number) => CODE_ALPHABET[b % 32]!;
 
 /** Accept what a person typed: any case, spaces or dashes anywhere. */
-export const normalizeRecoveryCode = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+const normalizeRecoveryCode = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 const hashCode = (code: string) => sha256Hex(`agora.recovery.v1|${normalizeRecoveryCode(code)}`);
 const hashToken = (token: string) => sha256Hex(`agora.session.v1|${token}`);
 const hashPair = (secret: string) => sha256Hex(`agora.pair.v1|${secret}`);

@@ -10,7 +10,7 @@ import type { ScreeningOptions } from "../features/screening/public-api/types";
 
 export { screen } from "../features/screening/public-api/infrastructure";
 export { scoreSignals } from "../features/scam-signals/public-api/infrastructure";
-export { verifyEvidenceBundle, REPORT_REASONS } from "../features/reports/public-api/infrastructure";
+export { verifyEvidenceBundle } from "../features/reports/public-api/infrastructure";
 
 export class TrustError extends Error {
   constructor(readonly code: "duplicate_report" | "bad_reason" | "not_found" | "not_reporter", message: string) {

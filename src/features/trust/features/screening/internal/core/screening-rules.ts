@@ -1,12 +1,12 @@
 export type FindingKind = "phone" | "email" | "handle" | "link" | "address" | "payment";
 
-export interface Finding {
+interface Finding {
   kind: FindingKind;
   /** Where in the original text, or null when only an obfuscated reading found it (then the whole message is blocked). */
   span: [number, number] | null;
 }
 
-export interface ScreeningResult {
+interface ScreeningResult {
   decision: "allow" | "redact" | "block";
   findings: Finding[];
   kinds: FindingKind[];

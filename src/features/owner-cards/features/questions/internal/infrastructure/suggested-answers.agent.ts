@@ -2,7 +2,7 @@ import type { SuggestedAnswer } from "../core/owner-question.schema";
 
 export type TermsFact = { kind: "free" } | { kind: "swap"; swapFor: string } | { kind: "price"; amount: number; currency: string } | { kind: "unknown" };
 
-export interface QuestionFacts {
+interface QuestionFacts {
   topic: string;
   /** Structured summary of what is being asked, never raw counterparty text. */
   terms?: TermsFact;

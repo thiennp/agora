@@ -16,7 +16,7 @@ export class LogisticsError extends Error {
 }
 
 /** What logistics needs from negotiation; its service satisfies this. */
-export interface LogisticsDeals {
+interface LogisticsDeals {
   get(dealId: string): Promise<Deal | null>;
   startHandoff(dealId: string): Promise<Deal>;
   finishHandoff(dealId: string, ok: boolean): Promise<Deal>;
@@ -28,7 +28,7 @@ const CONFIRMED = ["confirmed", "handoff", "completed", "not_completed"];
 
 type App = Pick<AppConfig, "id" | "policies">;
 
-export type HandoffCard =
+type HandoffCard =
   | { empty: true }
   | {
       empty: false;
@@ -275,4 +275,3 @@ export function createLogistics(deps: {
 
 const dealConfirmed = (d: Deal) => CONFIRMED.includes(d.state);
 
-export type Logistics = ReturnType<typeof createLogistics>;

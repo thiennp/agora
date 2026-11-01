@@ -1,1 +1,1 @@
-export type { PhotoLabels, PhotoItemLabel } from "../internal/core/item-label.schema";
+export type { PhotoLabels } from "../internal/core/item-label.schema";

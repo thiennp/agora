@@ -21,7 +21,7 @@ const FORWARDED = ["OwnerAnswered", "OwnerDecision", "DealConfirmed", "DealDecli
 
 export type ArmName = "learning_on" | "learning_tighten_only" | "learning_off" | "oracle_ceiling" | "learning_on_retry" | "learning_off_retry" | "learning_ordered" | "learning_ordered_wide" | "learning_ordered_open";
 /** learning_on learns and asks owners before looking beyond a learned limit; learning_tighten_only is the earlier behaviour; learning_off never learns. */
-export const ARMS: { name: ArmName; learning: boolean; stretch: boolean; oracle?: boolean; retry?: boolean; ordered?: boolean; wideStretch?: boolean; noBackoff?: boolean }[] = [
+const ARMS: { name: ArmName; learning: boolean; stretch: boolean; oracle?: boolean; retry?: boolean; ordered?: boolean; wideStretch?: boolean; noBackoff?: boolean }[] = [
   { name: "learning_on", learning: true, stretch: true },
   { name: "learning_tighten_only", learning: true, stretch: false },
   { name: "learning_off", learning: false, stretch: false },
@@ -38,7 +38,7 @@ export const ARMS: { name: ArmName; learning: boolean; stretch: boolean; oracle?
   { name: "learning_ordered_open", learning: true, stretch: true, retry: true, ordered: true, wideStretch: true, noBackoff: true },
 ];
 
-export interface SimulationOptions {
+interface SimulationOptions {
   appId?: string;
   seed: number;
   /** True: lessons are learned from training episodes and applied. False: the baseline that never learns. */
@@ -340,9 +340,7 @@ export async function createSimulation(opts: SimulationOptions) {
   };
 }
 
-export type Simulation = Awaited<ReturnType<typeof createSimulation>>;
-
-export interface BenchmarkOptions {
+interface BenchmarkOptions {
   appId?: string;
   seed?: number;
   rounds?: number;
@@ -449,7 +447,7 @@ export async function runBenchmark(o: BenchmarkOptions = {}): Promise<BenchmarkR
   };
 }
 
-export interface SeedSummaryRow {
+interface SeedSummaryRow {
   round: number;
   approvalOnMean: number | null;
   approvalOnMin: number | null;

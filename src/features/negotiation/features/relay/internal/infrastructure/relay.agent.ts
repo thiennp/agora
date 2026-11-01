@@ -16,7 +16,7 @@ export class RelayError extends Error {
 }
 
 /** What relay needs from negotiation. */
-export interface RelayDeals {
+interface RelayDeals {
   get(dealId: string): Promise<Deal | null>;
   markReported(dealId: string): Promise<Deal>;
 }
@@ -182,4 +182,3 @@ export function createRelay(deps: {
   return service;
 }
 
-export type Relay = ReturnType<typeof createRelay>;

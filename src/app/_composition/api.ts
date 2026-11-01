@@ -46,7 +46,7 @@ export const resetRateLimit = () => {
 
 export const personaKey = z.enum(["a", "b"]);
 
-export interface Ctx<I> {
+interface Ctx<I> {
   input: I;
   platform: Platform;
   params: Record<string, string>;

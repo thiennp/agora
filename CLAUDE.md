@@ -117,7 +117,7 @@ hidden rules, held-out benchmark; `docs/SIMULATION.md`), which is a test and eva
 apps live in `apps/` (`kids-gear`, `garden-tools`); they feed the simulation and the docs and are not seeded into the running app.
 Created apps still cannot: events, calendars, RSVPs, sign-up lists, group chat or announcements, a real carrier, or being
 used through Muse alone.
-Scaffold only (empty files): the `safety` and `voice` slices, the dashboard slice's sub-features, golden-file evals and Playwright e2e (the product journey is covered by `src/app/api/*.test.ts`, including `muse-first-flow.test.ts`).
+Not built (their empty placeholder files were removed Oct 30; only the requirement documents remain): the `safety` and `voice` slices, the dashboard slice's sub-features, golden-file evals and Playwright e2e (the product journey is covered by `src/app/api/*.test.ts`, including `muse-first-flow.test.ts`).
 Not built: durable relational storage (migrations 0001–0010 are unused; state is one saved document), a queue/outbox, real authentication, feature flags, a retention job, secret scanning (`docs/ARCHITECTURE.md` §12b), embedding search for docs Q&A, background removal on crops, a face detector, notifications, report review tooling, a real carrier, the real-model language quality test (G0), owner-card screens for stretch cards, Postgres-backed memory, voice.
 Context: the hackathon demo (Oct 28 decision) is a real Muse creating an app live from a pasted prompt; the script is `docs/DEMO-SCRIPT.md`.
 Also built (Oct 29): home page redesigned, Agora logo (`src/components/ui/Logo.tsx`; favicon, Apple icon and share image generated at build time), shared page header, new not-found and error screens.

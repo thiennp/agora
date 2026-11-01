@@ -2,12 +2,12 @@ import type { AppConfig } from "@/lib/app-config";
 import type { City, SimFamily } from "./persona.schema";
 import { hashSeed, rng } from "./rng";
 
-export interface ItemSpec {
+interface ItemSpec {
   category: string;
   size?: string;
   condition?: string;
 }
-export interface FamilyScenario {
+interface FamilyScenario {
   familyId: string;
   offer: ItemSpec;
   want: ItemSpec;

@@ -1,10 +1,10 @@
 import sharp from "sharp";
 import type { Box } from "../../../segmentation/public-api/types";
 
-export const MAX_SIDE = 1600;
-export const CROP_SIDE = 480;
+const MAX_SIDE = 1600;
+const CROP_SIDE = 480;
 
-export interface Photo {
+interface Photo {
   /** The working copy: rotated upright, at most MAX_SIDE on the long side, re-encoded as JPEG so camera metadata (location, time, device) is gone. */
   jpeg: Buffer;
   width: number;

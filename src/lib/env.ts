@@ -5,7 +5,7 @@ const schema = z.object({
   META_API_KEY: z.string().optional(),
   AGENTWITCH_URL: z.string().url().optional(),
   META_API_URL: z.string().url().optional(),
-  OPEN_MODEL_HOST: z.enum(["baseten", "modal"]).optional(),
+  OPEN_MODEL_HOST: z.enum(["baseten"]).optional(),
   OPEN_MODEL_URL: z.string().url().optional(),
   OPEN_MODEL_KEY: z.string().optional(),
   FIELD_ENCRYPTION_SECRET: z.string().min(16).optional(),
@@ -18,7 +18,7 @@ const schema = z.object({
   AGORA_STATE_FILE: z.string().optional(),
 });
 
-export type Env = z.infer<typeof schema>;
+type Env = z.infer<typeof schema>;
 
 export function loadEnv(source: Record<string, string | undefined> = process.env): Env {
   return schema.parse(source);

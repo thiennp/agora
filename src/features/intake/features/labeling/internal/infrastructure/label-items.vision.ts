@@ -5,7 +5,7 @@ import { photoLabelsSchema, type PhotoLabels } from "../core/item-label.schema";
 type Catalog = Pick<AppConfig["catalog"], "categories" | "sizeSystems" | "conditions">;
 
 /** The instructions for the vision step: what to list, in the app's own words, and what never to say or look at. */
-export function labelInstructions(catalog: Catalog): string {
+function labelInstructions(catalog: Catalog): string {
   const cats = catalog.categories.map((c) => `${c.id} (${c.label}${c.hints.length ? `; for example ${c.hints.join(", ")}` : ""})`).join("; ");
   const sizes = Object.entries(catalog.sizeSystems).map(([c, s]) => `${c}: ${s.join(", ")}`).join("; ");
   return [

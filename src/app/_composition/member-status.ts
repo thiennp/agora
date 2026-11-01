@@ -17,7 +17,7 @@ const STATE_LABEL: Record<string, string> = {
 };
 const OPEN = new Set(["proposed", "countered", "agreed_by_agents", "awaiting_owner_input", "awaiting_owners", "confirmed", "handoff"]);
 
-export interface MemberStatus {
+interface MemberStatus {
   app: { id: string; name: string };
   member: { id: string; name: string; role: "creator" | "member" };
   waiting: {
@@ -94,7 +94,7 @@ export async function memberStatusFor(p: Platform, member: { id: string; name: s
   };
 }
 
-export type MemberStatusView = { kind: "denied" } | { kind: "ok"; status: MemberStatus };
+type MemberStatusView = { kind: "denied" } | { kind: "ok"; status: MemberStatus };
 
 /**
  * `/app/{app}/muse/{id}` (BR-43). Only the member whose id it is, proved by that app's session cookie, sees it. Everyone else, the
@@ -111,14 +111,13 @@ export async function memberStatusView(appId: string, memberId: string, cookieHe
   return { kind: "ok", status: await memberStatusFor(await getPlatform(appId), { id: memberId, name: me?.name ?? "", role: who.role }) };
 }
 
-
 const EVENT_LABEL: Record<string, string> = {
   propose: "Your agent made an offer", counter: "A counter-offer was exchanged", agree: "The agents agreed on terms", open_cards: "Cards were opened for the owners",
   ask_owner: "Your agent asked its owner", owner_answered: "An owner answered a question", owner_confirm: "An owner confirmed", owner_decline: "An owner declined",
   agents_decline: "The agents declined", expire: "The deal expired", start_handoff: "The handover started", handoff_done: "The handover finished", report: "A problem was reported",
 };
 
-export interface MemberAction {
+interface MemberAction {
   at: string;
   dealId: string;
   item: string;

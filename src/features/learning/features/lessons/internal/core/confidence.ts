@@ -4,5 +4,5 @@ export const confidenceFor = (count: number): number => Math.min(0.95, 1 - 0.5 *
 /** Lessons act on behaviour only from this confidence (two sightings). */
 export const ACTS_FROM = 0.75;
 
-export type ConfidenceLevel = "tentative" | "likely" | "strong";
+type ConfidenceLevel = "tentative" | "likely" | "strong";
 export const levelOf = (c: number): ConfidenceLevel => (c >= 0.9 ? "strong" : c >= ACTS_FROM ? "likely" : "tentative");

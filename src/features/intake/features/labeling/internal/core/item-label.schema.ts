@@ -21,4 +21,3 @@ export const photoLabelsSchema = z.object({
     .max(30),
 });
 export type PhotoLabels = z.infer<typeof photoLabelsSchema>;
-export type PhotoItemLabel = PhotoLabels["items"][number];

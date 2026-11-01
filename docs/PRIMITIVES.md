@@ -163,5 +163,5 @@ Also built: the simulation slice (sandbox city, simulated owners, held-out bench
 Not built: community communication and relevance scoring, circles and criteria, voting, evolving, time beyond availability
 windows, notifications, a logging store with retention, database access (in-memory stores only), accounts, voice intake. A web app exists: `/start` interview, per-app pages (owner cards, deal room, items), member status, the Muse read API and the judge dashboard; it needs a real Meta key (no demo or mock mode).
 
-Scaffold only: the `safety` and `voice` slices are empty files (the `intake` slice is built except its sub-feature `capture`, whose upload lives in the page); their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
+Not built: the `safety` and `voice` slices have requirement documents only, no code (the `intake` slice is built except its sub-feature `capture`, whose upload lives in the page); their requirement rows are targets, not features. The app config schema currently describes only the exchange use case; it will gain a `community` section and
 per-primitive sections as each primitive lands, and existing apps must keep working.

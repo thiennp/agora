@@ -26,7 +26,7 @@ export interface Answer {
 /** Text in, text out. Supplied by the caller (for example the Meta client); the knowledge base never depends on a model. */
 export type Generate = (prompt: { system: string; user: string }) => Promise<string>;
 
-export interface AskOptions {
+interface AskOptions {
   /** Passages to retrieve and cite (default 4). */
   k?: number;
   generate?: Generate;
@@ -143,7 +143,7 @@ export function focus(text: string, firstLine: number, question: string, max = E
 }
 
 /** The start of a passage, cut at a paragraph or line end so a sentence or table row is not split mid-way. */
-export function excerpt(text: string, max = EXCERPT_CHARS): string {
+function excerpt(text: string, max = EXCERPT_CHARS): string {
   if (text.length <= max) return text;
   const head = text.slice(0, max);
   const cut = Math.max(head.lastIndexOf("\n\n"), head.lastIndexOf("\n"), head.lastIndexOf(". ") + 1);

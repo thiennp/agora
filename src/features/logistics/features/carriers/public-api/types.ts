@@ -1,1 +1,1 @@
-export type { CarrierPort, Label, LabelRequest, Appointment, AppointmentRequest, TrackResult, ShipmentStatus } from "../internal/infrastructure/carrier.port";
+export type { CarrierPort, Appointment, ShipmentStatus } from "../internal/infrastructure/carrier.port";

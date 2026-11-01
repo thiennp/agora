@@ -43,4 +43,3 @@ export function buildItemSchema(app: App) {
     });
 }
 
-export type ItemInput = z.input<ReturnType<typeof buildItemSchema>>;

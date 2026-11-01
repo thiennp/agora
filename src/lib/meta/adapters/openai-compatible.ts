@@ -1,6 +1,6 @@
 import type { ModelAdapter, ModelId, ModelRequest, Provider } from "../types";
 
-export interface HttpAdapterOptions {
+interface HttpAdapterOptions {
   provider: Provider;
   baseUrl: string;
   apiKey: string;

@@ -8,8 +8,8 @@ export type TranslateResult =
   | { ok: true; text: string; from: string | null; to: string; uncertain: boolean }
   | { ok: false; reason: "no_model" | "unavailable" | "invalid_output" | "numbers_changed" | "too_long" };
 
-export const MAX_CHARS = 1000;
-export const UNCERTAIN_BELOW = 0.7;
+const MAX_CHARS = 1000;
+const UNCERTAIN_BELOW = 0.7;
 
 /**
  * Translate one text through the Meta client. The text is passed as data inside JSON and the reply must be a validated

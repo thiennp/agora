@@ -6,7 +6,7 @@ import { ACTS_FROM } from "./confidence";
  * a smaller distance, a higher condition floor, exact sizes. There is no field for topics, terms or commitments, so a lesson
  * can never relax an always-ask topic (LRN-04).
  */
-export interface Adjustments {
+interface Adjustments {
   distanceFactor?: number;
   raiseConditionFloor?: boolean;
   strictSizeCategories: string[];
@@ -54,7 +54,7 @@ export function deriveAdjustments(lessons: readonly Lesson[]): Adjustments {
 
 export type StretchReason = "too_far" | "condition" | "wrong_size";
 
-export interface StretchFacts {
+interface StretchFacts {
   category: string;
   distanceKm: number | null;
   offerCondition?: string;
@@ -63,7 +63,7 @@ export interface StretchFacts {
 }
 
 /** How far beyond a learned limit a candidate may be and still be worth asking about (LRN-10): 30% on distance, one step on condition. */
-export const STRETCH_DISTANCE_MARGIN = 1.3;
+const STRETCH_DISTANCE_MARGIN = 1.3;
 
 /**
  * Which learned limits (and only those) keep this candidate out, when the candidate is close enough to the limit to be worth asking

@@ -5,7 +5,6 @@ import { createInMemoryProfileRepository, createProfileService } from "../featur
 import type { ProfileRepository } from "../features/profile/public-api/types";
 
 export { ProfileValidationError } from "../features/profile/public-api/infrastructure";
-export { CONSENT_SCOPES } from "../features/consent/public-api/infrastructure";
 
 /** Facade over profile and consent: erasure removes the family and its consent history together (FAM-03). */
 export function createFamilyService(deps: {
@@ -29,4 +28,3 @@ export function createFamilyService(deps: {
   };
 }
 
-export type FamilyService = ReturnType<typeof createFamilyService>;

@@ -9,20 +9,20 @@ import type { Answer } from "../../features/standing-rules/public-api/types";
 import { tracked } from "@/lib/state";
 
 /** Facts about a deal that learning needs; negotiation and catalog provide them. */
-export interface DealInfo {
+interface DealInfo {
   offerFamilyId: string;
   wantFamilyId: string;
   category?: string;
 }
 
 /** What learning needs from owner cards' standing-rule book. */
-export interface RuleBook {
+interface RuleBook {
   eligibleTopics(): string[];
   activeTopics(familyId: string): string[];
   add(input: { familyId: string; topic: string; days?: number; source?: "owner" | "learned_with_consent" }): unknown;
 }
 
-export interface RuleProposal {
+interface RuleProposal {
   id: string;
   familyId: string;
   topic: string;
@@ -37,7 +37,7 @@ export interface RuleProposal {
  * A match the agent skipped only because of a learned limit, offered to the owner to look at anyway. Nothing starts without the
  * owner's yes (LRN-09). It names no one: the owner sees only why it was skipped.
  */
-export interface StretchOffer {
+interface StretchOffer {
   id: string;
   familyId: string;
   wantItemId: string;
@@ -50,7 +50,7 @@ export interface StretchOffer {
   createdAt: string;
 }
 
-export interface StretchInput {
+interface StretchInput {
   wantItemId: string;
   offerItemId: string;
   counterpartFamilyId: string;
@@ -307,4 +307,3 @@ export function createLearning(deps: {
   return service;
 }
 
-export type Learning = ReturnType<typeof createLearning>;

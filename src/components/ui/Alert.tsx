@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "./cn";
 import { Icon, type IconName } from "./icons";
 
-export type AlertTone = "success" | "danger" | "warning" | "info";
+type AlertTone = "success" | "danger" | "warning" | "info";
 
 const LOOK: Record<AlertTone, { box: string; icon: string; glyph: IconName }> = {
   success: { box: "border-green-300 bg-ok-soft dark:border-green-800", icon: "text-ok", glyph: "check" },

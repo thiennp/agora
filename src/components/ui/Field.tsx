@@ -24,7 +24,7 @@ const HINT_TONE: Record<Status, string> = { default: "text-muted", error: "text-
 
 /* ---------- Field: label + control + hint ---------- */
 
-export interface FieldProps {
+interface FieldProps {
   label: string;
   hint?: ReactNode;
   status?: Status;
@@ -54,7 +54,7 @@ export function Field({ label, hint, status = "default", children, className }: 
 
 /* ---------- text controls ---------- */
 
-export interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   status?: Status;
 }
 
@@ -62,7 +62,7 @@ export function TextInput({ status = "default", className, ...rest }: TextInputP
   return <input aria-invalid={status === "error" || undefined} className={cn(CONTROL, "h-11", STATUS[status], className)} {...rest} />;
 }
 
-export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   status?: Status;
 }
 
@@ -70,7 +70,7 @@ export function TextArea({ status = "default", rows = 4, className, ...rest }: T
   return <textarea rows={rows} aria-invalid={status === "error" || undefined} className={cn(CONTROL, "py-2.5", STATUS[status], className)} {...rest} />;
 }
 
-export interface SelectBoxProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectBoxProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: { value: string; label: string }[];
   placeholder?: string;
   status?: Status;
@@ -141,7 +141,7 @@ export function Radio({ label, description, className, ...rest }: ChoiceProps) {
   );
 }
 
-export interface ToggleProps {
+interface ToggleProps {
   label: string;
   checked?: boolean;
   defaultChecked?: boolean;

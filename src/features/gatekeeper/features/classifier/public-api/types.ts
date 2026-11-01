@@ -1,1 +1,1 @@
-export type { Classification, ModelProposal } from "../internal/core/classify";
+export type { ModelProposal } from "../internal/core/classify";

@@ -41,10 +41,10 @@ export const defaultsFor = (a: AnswerMap) => (a.purpose?.value === "exchange" ? 
  * What an app for learning or organising does today, said plainly instead of "not available" (the platform has one engine: people post
  * what they offer or look for, agents match and agree details, every owner decides). Shown as a note on the summary.
  */
-export const CLOSEST_FIT = "What your app will do: people post what they offer or look for (for example a place on a walk, a lesson or a helping hand), and their agents match them and agree the details, with every person deciding. What it does not do yet: set dates and times, sign people up for an event, or send reminders to a group. Your wish for those is noted for the team.";
+const CLOSEST_FIT = "What your app will do: people post what they offer or look for (for example a place on a walk, a lesson or a helping hand), and their agents match them and agree the details, with every person deciding. What it does not do yet: set dates and times, sign people up for an event, or send reminders to a group. Your wish for those is noted for the team.";
 
 /** The person's own care words, when they wrote their own: `none` and `safe` are the tap answers, anything else is theirs, kept verbatim. */
-export const ownRule = (a: AnswerMap): string | undefined => {
+const ownRule = (a: AnswerMap): string | undefined => {
   const v = a.care?.value;
   return v && v !== "none" && v !== "safe" ? cleanText(a.care?.label, 300) : undefined;
 };
