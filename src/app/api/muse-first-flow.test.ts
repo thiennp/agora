@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import Home from "@/app/page";
 import { appPageView } from "@/app/_composition/app-views";
 import { memberStatusView } from "@/app/_composition/member-status";
-import { appUrl, startUrl } from "@/app/_composition/public-url";
+import { appUrl, startBriefUrl, startUrl } from "@/app/_composition/public-url";
 import { loadApp } from "@/lib/app-config";
 import { POST as interview } from "./interview/route";
 import { POST as build } from "./interview/build/route";
@@ -51,10 +51,11 @@ describe("Muse-first flow, end to end with the model stood in", () => {
   beforeEach(() => resetWorld());
 
   it("goes from the QR code to a Muse reading a member's real status, and nothing a Muse holds can answer a card", async () => {
-    // 1. The home page is one QR code that opens /start.
+    // 1. The home page is one QR code that opens the assistant brief, /start/agent.md.
     const home = renderToStaticMarkup(React.createElement(Home));
     expect(startUrl).toBe("https://agentwitch.com/agora/start");
-    expect(home).toContain(startUrl);
+    expect(startBriefUrl).toBe(`${startUrl}/agent.md`);
+    expect(home).toContain(startBriefUrl);
     expect(home).toMatch(/<svg/);
 
     // 2. The interview asks every question, then shows a review; one yes stores the app and makes the caller its creator.

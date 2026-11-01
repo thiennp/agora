@@ -79,12 +79,11 @@ start if `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` or `REPORT_EXPORT_SECRET` is 
 personas and the persona switch, the `/demo` page, the `(owner)` pages (`/items`, `/cards`, `/deals` with `?as=`), the
 reset route, the demo scenario seed, the simulated translation adapter and the 501 `auth_not_built` path.
 
-How a person meets it: the home page shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to `/start`
+How a person meets it: the home page shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to the assistant brief `/start/agent.md` (there is no human `/start` page: the assistant runs the interview in chat)
 (address hardcoded to `https://agentwitch.com/agora/start` in `src/app/_composition/public-url.ts`), which runs the
 create-an-app interview (`src/lib/interview`, `/api/interview`, `/api/interview/build`: six scripted question cards about
 the app only, the model offers examples and drafts wording, code sets all rules and validates against `schema.ts`, one yes
-stores the app and makes the caller its creator). `/start` is also readable by an assistant (brief in its HTML and at
-`/start/agent.md`; the assistant ends with a draft link `/start?purpose=…&actions=…`; only the person's tap builds). An agent
+stores the app and makes the caller its creator). The assistant builds the app itself after the person types yes in chat, then gives them the public address, the admin address `/app/{app}/admin` (recovery-code door to the admin dashboard at `/app/{app}`, visible only to the creator) and the recovery code. An agent
 index is at `/agent.md` and `/llms.txt`. The flow has not yet been tried with a real Muse (step 0, `docs/PLAN.md` §2d; Meta
 documents custom connectors built from an API, MCP in the consumer app is unconfirmed).
 

@@ -57,9 +57,9 @@ interviewer use Muse Spark and SAM 3.1) and two secrets of at least 16 character
 addresses, `REPORT_EXPORT_SECRET` signs report exports); without them it fails and names the missing variable. State survives
 restarts with `DATABASE_URL` (Postgres) or `AGORA_STATE_FILE=./state.json`; with neither it is memory only.
 
-The home page `/` shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to `/start`, the create-an-app
+The home page `/` shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to the assistant brief `/start/agent.md` (the assistant runs the interview in chat and builds the app after the person types yes), the create-an-app
 interview (the code always points at `https://agentwitch.com/agora/start`, so scanning only works once that is deployed;
-locally open `/start` directly). Creating an app makes you its creator; the app then lives at `/app/{app}` with its own items,
+locally open `/start/agent.md` directly). Creating an app makes you its creator; the app then lives at `/app/{app}` with its own items,
 cards and deals pages. Every platform API route needs `?app=<id>` and that app's session cookie. Photos are never kept, only a
 small picture of each item you list. `npm run simulate` writes the benchmark that the judge dashboard charts; `npm test`,
 `npm run lint`, `npm run typecheck` and `npm run db:check` (needs Docker) check the rest. Tests use test doubles for the model;

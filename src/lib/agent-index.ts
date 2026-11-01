@@ -1,16 +1,16 @@
 /**
  * One page that tells an AI assistant (Muse) everything the platform offers and where it is, so it can start from a single address.
- * Served as markdown at `/agent.md` and `/llms.txt`. Everything it names exists; nothing here can build an app or answer a card.
+ * Served as markdown at `/agent.md` and `/llms.txt`. Everything it names exists; creating an app needs the person's typed yes in chat, and nothing here can answer a card.
  */
 export function agentIndex(baseUrl: string): string {
   return `# Agora: apps that any Muse user can create and use
 
-Agora lets a person create a small app by chatting with you (Muse), and lets any Muse user use such an app. You never click or build anything yourself: you read pages and talk to the person, and the person taps a button in their own browser.
+Agora lets a person create a small app by chatting with you (Muse), and lets any Muse user use such an app. You read pages and talk to the person; you create the app yourself, but only after the person typed yes in the chat.
 
 ## To create an app with the least effort
-1. Read ${baseUrl}/start/agent.md (the same text is on ${baseUrl}/start, which is what the QR code opens).
+1. Read ${baseUrl}/start/agent.md (what the QR code opens).
 2. Interview the person in typed chat, about 6 plain questions, and write the app back in one paragraph.
-3. After they type yes, give them the link that page describes. They open it and tap **Build it**. That tap is the only way an app is created.
+3. After they type yes, create the app with the two requests that page describes, then give them the app's address and recovery code.
 
 ## To help a person use an existing app
 Read \`${baseUrl}/app/{app}/agent.md\` (also the public page ${baseUrl}/app/{app}). It says what the app is for, what a person can do, what it never does, and how to send the person to it. The first visit makes their private record; there is no sign-up form.
