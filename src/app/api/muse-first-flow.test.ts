@@ -23,7 +23,7 @@ import * as mcpRoute from "./muse/[app]/mcp/route";
 import { endWorld, resetWorld } from "./test-support";
 
 /**
- * The whole Muse-first demo in mock mode, end to end through the real routes (docs/PLAN.md §2c step 7): the QR home page, the
+ * The whole Muse-first demo in mock mode, end to end through the real routes (docs/PLAN.md §2c step 7): the copy-paste home page, the
  * /start interview, the app being created, its overview and invite, a second person joining, the member status page showing real
  * data, and a person's own Muse reading it with a member key and being unable to answer anything. No model, no network.
  */
@@ -50,13 +50,14 @@ describe("Muse-first flow, end to end with the model stood in", () => {
   afterEach(endWorld);
   beforeEach(() => resetWorld());
 
-  it("goes from the QR code to a Muse reading a member's real status, and nothing a Muse holds can answer a card", async () => {
-    // 1. The home page is one QR code that opens the assistant brief, /start/agent.md.
+  it("goes from the pasted prompt to a Muse reading a member's real status, and nothing a Muse holds can answer a card", async () => {
+    // 1. The home page is one copy-paste message that opens the assistant brief, /start/agent.md.
     const home = renderToStaticMarkup(React.createElement(Home));
     expect(startUrl).toBe("https://agentwitch.com/agora/start");
     expect(startBriefUrl).toBe(`${startUrl}/agent.md`);
     expect(home).toContain(startBriefUrl);
-    expect(home).toMatch(/<svg/);
+    expect(home).not.toMatch(/QR code/i);
+    expect(home).toContain("Copy");
 
     // 2. The interview asks every question, then shows a review; one yes stores the app and makes the caller its creator.
     for (let i = 0; i < answers.length; i++) {

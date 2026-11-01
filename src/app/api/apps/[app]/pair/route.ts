@@ -7,7 +7,7 @@ import { appUrl } from "@/app/_composition/public-url";
 export const dynamic = "force-dynamic";
 
 /**
- * A new computer asks to be signed in as a person who already uses this app. It gets a `code` (for the QR or prompt, which is safe to
+ * A new computer asks to be signed in as a person who already uses this app. It gets a `code` (for the prompt, which is safe to
  * show), a `secret` (kept on this computer, needed to collect the session) and four digits to read out. Nothing is granted until a
  * signed-in device approves. A phone that has no membership cannot be paired: it should join instead.
  */

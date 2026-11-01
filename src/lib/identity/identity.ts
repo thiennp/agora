@@ -87,7 +87,7 @@ export const normalizeRecoveryCode = (s: string) => s.toUpperCase().replace(/[^A
 const hashCode = (code: string) => sha256Hex(`agora.recovery.v1|${normalizeRecoveryCode(code)}`);
 const hashToken = (token: string) => sha256Hex(`agora.session.v1|${token}`);
 const hashPair = (secret: string) => sha256Hex(`agora.pair.v1|${secret}`);
-/** Four digits, shown on the new computer and typed on the approving device, so a QR photographed from over a shoulder cannot be approved blind. */
+/** Four digits, shown on the new computer and typed on the approving device, so a link photographed from over a shoulder cannot be approved blind. */
 const newVerify = () => String(randomBytes(4).readUInt32BE() % 10000).padStart(4, "0");
 
 /** What the approving device is told about the computer asking in. */
@@ -106,7 +106,7 @@ export interface IdentityStore {
   /** Recovery on a new phone: the code replaces every old session and is itself replaced, so a copied code works once. */
   recover(appId: string, code: string): Promise<{ memberId: string; role: Role; sessionToken: string; recoveryCode: string } | undefined>;
   /**
-   * A new computer asks to be signed in. Returns a `code` (goes in the QR or prompt, readable by anyone who sees it), a `secret` (stays
+   * A new computer asks to be signed in. Returns a `code` (goes in the prompt, readable by anyone who sees it), a `secret` (stays
    * on this computer and is needed to collect the session) and a four digit `verify` the approving person types. Valid for a few minutes.
    */
   startPairing(appId: string, label?: string): Promise<{ code: string; secret: string; verify: string; expiresAt: string }>;

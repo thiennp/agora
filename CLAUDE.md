@@ -79,7 +79,7 @@ start if `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` or `REPORT_EXPORT_SECRET` is 
 personas and the persona switch, the `/demo` page, the `(owner)` pages (`/items`, `/cards`, `/deals` with `?as=`), the
 reset route, the demo scenario seed, the simulated translation adapter and the 501 `auth_not_built` path.
 
-How a person meets it: the home page shows a QR code and a copy-paste prompt for Muse or Meta AI; both lead to the assistant brief `/start/agent.md` (there is no human `/start` page: the assistant runs the interview in chat)
+How a person meets it: the home page shows a copy-paste prompt for Muse or Meta AI (no QR code: assistants do not know what to do with one) that leads to the assistant brief `/start/agent.md` (there is no human `/start` page: the assistant runs the interview in chat)
 (address hardcoded to `https://agentwitch.com/agora/start` in `src/app/_composition/public-url.ts`), which runs the
 create-an-app interview (`src/lib/interview`, `/api/interview`, `/api/interview/build`: six scripted question cards about
 the app only, the model offers examples and drafts wording, code sets all rules and validates against `schema.ts`, one yes
@@ -88,7 +88,7 @@ index is at `/agent.md` and `/llms.txt`. The flow has not yet been tried with a 
 documents custom connectors built from an API, MCP in the consumer app is unconfirmed).
 
 Built, per app: `/app/{app}` public page (also markdown at `/app/{app}/agent.md`), the creator's private overview with the
-share QR, light identity (`src/lib/identity`: cookie session per app that slides 30 days from last use, recovery code, pairing a new computer by QR or prompt with four digits and an approving tap, no sign-up form; real accounts are not
+share link, light identity (`src/lib/identity`: cookie session per app that slides 30 days from last use, recovery code, pairing a new computer by a copy-paste prompt with four digits and an approving tap, no sign-up form; real accounts are not
 built), and usable pages `/app/{app}/items`, `/cards`, `/deals`, `/deals/{id}` in the app's own words (`appVocabulary`: a
 free pick-up-only app is a board of posts and conversations). Every member of a stored app is a real party of that app's
 platform (`Platform.addMember`, ADR 0007). The member status page `/app/{app}/muse/{id}` is visible only to that member.
@@ -119,7 +119,7 @@ Created apps still cannot: events, calendars, RSVPs, sign-up lists, group chat o
 used through Muse alone.
 Scaffold only (empty files): the `safety` and `voice` slices, the dashboard slice's sub-features, golden-file evals and Playwright e2e (the product journey is covered by `src/app/api/*.test.ts`, including `muse-first-flow.test.ts`).
 Not built: durable relational storage (migrations 0001–0010 are unused; state is one saved document), a queue/outbox, real authentication, feature flags, a retention job, secret scanning (`docs/ARCHITECTURE.md` §12b), embedding search for docs Q&A, background removal on crops, a face detector, notifications, report review tooling, a real carrier, the real-model language quality test (G0), owner-card screens for stretch cards, Postgres-backed memory, voice.
-Context: the hackathon demo (Oct 28 decision) is a real Muse creating an app live from a QR code; the script is `docs/DEMO-SCRIPT.md`.
+Context: the hackathon demo (Oct 28 decision) is a real Muse creating an app live from a pasted prompt; the script is `docs/DEMO-SCRIPT.md`.
 Also built (Oct 29): home page redesigned, Agora logo (`src/components/ui/Logo.tsx`; favicon, Apple icon and share image generated at build time), shared page header, new not-found and error screens.
 
 ## Working here

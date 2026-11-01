@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 function Links() {
   const path = usePathname();
-  // The QR home page, the start page and every app have their own look: no site navigation there.
+  // The home page, the start page and every app have their own look: no site navigation there.
   if (path === "/" || path.startsWith("/start") || path.startsWith("/app/")) return null;
   const item = (href: string, label: string) => (
     <Link href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</Link>

@@ -23,7 +23,6 @@ All slices.
 | LIB-08 | Interview (BR-40): a scripted create-an-app interview in code (about six questions, only about the app), a model that only suggests examples and drafts wording, rules set by code, and every draft validated by the app schema, with a code fallback. See [interview](interview/REQUIREMENTS.md). | Must | `src/lib/interview/interview.test.ts`. |
 | LIB-03 | Enforce per-family model budgets and a global spend breaker. | Must | Budget exhaustion degrades to deterministic mode. |
 | LIB-05 | `tracked` state registry: stores register containers; a scope snapshots and restores them in place; no effect outside a scope. | Must | `src/lib/state.test.ts`. |
-| LIB-06 | `makeQr` encodes a URL as a QR code (error correction M, four-module quiet zone) with no network call. | Should | `src/lib/qr.test.ts`. |
 | LIB-04 | Write structured logs without personal data and an append-only audit log of state changes and owner decisions. | Should | No log line contains an address, name or contact detail; audit entries exist for each state change. |
 
 ## Out of scope
