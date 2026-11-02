@@ -1,4 +1,4 @@
-import { createIdentityStore, createMuseKeyStore, IdentityError, type IdentityBackend, type IdentityStore, type MuseKeyStore, type Principal, type Role } from "@/lib/identity";
+import { createIdentityStore, createMuseKeyStore, createWebhookStore, IdentityError, type IdentityBackend, type IdentityStore, type MuseKeyStore, type Principal, type Role, type WebhookStore } from "@/lib/identity";
 import { createFileBackend, createPostgresBackend } from "./persistence";
 import { loadEnv } from "@/lib/env";
 import { repoAppIds } from "@/lib/app-config";
@@ -7,7 +7,7 @@ import { repoAppIds } from "@/lib/app-config";
 export const LIGHT_IDENTITY_NOTICE =
   "This is light identity, not a real account. Your phone holds a private session, and the recovery code is the only way back in on a new phone. Anyone who has the code is you. Keep it somewhere safe and do not share it or post it.";
 
-const g = globalThis as unknown as { __agoraIdentity?: IdentityStore; __agoraMuseKeys?: MuseKeyStore };
+const g = globalThis as unknown as { __agoraIdentity?: IdentityStore; __agoraMuseKeys?: MuseKeyStore; __agoraWebhooks?: WebhookStore };
 
 /** Same backend choice as the apps: DATABASE_URL (row `identity` of `app_state`), else `<AGORA_STATE_FILE>.identity.json`, else memory. */
 function backendFromEnv(env: { DATABASE_URL?: string; AGORA_STATE_FILE?: string }, name = "identity"): IdentityBackend | undefined {
@@ -23,6 +23,15 @@ export function getIdentityStore(): IdentityStore {
 /** The per-member keys of a person's own Muse (BR-44); same backend choice, own row (`muse-keys`). */
 export function getMuseKeyStore(): MuseKeyStore {
   return (g.__agoraMuseKeys ??= createMuseKeyStore(backendFromEnv(loadEnv(), "muse-keys")));
+}
+
+/** The webhooks of members' assistants; same backend choice, own row (`muse-webhooks`). */
+export function getWebhookStore(): WebhookStore {
+  return (g.__agoraWebhooks ??= createWebhookStore(backendFromEnv(loadEnv(), "muse-webhooks")));
+}
+
+export function useWebhookStore(store: WebhookStore | undefined): void {
+  g.__agoraWebhooks = store;
 }
 
 export function useMuseKeyStore(store: MuseKeyStore | undefined): void {

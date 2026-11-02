@@ -7,3 +7,4 @@ export { participantsSchema, personasSchema, validateSandbox } from "./sandbox";
 export { appStyle, describeApp, type AppDescription, type AppStyle } from "./describe";
 export { appVocabulary, type Vocabulary } from "./vocabulary";
 export { appAgentBrief, type AgentPageApp } from "./agent-page";
+export { connectAbout, connectBrief, connectPrompt } from "./connect-page";

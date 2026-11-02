@@ -125,11 +125,7 @@ interface MemberAction {
   state: string;
 }
 
-/**
- * The member's recent actions (BR-44): the state changes of their own deals, newest first. Decisions only, never message text. Like
- * "what it did alone" this stands in for the audit log, which is not written yet.
- */
-export async function memberActionsFor(p: Platform, memberId: string, limit = 20): Promise<MemberAction[]> {
+async function allActionsOf(p: Platform, memberId: string): Promise<MemberAction[]> {
   await p.cards.settled();
   const out: MemberAction[] = [];
   for (const d of await p.negotiation.listForFamily(memberId)) {
@@ -139,5 +135,54 @@ export async function memberActionsFor(p: Platform, memberId: string, limit = 20
       out.push({ at: String(h.at), dealId: d.id, item, what: EVENT_LABEL[h.event] ?? "The deal changed", state: STATE_LABEL[h.to] ?? h.to });
     }
   }
-  return out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(1, Math.min(limit, 50)));
+  return out;
+}
+
+/**
+ * The member's recent actions (BR-44): the state changes of their own deals, newest first. Decisions only, never message text. Like
+ * "what it did alone" this stands in for the audit log, which is not written yet.
+ */
+export async function memberActionsFor(p: Platform, memberId: string, limit = 20): Promise<MemberAction[]> {
+  return (await allActionsOf(p, memberId)).sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(1, Math.min(limit, 50)));
+}
+
+/** Before every real timestamp: the cursor of a member whose deals have never changed. */
+export const UPDATES_START = "1970-01-01T00:00:00.000Z";
+
+export interface MemberUpdates {
+  /** Pass this back as `since` next time. It only moves forward, and only past events that were returned. */
+  cursor: string;
+  /** What changed in the member's own deals after `since`, oldest first. Empty when `since` is not given (the first call only sets the cursor). */
+  events: MemberAction[];
+  /** More events than `limit` were waiting: call again with the new cursor. */
+  more: boolean;
+  /** Cards waiting for the owner right now (always the current number, not a change). */
+  waiting: { total: number; questions: number; confirmations: number; offers: number };
+}
+
+/**
+ * What an assistant polls for (docs/MUSE-CONNECTOR.md): the member's own deal changes since a cursor, and how many cards wait for the
+ * owner. Same data and same limits as the actions feed: decisions and counts, never message text, never another member's data. Without
+ * `since` it returns no events and a cursor at the latest one, so a new connection does not announce the past. The cursor is an event
+ * time; two events in the same millisecond are returned together (a limit cut never splits them).
+ */
+export async function memberUpdatesFor(p: Platform, memberId: string, since?: string, limit = 20): Promise<MemberUpdates> {
+  const all = (await allActionsOf(p, memberId)).sort((a, b) => a.at.localeCompare(b.at));
+  const questions = p.cards.questionsFor(memberId).length;
+  const confirmations = p.cards.confirmationsFor(memberId).length;
+  const offers = p.learning.stretchOffersFor(memberId).length + p.learning.proposalsFor(memberId).length;
+  const waiting = { total: questions + confirmations + offers, questions, confirmations, offers };
+  const latest = all.at(-1)?.at ?? UPDATES_START;
+  if (since === undefined) return { cursor: latest, events: [], more: false, waiting };
+  let fresh = all.filter((e) => e.at > since);
+  const cap = Math.max(1, Math.min(limit, 50));
+  let more = false;
+  if (fresh.length > cap) {
+    // Cut after `cap` events, but never in the middle of events that share a time, or the next call would skip the rest of them.
+    let end = cap;
+    while (end < fresh.length && fresh[end]!.at === fresh[end - 1]!.at) end++;
+    more = end < fresh.length;
+    fresh = fresh.slice(0, end);
+  }
+  return { cursor: fresh.at(-1)?.at ?? since, events: fresh, more, waiting };
 }
