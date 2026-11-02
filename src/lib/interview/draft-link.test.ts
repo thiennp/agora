@@ -104,7 +104,7 @@ describe("agent brief", () => {
     expect(md).toContain("numbered list");
     expect(md).toContain('type "yes"');
     expect(md).toContain("do not click anything");
-    expect(md).not.toContain("/start?draft=");
+    expect(md).toContain("/start?draft=");
     expect(md).toContain("`purpose`");
     expect(md).toContain("Next, for your app:");
     expect(md).toContain("About 6 questions");

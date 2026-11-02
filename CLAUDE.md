@@ -79,7 +79,7 @@ start if `META_API_KEY`, `FIELD_ENCRYPTION_SECRET` or `REPORT_EXPORT_SECRET` is 
 personas and the persona switch, the `/demo` page, the `(owner)` pages (`/items`, `/cards`, `/deals` with `?as=`), the
 reset route, the demo scenario seed, the simulated translation adapter and the 501 `auth_not_built` path.
 
-How a person meets it: the home page shows a copy-paste prompt for Muse or Meta AI (no QR code: assistants do not know what to do with one) that leads to the assistant brief `/start/agent.md` (there is no human `/start` page: the assistant runs the interview in chat)
+How a person meets it: the home page shows a copy-paste prompt for Muse or Meta AI (no QR code: assistants do not know what to do with one) that leads to the assistant brief `/start/agent.md` (the assistant runs the interview in chat; an assistant that cannot send POST requests, as Meta AI could not on Nov 2, hands over a draft link `/start?draft=a~b~c…`: a confirm page shows the summary and the person's tap on Build it creates the app)
 (address hardcoded to `https://agentwitch.com/agora/start` in `src/app/_composition/public-url.ts`), which runs the
 create-an-app interview (`src/lib/interview`, `/api/interview`, `/api/interview/build`: six scripted question cards about
 the app only, the model offers examples and drafts wording, code sets all rules and validates against `schema.ts`, one yes
