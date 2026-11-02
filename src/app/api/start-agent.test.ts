@@ -28,7 +28,8 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(t).toContain("You are Muse");
     expect(t).toContain("/api/interview/build");
     expect(t).toContain("only after the person has typed");
-    expect(t).not.toContain("/start?draft=");
+    expect(t).toContain("/start?draft=");
+    expect(t).toContain("If you can only open links");
   });
 
   it("tells Muse what typed text is, how to handle the language, names, corrections and tidy encoding", async () => {

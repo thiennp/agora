@@ -55,7 +55,11 @@ The agent of every user always asks its owner before agreeing to anything, givin
 2. \`POST ${baseUrl}/api/interview/build\` with \`{"draft": <the draft from step 1, unchanged>, "projectId": "<projectId, if you opened one>"}\`. It answers the app's address (\`path\`) and the creator's \`recoveryCode\`.
 3. Tell the person their app is ready, give them two addresses: \`${baseUrl}\` followed by \`path\` is the public page to share with others, and \`${baseUrl}\` followed by \`path\` and \`/admin\` is the admin dashboard, where only the person gets in, by typing the recovery code. Give the code: "Keep this code. It is how you get back into your app as its creator, and I cannot show it again." Do not repeat the code anywhere else.
 
-The build step checks the draft against the app rules again, so nothing you send can relax an always-ask rule. If you cannot send web requests, say so plainly and do not pretend the app exists; the person cannot create it without an assistant that can.
+The build step checks the draft against the app rules again, so nothing you send can relax an always-ask rule.
+
+### If you can only open links
+
+Do not pretend the app exists. Give the person this link instead: \`${baseUrl}/start?draft=\` plus their answers in the order above, each percent-encoded (space %20, comma %2C), joined by \`~\` (a short code for a tap answer, else their words). Say: "Open this link, check the summary and tap Build it. Nothing is created until you tap."
 
 ## Report your progress (skip if you cannot open links)
 
