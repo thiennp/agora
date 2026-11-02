@@ -57,9 +57,9 @@ The agent of every user always asks its owner before agreeing to anything, givin
 
 The build step checks the draft against the app rules again, so nothing you send can relax an always-ask rule.
 
-### If you can only open links
+### If you cannot send the web requests (blocked by policy, no internet)
 
-Do not pretend the app exists. Give the person this link instead: \`${baseUrl}/start?draft=\` plus their answers in the order above, each percent-encoded (space %20, comma %2C), joined by \`~\` (a short code for a tap answer, else their words). Say: "Open this link, check the summary and tap Build it. Nothing is created until you tap."
+If your sandbox refuses live requests (for example LIVE_CRAWL_POLICY_BLOCKED), do not pretend the app exists. **Just write a link in your reply; do not send or open it.** Give them \`${baseUrl}/start?draft=\` plus their answers in the order above, percent-encoded (space %20, comma %2C) and joined by \`~\`. Say: "Open this link, check the summary and tap Build it. Nothing is made until you tap."
 
 ## Report your progress (skip if you cannot open links)
 
