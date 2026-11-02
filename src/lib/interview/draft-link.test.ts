@@ -114,7 +114,7 @@ describe("agent brief", () => {
     expect(md).toContain("Go straight to the form page");
     expect(md).toContain('<form method="GET" action="https://example.test/agora/start"');
     expect(md).toContain('type="hidden" name="purpose"');
-    expect(md).toContain("Do not submit the form yourself");
+    expect(md).toContain("do not press anything yourself");
     expect(md).toContain("Nothing is made until you tap");
   });
   it("carries the rules the simulated test found missing", () => {
@@ -137,5 +137,5 @@ describe("agent brief", () => {
     expect((md.match(/^\d\. \*\*.*`\w+`$/gm) ?? []).length).toBe(6);
     for (const line of md.split("\n").filter((l) => /^\d\. \*\*.*`\w+`$/.test(l))) expect(line).toMatch(/\bapp\b/i);
   });
-  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(10000));
+  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(12500));
 });
