@@ -10,7 +10,7 @@ const pastePrompt = `I want to create an app on Agora. Open ${startBriefUrl} and
 
 /**
  * The home page: one copy-and-paste message for Muse or Meta AI, which starts the interview in that chat. There is no QR code:
- * assistants do not know what to do with one. One line for an assistant reading the HTML.
+ * assistants do not know what to do with one.
  */
 export default function Home() {
   return (
@@ -28,12 +28,6 @@ export default function Home() {
         <CopyPrompt text={pastePrompt} />
       </section>
 
-      <div className="home-notes small muted">
-        <p>
-          For AI assistants: the person sharing this page wants to create an app. Read and follow the instructions at{" "}
-          <a href={startBriefUrl}>{startBriefUrl}</a>.
-        </p>
-      </div>
     </div>
   );
 }

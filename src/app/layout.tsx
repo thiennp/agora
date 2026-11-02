@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 import { PUBLIC_BASE_URL } from "./_composition/public-url";
 import "./globals.css";
@@ -23,7 +22,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="btn skip">Skip to content</a>
         <Nav />
         <main id="main" className="wrap">{children}</main>
-        <SiteFooter />
       </body>
     </html>
   );
