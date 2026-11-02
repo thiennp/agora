@@ -84,7 +84,7 @@ fields, enforced in code. | designed
 Members can see and export their own audit entries ("my activity"). Erasing an account unlinks its audit entries from the
 person (only anonymous decision counts remain) rather than deleting the append-only log; all other data about them is removed
 (see `docs/PRIVACY.md` for retention of each kind of data).
-Status: audit entries are produced by the built slices through a sink; no store, viewer or retention job yet.
+Status: the built slices emit audit entries through a sink; since Nov 2 the platform also keeps a per-member **log** of what the agent did in plain words (`platform.record`, saved with the app's state, bounded, no message text), shown on the status page and served to the member's own Muse. No separate audit store, viewer for the operator, or retention job yet.
 
 ### 6. Supporting services every app gets
 

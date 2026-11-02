@@ -47,6 +47,20 @@ interface Audit {
   cards: Record<string, number>;
 }
 
+/**
+ * One line of a member's own log: what their agent did, decided or asked, in plain words (BR-43, docs/PRIMITIVES.md §5). It holds a
+ * short label, the deal it was about and nothing else: no message text, no other member's id, no address. Saved with the app's state.
+ */
+export interface MemberLogEntry {
+  at: string;
+  memberId: string;
+  dealId?: string;
+  kind: "listed" | "found" | "reached_out" | "approached" | "screened" | "asked" | "answered" | "agreed" | "decided" | "confirmed" | "ended" | "handoff" | "reported";
+  text: string;
+}
+
+const LOG_KEEP = 2000;
+
 const TOPIC_WORDS: Record<string, string> = { pickup_time_window: "a pickup time", price_terms: "terms", commitment: "agreeing", location_reveal: "a place", identity_reveal: "personal details", shipping_choice: "shipping" };
 
 async function build(appId: string, opts: { fresh?: boolean } = {}) {
@@ -69,23 +83,68 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   const leave = enterScope(scope);
   const feed = tracked("platform.feed", [] as FeedItem[]);
   const audit = tracked("platform.audit", { gatekeeper: {}, screening: {}, relay: {}, cards: {} } as Audit);
+  const log = tracked("platform.log", [] as MemberLogEntry[]);
   const meta = tracked("platform.meta", {} as { dealId?: string; createdAt?: string });
   if (!meta.createdAt) meta.createdAt = new Date().toISOString();
   const bump = (m: Record<string, number>, k: string) => void (m[k] = (m[k] ?? 0) + 1);
   const say = (text: string) => void feed.unshift({ at: new Date().toISOString(), text });
   const nameOf = (f: string) => byId.get(f)?.name || "someone";
+  const topicWord = (t: string) => TOPIC_WORDS[t] ?? t.replace(/_/g, " ");
+  /** Append to a member's own log (newest last; the readers reverse it). Bounded so an app's state cannot grow without limit. */
+  const record = (memberId: string, kind: MemberLogEntry["kind"], text: string, dealId?: string) => {
+    log.push({ at: new Date().toISOString(), memberId, kind, text, ...(dealId ? { dealId } : {}) });
+    if (log.length > LOG_KEEP) log.splice(0, log.length - LOG_KEEP);
+  };
+  /** The same line for both owners of a deal, once the deal is known. */
+  const recordBoth = (dealId: string, kind: MemberLogEntry["kind"], text: string) =>
+    void negotiation.get(dealId).then((d) => {
+      if (!d) return;
+      record(d.offerFamilyId, kind, text, dealId);
+      record(d.wantFamilyId, kind, text, dealId);
+    }).catch(() => undefined);
 
   const bus: DealEventBus = createDealEventBus();
-  bus.subscribe("OwnerQuestionOpened", (e) => say(`The agent paused and asked ${nameOf(e.familyId)} about ${TOPIC_WORDS[e.topic] ?? e.topic}.`));
-  bus.subscribe("OwnerAnswered", (e) => say(`${nameOf(e.familyId)} answered ${e.answer}.`));
-  bus.subscribe("DealAgreedByAgents", () => say("The two agents agreed (not binding). Both owners now have a confirm card."));
-  bus.subscribe("OwnerDecision", (e) => say(`${nameOf(e.familyId)} ${e.decision === "confirm" ? "confirmed" : "declined"}${e.reasonCode ? ` (${e.reasonCode.replace(/_/g, " ")})` : ""}.`));
-  bus.subscribe("DealConfirmed", () => say("Both owners confirmed. The handover plan opens."));
-  bus.subscribe("DealDeclined", (e) => say(`The deal ended: ${e.reason}.`));
-  bus.subscribe("DealExpired", () => say("The deal expired."));
-  bus.subscribe("HandoffProposed", (e) => say(`A way to hand over was proposed: ${e.mode.replace(/_/g, " ")}.`));
-  bus.subscribe("HandoffFinished", (e) => say(e.ok ? "The item changed hands." : "The handover did not happen."));
-  bus.subscribe("ReportFiled", () => say("A report was filed and the deal stopped."));
+  bus.subscribe("OwnerQuestionOpened", (e) => {
+    say(`The agent paused and asked ${nameOf(e.familyId)} about ${topicWord(e.topic)}.`);
+    record(e.familyId, "asked", `Would not decide ${topicWord(e.topic)} alone: asked you`, e.dealId);
+  });
+  bus.subscribe("OwnerAnswered", (e) => {
+    say(`${nameOf(e.familyId)} answered ${e.answer}.`);
+    record(e.familyId, "answered", `You answered ${e.answer} about ${topicWord(e.topic)}; your agent went on`, e.dealId);
+  });
+  bus.subscribe("DealAgreedByAgents", (e) => {
+    say("The two agents agreed (not binding). Both owners now have a confirm card.");
+    record(e.offerFamilyId, "agreed", "Agreed terms with the other agent (not binding) and asked you to confirm", e.dealId);
+    record(e.wantFamilyId, "agreed", "Agreed terms with the other agent (not binding) and asked you to confirm", e.dealId);
+  });
+  bus.subscribe("OwnerDecision", (e) => {
+    say(`${nameOf(e.familyId)} ${e.decision === "confirm" ? "confirmed" : "declined"}${e.reasonCode ? ` (${e.reasonCode.replace(/_/g, " ")})` : ""}.`);
+    record(e.familyId, "decided", e.decision === "confirm" ? "You confirmed" : `You declined${e.reasonCode ? ` (${e.reasonCode.replace(/_/g, " ")}); your agent remembers that` : ""}`, e.dealId);
+  });
+  bus.subscribe("DealConfirmed", (e) => {
+    say("Both owners confirmed. The handover plan opens.");
+    recordBoth(e.dealId, "confirmed", "Both of you confirmed; your agent opened the handover plan");
+  });
+  bus.subscribe("DealDeclined", (e) => {
+    say(`The deal ended: ${e.reason}.`);
+    recordBoth(e.dealId, "ended", "The deal ended without a handover");
+  });
+  bus.subscribe("DealExpired", (e) => {
+    say("The deal expired.");
+    recordBoth(e.dealId, "ended", "The deal expired; nobody was committed");
+  });
+  bus.subscribe("HandoffProposed", (e) => {
+    say(`A way to hand over was proposed: ${e.mode.replace(/_/g, " ")}.`);
+    recordBoth(e.dealId, "handoff", `A handover by ${e.mode.replace(/_/g, " ")} was proposed; it waits for both of you`);
+  });
+  bus.subscribe("HandoffFinished", (e) => {
+    say(e.ok ? "The item changed hands." : "The handover did not happen.");
+    recordBoth(e.dealId, "handoff", e.ok ? "The handover happened" : "The handover did not happen");
+  });
+  bus.subscribe("ReportFiled", (e) => {
+    say("A report was filed and the deal stopped.");
+    recordBoth(e.dealId, "reported", "A problem was reported and the deal stopped");
+  });
 
   const gatekeeper = createGatekeeper({ app, audit: (e) => bump(audit.gatekeeper, e.outcome) });
   const book = createMandateBook({ app, gatekeeper, store: createMandateStore() });
@@ -95,7 +154,14 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   // Translation and every other model call go to the real Meta Model API (Muse Spark).
   const client = metaClientFor(app);
   const language = createLanguageService({ app, client });
-  const trust = createTrust({ app, exportSecret: secrets.REPORT_EXPORT_SECRET, audit: (e) => bump(audit.screening, e.decision) });
+  const trust = createTrust({
+    app, exportSecret: secrets.REPORT_EXPORT_SECRET,
+    audit: (e) => {
+      bump(audit.screening, e.decision);
+      if (e.decision === "redact") record(e.familyId, "screened", `Removed ${e.kinds.map((k) => `a ${k.replace(/_/g, " ")}`).join(", ") || "a contact detail"} from a message before passing it on`, e.dealId);
+      if (e.decision === "block") record(e.familyId, "screened", "Held back a message that looked unsafe", e.dealId);
+    },
+  });
   const negotiation = createNegotiationService({
     app, items: catalog.items, gatekeeper, bus, language, canStartDeal: (f) => trust.reputation.canStartDeal(f),
     mandateOf: (f) => book.negotiationMandate(f, lang(f)),
@@ -154,7 +220,7 @@ async function build(appId: string, opts: { fresh?: boolean } = {}) {
   await persist();
 
   return {
-    app, personas: who, byId, addMember, bus, feed, audit, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake,
+    app, personas: who, byId, addMember, bus, feed, audit, log, record, gatekeeper, book, catalog, negotiation, relay, cards, learning, logistics, trust, language, matcher, intake,
     createdAt: meta.createdAt!, persistence: (backend?.kind ?? "memory") as "memory" | "file" | "postgres", persist, restored: Boolean(saved),
     async wipe() {
       await tail;

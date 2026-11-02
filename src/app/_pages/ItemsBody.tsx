@@ -57,8 +57,8 @@ export async function ItemsBody({ platform: p, scope }: { platform: Platform; sc
           {i.status === "listed" ? <ActionButton url={`/api/items/${i.id}/withdraw`} body={{ as }} variant="ghost" confirmText="Take this off the list?">Take it off the list</ActionButton> : null}
         </Card>
       ))}
-      {scope.app ? null : (
-        <Card title="Give things away from a photo">
+      {w.style === "board" ? null : (
+        <Card title={w.photoTitle ?? "Give things away from a photo"}>
           <PhotoIntake as={as} options={view.options} />
         </Card>
       )}

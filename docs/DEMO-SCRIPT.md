@@ -42,9 +42,10 @@ never say Muse connected unless the manual checks below passed; rehearse three t
   measured. Photo intake uses the real models (Muse Spark vision, SAM 3.1).
 - Identity is light: a phone holds a session, a recovery code is the only way back in; no passwords, no email.
 - All members of an app share one coarse district and one language (the app's first) until a location and language step exists.
-- The status page's "what the agent did alone" is derived from the member's own deals; the audit log is not written yet.
+- The status page's "what the agent did alone" is the member's own log, written by the platform as the agent works (Nov 2);
+  it holds plain-words lines, decisions and counts, never message text. The hands-on two-phone run is `docs/DEMO-TWO-PHONES.md`.
 - Learning numbers come from the synthetic sandbox city, labelled simulated, not from real people.
-- Not built: voice, an edit screen in the interview, deal-room screens for created apps (their deals run through the API and the
+- Not built: voice, an edit screen in the interview, push or email notifications (only the in-page live badge), deal-room screens for created apps (their deals run through the API and the
   status page), real accounts, OAuth for the connector, notifications.
 
 ## Manual checks only the owner can do (before recording)
