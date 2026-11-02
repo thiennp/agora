@@ -1,3 +1,4 @@
+import { COPY_PAGE_RULES, openPageHtml } from "../assistant-page";
 import { EXAMPLES, INTERVIEW_PURPOSE, STEP_ORDER, stepOf, type StepId } from "./script";
 
 /**
@@ -14,6 +15,12 @@ function answersFor(id: StepId): string {
 }
 
 export function agentBrief(baseUrl: string): string {
+  const page = openPageHtml({
+    action: `${baseUrl}/start`,
+    fields: STEP_ORDER.map((id) => [id, "YOUR-ANSWER"]),
+    intro: "Your app is ready to check. Press the button: a page opens with the summary. Nothing is made until you tap Build it there.",
+    button: "Check and build my app",
+  });
   const questions = STEP_ORDER.map((id, i) => {
     const s = stepOf(id);
     return `${i + 1}. **${s.ask}** \`${PARAM(id)}\`\n   ${answersFor(id)}`;
@@ -61,19 +68,13 @@ The build step checks the draft against the app rules again, so nothing you send
 
 If you are Meta AI, or your sandbox refuses live requests (for example LIVE_CRAWL_POLICY_BLOCKED), **do not try the two requests first and do not pretend the app exists. Go straight to the form page below.** The person's own browser sends what you cannot.
 
-**Show the person a small HTML page** (write it as an \`.html\` file and open or preview it in your sandbox browser). It holds one form that **opens** the checked summary, with one hidden field per question (the step name from the list above is the field name, the person's answer is the value, HTML-escaped). The form uses method GET, so no web request leaves your sandbox:
+**Show the person this page** (below, with your answers in place of YOUR-ANSWER). The field names are the step names from the list above; put each answer in as the \`value\`, as plain words (a short code for a tap question, otherwise the person's words; the browser does the encoding, so do not encode anything yourself). ${COPY_PAGE_RULES}
 
 \`\`\`html
-<form method="GET" action="${baseUrl}/start" target="_blank">
-  <p>Your app: <b>NAME</b>. Press the button to check it and build it.</p>
-  <input type="hidden" name="purpose" value="exchange">
-  <input type="hidden" name="actions" value="…">
-  <!-- one hidden input for each of the six steps, in the order above; add name="project" with your projectId if you opened one -->
-  <button type="submit">Check and build my app</button>
-</form>
+${page}
 \`\`\`
 
-Say: "Press the button. A page opens with the summary of your app; tap Build it there. Nothing is made until you tap." The button only opens the summary: the person's tap on **Build it** on that page is what stores the app, so it is still their approval after their typed yes. Do not submit the form yourself.
+Say: "Press the button. A page opens with the summary of your app; tap Build it there. Nothing is made until you tap." The button only opens the summary: the person's tap on **Build it** on that page is what stores the app, so it is still their approval after their typed yes.
 
 If you cannot show an HTML page at all, write the plain link instead: \`${baseUrl}/start?draft=\` plus their answers in the order above, percent-encoded (space %20, comma %2C) and joined by \`~\`. Do not send or open it; give it to the person to open.
 
