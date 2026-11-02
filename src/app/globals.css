@@ -278,8 +278,6 @@ img, svg { vertical-align: middle; }
 .home-steps { list-style: none; counter-reset: step; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
 .home-steps li { counter-increment: step; display: grid; grid-template-columns: 1.5rem 1fr; gap: 8px; align-items: baseline; }
 .home-steps li::before { content: counter(step); color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
-.home-notes { display: grid; gap: 4px; }
-.home-notes p { margin: 0; overflow-wrap: anywhere; }
 @media (min-width: 720px) {
   .home { padding-top: 40px; gap: 48px; }
 }
