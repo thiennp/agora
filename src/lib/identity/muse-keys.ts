@@ -11,8 +11,12 @@ import type { IdentityBackend } from "./identity";
 const MUSE_KEY_PREFIX = "agmk_";
 const MAX_ACTIVE_KEYS_PER_MEMBER = 3;
 
+/** A connect code is for a person pasting a prompt into their assistant right now, not for later. */
+export const CONNECT_CODE_TTL_MS = 15 * 60_000;
+const MAX_OPEN_CONNECT_CODES_PER_MEMBER = 5;
+
 export class MuseKeyError extends Error {
-  constructor(readonly code: "too_many_keys" | "not_found", message: string) {
+  constructor(readonly code: "too_many_keys" | "not_found" | "invalid_connect_code", message: string) {
     super(message);
   }
 }
@@ -25,9 +29,16 @@ interface KeyRow {
   createdAt: number;
   revokedAt?: number;
 }
+interface ConnectRow {
+  appId: string;
+  memberId: string;
+  expiresAt: number;
+}
 interface Doc {
   /** Keyed by the hash of the key. */
   keys: Record<string, KeyRow>;
+  /** One-time connect codes, keyed by the hash of the code. Absent in documents saved before connect codes existed. */
+  connect?: Record<string, ConnectRow>;
 }
 
 /** What a person may see about their keys: never the key, never its hash. */
@@ -46,11 +57,28 @@ export interface MuseKeyStore {
   /** Revoke one of the member's own keys; another member's key id is "not found". Revoking twice is fine. */
   revoke(appId: string, memberId: string, keyId: string): Promise<void>;
   list(appId: string, memberId: string): Promise<MuseKeyInfo[]>;
+  /**
+   * A one-time code the signed-in person puts in the prompt for their own assistant. The assistant swaps it for a key (`redeemConnectCode`),
+   * so no key ever sits in a prompt or a link. 128 random bits, stored hashed, valid 15 minutes, works once.
+   */
+  issueConnectCode(appId: string, memberId: string): Promise<{ code: string; expiresAt: string }>;
+  /** Swaps a live code for a new read-only key of the member who made it. A wrong, used, ended or other-app code is `invalid_connect_code`. */
+  redeemConnectCode(appId: string, code: string, label?: string): Promise<{ keyId: string; key: string; memberId: string }>;
 }
 
 const hashKey = (key: string) => sha256Hex(`agora.musekey.v1|${key}`);
+const hashConnect = (code: string) => sha256Hex(`agora.connectcode.v1|${code}`);
 
-export function createMuseKeyStore(backend?: IdentityBackend, now: () => number = Date.now): MuseKeyStore {
+function issueKey(d: Doc, appId: string, memberId: string, label: string, now: number): { keyId: string; key: string } {
+  const mine = Object.values(d.keys).filter((k) => k.appId === appId && k.memberId === memberId && !k.revokedAt);
+  if (mine.length >= MAX_ACTIVE_KEYS_PER_MEMBER) throw new MuseKeyError("too_many_keys", "Revoke an old key before making a new one.");
+  const key = MUSE_KEY_PREFIX + randomBytes(32).toString("base64url");
+  const keyId = randomBytes(8).toString("base64url");
+  d.keys[hashKey(key)] = { keyId, appId, memberId, label: label.trim().slice(0, 40), createdAt: now };
+  return { keyId, key };
+}
+
+export function createMuseKeyStore(backend?: IdentityBackend, now: () => number = () => Date.now()): MuseKeyStore {
   let doc: Doc | undefined;
   let tail: Promise<unknown> = Promise.resolve();
   const loaded = async (): Promise<Doc> => {
@@ -69,14 +97,28 @@ export function createMuseKeyStore(backend?: IdentityBackend, now: () => number 
     return run;
   };
   return {
-    issue: (appId, memberId, label = "") =>
+    issue: (appId, memberId, label = "") => mutate((d) => issueKey(d, appId, memberId, label, now())),
+    issueConnectCode: (appId, memberId) =>
       mutate((d) => {
-        const mine = Object.values(d.keys).filter((k) => k.appId === appId && k.memberId === memberId && !k.revokedAt);
-        if (mine.length >= MAX_ACTIVE_KEYS_PER_MEMBER) throw new MuseKeyError("too_many_keys", "Revoke an old key before making a new one.");
-        const key = MUSE_KEY_PREFIX + randomBytes(32).toString("base64url");
-        const keyId = randomBytes(8).toString("base64url");
-        d.keys[hashKey(key)] = { keyId, appId, memberId, label: label.trim().slice(0, 40), createdAt: now() };
-        return { keyId, key };
+        const t = now();
+        d.connect ??= {};
+        for (const [h, c] of Object.entries(d.connect)) if (c.expiresAt <= t) delete d.connect[h];
+        const open = Object.values(d.connect).filter((c) => c.appId === appId && c.memberId === memberId);
+        if (open.length >= MAX_OPEN_CONNECT_CODES_PER_MEMBER) throw new MuseKeyError("too_many_keys", "You already have several unused connect codes. Use one, or wait a few minutes.");
+        const code = randomBytes(16).toString("base64url");
+        d.connect[hashConnect(code)] = { appId, memberId, expiresAt: t + CONNECT_CODE_TTL_MS };
+        return { code, expiresAt: new Date(t + CONNECT_CODE_TTL_MS).toISOString() };
+      }),
+    redeemConnectCode: (appId, code, label = "My assistant") =>
+      mutate((d) => {
+        const bad = () => new MuseKeyError("invalid_connect_code", "That connect code is wrong, used or ended. Ask the person for a new one from the app.");
+        if (!code || code.length > 64) throw bad();
+        const h = hashConnect(code);
+        const row = d.connect?.[h];
+        if (!row || row.appId !== appId || row.expiresAt <= now()) throw bad();
+        // Burn the code first, so a code that cannot get a key (too many keys) is not left lying around half used.
+        delete d.connect![h];
+        return { ...issueKey(d, appId, row.memberId, label, now()), memberId: row.memberId };
       }),
     async authenticate(key) {
       if (!key || key.length > 128 || !key.startsWith(MUSE_KEY_PREFIX)) return undefined;

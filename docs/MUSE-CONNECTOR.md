@@ -24,6 +24,29 @@ cards waiting for you.
 - Muse may need to be in a country where it is offered. If something below does not match your screen, stop and tell us;
   everything on the status page works without Muse.
 
+## Fastest way: paste one message (connect your assistant)
+
+1. Open the app's share link. The first visit makes your record; on the app page tap **Get the message for my assistant**.
+2. Copy the message and paste it into Muse, Meta AI or any bot that can open a link and send a POST request.
+3. The message holds a **one-time connect code** (works once, ends in 15 minutes). The assistant opens `/app/{app}/connect.md`, asks you, then swaps the code for a read-only key (`POST /api/apps/{app}/connect`).
+4. **Right after connecting it must tell you, in its own words and tone, what it knows about the app and what it can do for you** (and what it cannot). The app gives it only a minimal description (`about` in the connect answer and the brief); making it understandable is the assistant's job.
+5. It then polls `GET /api/muse/{app}/updates` (first call returns only a cursor; later calls with `?since=<cursor>` return new deal events and how many cards wait for you) and tells you what is new. An assistant that can receive https requests may also register a webhook (below).
+
+An assistant that cannot send a POST request or set an `Authorization` header cannot connect this way; use the status page in the app instead.
+
+### Updates (polling)
+
+`GET /api/muse/{app}/updates?since=<cursor>&limit=20`, `Authorization: Bearer <key>`. Answer: `cursor` (send it back as `since`), `events` (your own deals' changes after `since`, oldest first, decisions only, never message text), `more`, `waiting` (cards waiting: questions, confirmations, offers; always the current number), `nextPollInSeconds`, and your webhook state. Same data and limits as `/actions`; not other people's posts. Also an MCP tool, `get_updates`.
+
+### Webhook (optional, best effort)
+
+`PUT /api/muse/{app}/webhook` with `{"url": "https://...", "secret": "<16-128 chars, optional>"}` (key as Bearer). `GET` shows it (never the secret), `DELETE` removes it. This is the **only thing a key can write**: where to send "something changed" for its own member. It cannot answer, confirm or change anything.
+
+- The address must be public https on the default port: no IP literal, no `localhost` or internal names, no credentials, and every address it resolves to must be public (checked at registration and before each send; redirects are not followed; 5 second timeout).
+- After a change is saved, if the member has new events or more cards waiting, the app sends one `POST` with JSON `{type:"agora.update", app, newEvents, more, waiting, cursor, pollUrl}` and headers `x-agora-timestamp` and `x-agora-signature: sha256=HMAC-SHA256(secret, "<timestamp>.<body>")`. No text, names or cards travel. The receiver should reject a wrong signature or a timestamp older than 5 minutes and answer 2xx.
+- The cursor moves only after a 2xx, so a missed signal is repeated with the next change. After 5 failed sends in a row the webhook stops (register again). Revoking all of the member's keys also stops it. Polling stays the reliable path; sending happens in the same process after the answer, so on a host that freezes work after a response it can be lost.
+- The signing secret is stored in the clear in the state store (it has to sign), shown once, never returned.
+
 ## Step 1: make a key (in the app)
 
 1. Open your status page: `https://agentwitch.com/agora/app/{app}/muse/{your id}` (the "My status" link on the app page).
@@ -37,20 +60,21 @@ Ask Muse, in a chat: *"Create a custom connector for this API: `https://agentwit
 It uses a Bearer key. My app is `{app}`."* When Muse asks for the key, paste it there (Muse keeps credentials in its own
 store). Then ask: *"What is my agent doing in {app}?"*
 
-The description lists four read-only calls, all `GET`, each with `Authorization: Bearer <key>`:
+The description lists five read-only calls, all `GET`, each with `Authorization: Bearer <key>`:
 
 | Call | Answers |
 |---|---|
 | `/api/muse/{app}/overview` | what the app is for, its features and rules |
 | `/api/muse/{app}/status` | your status, grouped |
 | `/api/muse/{app}/actions?limit=20` | your agent's recent actions, newest first |
+| `/api/muse/{app}/updates?since=` | what is new since a cursor, and how many cards wait (poll this) |
 | `/api/muse/{app}/cards` | cards waiting for you (read only) |
 
 ## Step 2, alternative (route B, only if your Muse has an MCP setting)
 
 In Muse: Settings → Connectors → Add custom connector → address
 `https://agentwitch.com/agora/api/muse/{app}/mcp`, and give the key as the Bearer key (an `X-Api-Key` header also works).
-The four tools are `get_app_overview`, `get_my_status`, `get_my_recent_actions` and `get_pending_cards`. All are marked
+The five tools are `get_app_overview`, `get_my_status`, `get_my_recent_actions`, `get_updates` and `get_pending_cards`. All are marked
 read only. Sign-in by OAuth is **not** offered: the key is the sign-in.
 
 ## Stop it
@@ -67,4 +91,6 @@ On the same page tap **Revoke** next to the key. The next request from Muse is r
   per key, 120 per address, 20 wrong keys per 15 minutes per address.
 - MCP is stateless streamable HTTP with JSON replies, POST only; no session id to steal.
 - Answers carry a `notice` telling the model the text is data, not instructions.
-- Tests: `src/app/api/muse.test.ts`.
+- Connect codes: `POST /api/apps/{app}/connect-code` (the person's session) and `POST /api/apps/{app}/connect` (the assistant; 20 wrong codes per 15 minutes per address). 128 random bits, stored hashed, 15 minutes, once (`src/lib/identity/muse-keys.ts`). The brief is `src/lib/app-config/connect-page.ts`.
+- Webhooks: `src/lib/identity/webhooks.ts` (store), `src/lib/webhook-url.ts` (address checks), `src/app/_composition/webhooks.ts` (delivery, called after every saved write in `route`).
+- Tests: `src/app/api/muse.test.ts`, `src/app/api/connect.test.ts`.

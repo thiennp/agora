@@ -5,6 +5,7 @@ import { getAppStore } from "./apps";
 import { assertHuman } from "@/lib/identity";
 import { authorize, isStoredApp } from "./identity";
 import { getPlatform, type Platform, type PersonaKey } from "./platform";
+import { notifyWebhooks } from "./webhooks";
 
 /** Stable error shape for every route (API-03): { error: { code, message } }. */
 export class HttpError extends Error {
@@ -123,7 +124,11 @@ export function route<S extends z.ZodTypeAny>(opts: { schema: S; params?: string
       }
       const as = ((input as { as?: PersonaKey }).as ?? "a") as PersonaKey;
       const result = await run({ input, platform, params, as });
-      if (req.method !== "GET") await platform.persist();
+      if (req.method !== "GET") {
+        await platform.persist();
+        // After the change is saved, tell the assistants that asked to be told. Never waits for them and never fails this request.
+        if (appId !== undefined) void notifyWebhooks(appId).catch(() => undefined);
+      }
       return result;
     });
 }

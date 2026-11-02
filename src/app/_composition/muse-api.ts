@@ -8,15 +8,15 @@ import { createRateLimiter } from "@/lib/rate-limit";
 import { HttpError, publicRoute, Reply } from "./api";
 import { appSummary } from "./app-views";
 import { getAppStore } from "./apps";
-import { getIdentityStore, getMuseKeyStore, isStoredApp } from "./identity";
-import { memberActionsFor, memberStatusFor } from "./member-status";
+import { getIdentityStore, getMuseKeyStore, getWebhookStore, isStoredApp } from "./identity";
+import { memberActionsFor, memberStatusFor, memberUpdatesFor } from "./member-status";
 import { getPlatform } from "./platform";
 
 /**
  * Read-only access for a person's own Muse (BR-44, docs/PLAN.md §2c step 6, docs/MUSE-CONNECTOR.md). One reader, two doors: the HTTP
  * API a Muse can turn into a custom connector (`/api/muse/{app}/...`) and the same four reads over MCP (`/api/muse/{app}/mcp`).
  *
- * There is no write anywhere in here. The principal is `via: "muse"`, which `assertHuman` refuses, and nothing in this file imports
+ * There is no write anywhere in here (the one thing a key may write, its own webhook address, lives in `api/muse/{app}/webhook` and only signals). The principal is `via: "muse"`, which `assertHuman` refuses, and nothing in this file imports
  * a function that answers, confirms, declines or edits a card, a deal, an item or a rule: only the status and action readers.
  * A key opens one member of one app. Responses hold decisions, counts and the member's own cards; never a key, a hash, a session,
  * a recovery code, another member's data, an address or message text (BR-30).
@@ -27,9 +27,12 @@ const MUSE_NOTICE =
 /** Per key: a Muse reading status a few times a minute is normal; a loop is not. */
 const museKeyLimiter = createRateLimiter({ limit: 60, windowMs: 60_000, liftable: true });
 /** Per address, for every request (before the key is looked up) and, tighter, for wrong keys. Keys are 256 random bits, so this is hygiene. */
-const museIpLimiter = createRateLimiter({ limit: 120, windowMs: 60_000, liftable: true });
+export const museIpLimiter = createRateLimiter({ limit: 120, windowMs: 60_000, liftable: true });
 const museFailLimiter = createRateLimiter({ limit: 20, windowMs: 15 * 60_000 });
+/** Wrong connect codes are the only thing to guess there (128 bits, so this is hygiene): tight per address, never lifted. */
+export const connectLimiter = createRateLimiter({ limit: 20, windowMs: 15 * 60_000 });
 export const resetMuseRateLimits = () => {
+  connectLimiter.reset();
   museKeyLimiter.reset();
   museIpLimiter.reset();
   museFailLimiter.reset();
@@ -47,7 +50,7 @@ function museKeyOf(req: Request): string | undefined {
 const ipOf = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 
 /** The member a key stands for in the app asked for. Wrong app, wrong key, revoked key and a member who is gone all look the same: 401. */
-async function authorizeMuse(req: Request, appId: string): Promise<Principal & { name: string }> {
+export async function authorizeMuse(req: Request, appId: string): Promise<Principal & { name: string }> {
   const key = museKeyOf(req);
   const hit = await getMuseKeyStore().authenticate(key);
   const member = hit && hit.appId === appId && isStoredApp(appId) ? (await getIdentityStore().members(appId)).find((m) => m.memberId === hit.memberId) : undefined;
@@ -78,6 +81,15 @@ export function museReads(who: Principal & { name: string }) {
     async actions(limit = 20) {
       return { notice: MUSE_NOTICE, actions: await memberActionsFor(await platform(), who.memberId, limit), note: "Built from your own deals; the audit log is not written yet." };
     },
+    async updates(since?: string, limit = 20) {
+      return {
+        notice: MUSE_NOTICE,
+        ...(await memberUpdatesFor(await platform(), who.memberId, since, limit)),
+        howToUse: "Keep `cursor` and send it back as `since` next time. Tell the person in a few words what is new in `events`, and if `waiting.total` is more than zero that cards wait for them in the app. You cannot answer them.",
+        nextPollInSeconds: 60,
+        webhook: (await getWebhookStore().get(who.appId, who.memberId)) ?? null,
+      };
+    },
     async cards() {
       const s = await memberStatusFor(await platform(), me);
       return {
@@ -98,7 +110,7 @@ export function museRoute<S extends z.ZodTypeAny>(schema: S, read: (r: ReturnTyp
   });
 }
 
-/** The same four reads as MCP tools, for one member. Every tool is read-only; none takes a member or app, so none can reach another's. */
+/** The same reads as MCP tools, for one member. Every tool is read-only; none takes a member or app, so none can reach another's. */
 function createMuseMcpServer(who: Principal & { name: string }): McpServer {
   const reads = museReads(who);
   const server = new McpServer({ name: "agora-muse", version: "0.1.0" });
@@ -110,6 +122,11 @@ function createMuseMcpServer(who: Principal & { name: string }): McpServer {
     "get_my_recent_actions",
     { title: "My agent's recent actions", description: "The latest state changes of my deals, newest first. Read only.", inputSchema: { limit: z.number().int().min(1).max(50).optional() }, annotations: readOnly },
     async ({ limit }) => text(await reads.actions(limit)),
+  );
+  server.registerTool(
+    "get_updates",
+    { title: "What is new for me", description: "Changes in my deals since a cursor (omit it the first time) and how many cards wait for me. Read only. Keep the returned cursor for next time.", inputSchema: { since: z.string().max(40).optional(), limit: z.number().int().min(1).max(50).optional() }, annotations: readOnly },
+    async ({ since, limit }) => text(await reads.updates(since, limit)),
   );
   server.registerTool("get_pending_cards", { title: "Cards waiting for me", description: "Questions, confirmations and offers that wait for my own decision. I can only read them: they are answered in the app, never by Muse.", inputSchema: {}, annotations: readOnly }, async () => text(await reads.cards()));
   return server;
