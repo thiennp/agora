@@ -79,7 +79,7 @@ export function museReads(who: Principal & { name: string }) {
       return { notice: MUSE_NOTICE, ...(await memberStatusFor(await platform(), me)) };
     },
     async actions(limit = 20) {
-      return { notice: MUSE_NOTICE, actions: await memberActionsFor(await platform(), who.memberId, limit), note: "Built from your own deals; the audit log is not written yet." };
+      return { notice: MUSE_NOTICE, actions: await memberActionsFor(await platform(), who.memberId, limit), note: "Your agent's own log: decisions and counts, never message text." };
     },
     async updates(since?: string, limit = 20) {
       return {

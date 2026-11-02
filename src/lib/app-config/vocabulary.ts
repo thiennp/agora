@@ -28,6 +28,8 @@ export interface Vocabulary {
   dealsEmpty: string;
   openRoom: string;
   handoffTitle: string;
+  /** The photo intake card (several items from one photo); an exchange of things only. */
+  photoTitle: string;
   /** Whether a condition is asked (an exchange of things); a board does not ask. */
   askCondition: boolean;
 }
@@ -44,7 +46,7 @@ export function appVocabulary(app: Pick<AppConfig, "name" | "policies">): Vocabu
       found: "Your agent found a post that fits:", foundNone: "Nothing fits yet. Your agent keeps looking, and when another person posts what you need it shows up here.",
       startMatch: "Ask my agent to reach out", matchBusy: "Your agent is on it…",
       dealsTitle: "Your conversations", dealsEmpty: "Nothing yet. When your agent finds a post that fits one of yours and you ask it to reach out, it shows up here. If someone else's agent reaches out to you, you get a card first.",
-      openRoom: "Open the conversation", handoffTitle: "Meeting up", askCondition: false,
+      openRoom: "Open the conversation", handoffTitle: "Meeting up", photoTitle: "", askCondition: false,
     };
   }
   return {
@@ -56,6 +58,6 @@ export function appVocabulary(app: Pick<AppConfig, "name" | "policies">): Vocabu
     found: "Your agent found:", foundNone: "No match yet. Your agent keeps looking.",
     startMatch: "Ask my agent to propose this", matchBusy: "Your agent is on it…",
     dealsTitle: "Your deals", dealsEmpty: "No deals yet. When your agent finds a match for something you need and you ask it to propose it, the deal shows up here.",
-    openRoom: "Open the deal room", handoffTitle: "How the item changes hands", askCondition: true,
+    openRoom: "Open the deal room", handoffTitle: "How the item changes hands", photoTitle: "List several things from one photo", askCondition: true,
   };
 }

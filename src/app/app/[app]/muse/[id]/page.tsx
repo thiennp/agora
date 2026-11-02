@@ -1,11 +1,15 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { Badge } from "@/components/Badge";
 import { BarList } from "@/components/BarList";
 import { Banner, Card } from "@/components/Card";
+import { ConfirmCard } from "@/components/ConfirmCard";
 import { LineChart } from "@/components/LineChart";
 import { MuseKeyPanel } from "@/components/MuseKeyPanel";
+import { QuestionCard } from "@/components/QuestionCard";
+import { ScopeProvider } from "@/components/ScopeContext";
 import { getMuseKeyStore } from "@/app/_composition/identity";
 import { appUrl } from "@/app/_composition/public-url";
 import { appVocabulary, loadApp } from "@/lib/app-config";
@@ -18,7 +22,8 @@ const bars = (xs: { label: string; value: number }[]) => xs.map((x, i) => ({ ...
 
 /**
  * `/app/{app}/muse/{id}` (served at `/agora/app/{app}/muse/{id}`), docs/PLAN.md §2c step 5, BR-43. One member's agent in one app,
- * grouped. Read-only: answering cards is a separate step. Anyone but that member gets the not-found page (see `memberStatusView`).
+ * grouped. The cards that wait are answered here too, with the person's own tap (the same cards as `/cards`). Anyone but that member
+ * gets the not-found page (see `memberStatusView`).
  */
 export default async function MemberStatusPage({ params }: { params: Promise<{ app: string; id: string }> }) {
   const { app, id } = await params;
@@ -30,9 +35,12 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
   const total = s.deals.length + s.items.length;
   const w = appVocabulary(await loadApp(app));
   const board = w.style === "board";
+  const scope = { app, as: "a" as const, words: w };
 
   return (
+    <ScopeProvider scope={scope}>
     <div className="stack-lg">
+      <AutoRefresh />
       <div>
         <p className="small muted">Your agent in <Link href={`/app/${s.app.id}`}>{s.app.name}</Link></p>
         <h1>{s.member.name ? `${s.member.name}'s agent` : "Your agent"}</h1>
@@ -43,12 +51,16 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
 
       <Card title={<>Waiting on you <Badge tone={waiting ? "warn" : "neutral"}>{waiting}</Badge></>} prominent={waiting > 0}>
         {waiting === 0 ? <p className="muted">Nothing needs you. Your agent only stops to ask when it cannot decide alone.</p> : null}
-        {waiting > 0 ? <p><Link className="btn primary" href={`/app/${s.app.id}/cards`}>Answer them</Link></p> : null}
-        <ul className="list">
-          {s.waiting.questions.map((q) => <li key={q.id}>{q.text}</li>)}
-          {s.waiting.confirmations.map((c) => <li key={c.id}>Confirm or decline: {c.item}{board ? null : <span className="small muted"> · you are {c.role}</span>}</li>)}
-          {s.waiting.offers.map((o) => <li key={o.id}>{o.text}</li>)}
-        </ul>
+        <div className="stack">
+          {s.waiting.questions.map((q) => <QuestionCard key={q.id} id={q.id} as="a" text={q.text} answers={q.answers} canRemember={q.canRemember} language={q.language} />)}
+          {s.waiting.confirmations.map((c) => <ConfirmCard key={c.id} id={c.id} dealId={c.dealId} as="a" item={c.item} role={c.role} />)}
+        </div>
+        {s.waiting.offers.length ? (
+          <>
+            <ul className="list">{s.waiting.offers.map((o) => <li key={o.id}>{o.text}</li>)}</ul>
+            <p><Link href={`/app/${s.app.id}/cards`}>Answer these suggestions</Link></p>
+          </>
+        ) : null}
       </Card>
 
       <Card title={<>{board ? "Conversations" : "Deals"} <Badge>{s.deals.length}</Badge></>}>
@@ -77,8 +89,17 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
 
       <Card title="What your agent did alone">
         <p>
-          <strong>{s.alone.dealsRunning}</strong> deals in progress · <strong>{s.alone.roundsHandled}</strong> negotiation rounds handled · <strong>{s.alone.agreedWithoutYou}</strong> agreed with the other agent. It asked you before every commitment, price, place or personal detail.
+          <strong>{s.alone.dealsRunning}</strong> {board ? "conversations" : "deals"} in progress · <strong>{s.alone.roundsHandled}</strong> negotiation rounds handled · <strong>{s.alone.agreedWithoutYou}</strong> agreed with the other agent. It asked you before every commitment, price, place or personal detail.
         </p>
+        {s.log.length === 0 ? <p className="muted small">Nothing yet. Every step your agent takes for you is written here, in plain words.</p> : (
+          <ol className="list" aria-label="Your agent's log, newest first">
+            {s.log.map((e, i) => (
+              <li key={`${e.at}-${i}`}>
+                <span className="small muted">{e.at.slice(0, 16).replace("T", " ")}</span> · {e.dealId ? <Link href={`/app/${s.app.id}/deals/${e.dealId}`}>{e.text}</Link> : e.text}
+              </li>
+            ))}
+          </ol>
+        )}
         <LineChart
           title="Agent activity, last 7 days"
           summary={`Steps your agent took on your deals per day: ${s.activity.counts.join(", ")}.`}
@@ -112,5 +133,6 @@ export default async function MemberStatusPage({ params }: { params: Promise<{ a
         <MuseKeyPanel appId={app} initial={keys} />
       </Card>
     </div>
+    </ScopeProvider>
   );
 }

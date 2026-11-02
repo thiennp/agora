@@ -638,6 +638,11 @@ copy substitutes the screened text, so after a restart the sender sees that), no
 stored encrypted). Encrypted fields use `FIELD_ENCRYPTION_SECRET` (the former hard-coded demo key is removed), so the saved state is only as private as that secret and the database. Deleting an app's data is not built yet.
 
 
+**Member log (Nov 2).** The composition root keeps `platform.log`, a tracked, bounded array of `{ at, memberId, dealId?, kind, text }`
+written by `platform.record` from the deal events, the screening audit and the items and match routes (listed, found n fits,
+reached out, asked you, agreed, confirmed, handover, screened a contact detail). It is the "what your agent did alone" group of the
+status page and the Muse `actions` read. Plain words and ids only: no message text, no other member's id, no address.
+
 ## 11c. Photo intake
 
 `POST /api/intake/photo` takes one photo (data URL; the page shrinks it to 1600 px and re-encodes it first) and returns item drafts. The steps, all in `src/features/intake`:

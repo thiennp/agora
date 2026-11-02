@@ -21,6 +21,9 @@ export const POST = route({ schema }, async ({ platform, input }) => {
   const offer = await platform.catalog.items.get(input.offerItemId);
   if (!offer) throw new HttpError(404, "not_found", "That item does not exist.");
   const deal = await platform.negotiation.start({ offerItemId: offer.id, wantItemId: want.id, offerFamilyId: offer.familyId, wantFamilyId: me.id });
+  const label = offer.description || platform.app.catalog.categories.find((c) => c.id === offer.category)?.label || offer.category;
+  platform.record(me.id, "reached_out", `Reached out to the other agent about ${label}`, deal.id);
+  platform.record(offer.familyId, "approached", `Another member's agent asked about your ${label}; your agent is talking to it`, deal.id);
   await platform.negotiation.run(deal.id);
   await platform.cards.settled();
   return { dealId: deal.id };

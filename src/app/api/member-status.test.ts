@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { appPageView } from "@/app/_composition/app-views";
-import { memberStatusFor, memberStatusView } from "@/app/_composition/member-status";
+import { memberActionsFor, memberStatusFor, memberStatusView } from "@/app/_composition/member-status";
 import { loadApp } from "@/lib/app-config";
 import { POST as createApp } from "./apps/route";
 import { POST as join } from "./apps/[app]/join/route";
+import { GET as waiting } from "./apps/[app]/waiting/route";
 import { createTestApp, endWorld, resetWorld, startJacketDeal } from "./test-support";
 
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
@@ -43,7 +44,7 @@ describe("member status page (BR-43)", () => {
     expect(await memberStatusView("club-s", member.memberId, member.cookie.replace("agora_s_club-s", "agora_s_other"))).toEqual({ kind: "denied" });
   });
 
-  it("has empty, working groups for a new member and says the audit log is missing", async () => {
+  it("has empty, working groups and an empty log for a new member", async () => {
     const { member } = await setup();
     const v = await memberStatusView("club-s", member.memberId, member.cookie);
     if (v.kind !== "ok") throw new Error("denied");
@@ -52,7 +53,42 @@ describe("member status page (BR-43)", () => {
     expect([s.deals, s.items, s.lessons, s.rules, s.dealsByState, s.itemsByStatus]).toEqual([[], [], [], [], [], []]);
     expect(s.alone).toEqual({ agreedWithoutYou: 0, roundsHandled: 0, dealsRunning: 0 });
     expect(s.activity.counts).toEqual([0, 0, 0, 0, 0, 0, 0]);
-    expect(s.missing.join(" ")).toMatch(/audit log/);
+    expect(s.log).toEqual([]);
+    expect(s.missing).toEqual([]);
+  });
+
+  it("writes each member their own log of what the agent did, in plain words, and serves it as their actions (BR-43, BR-44)", async () => {
+    const t = await createTestApp();
+    await startJacketDeal(t);
+    const p = t.platform;
+    const mine = await memberStatusFor(p, { id: t.b.id, name: "Jonas", role: "member" });
+    const theirs = await memberStatusFor(p, { id: t.a.id, name: "Mia", role: "member" });
+    // The wanting side: noted the need, found the fit, reached out. The offering side: listed, was approached.
+    expect(mine.log.map((e) => e.kind)).toEqual(expect.arrayContaining(["listed", "found", "reached_out"]));
+    expect(theirs.log.map((e) => e.kind)).toEqual(expect.arrayContaining(["listed", "approached"]));
+    expect(mine.log[0]!.at >= mine.log[mine.log.length - 1]!.at).toBe(true); // newest first
+    // Every step the agent took counts as activity, and the log never names the other member or carries message text.
+    expect(mine.activity.counts.reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(mine.log.length);
+    expect(JSON.stringify(mine.log)).not.toContain(t.a.id);
+    expect(JSON.stringify(theirs.log)).not.toContain(t.b.id);
+    const actions = await memberActionsFor(p, t.b.id, 5);
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.length).toBeLessThanOrEqual(5);
+    expect(actions[0]!.what).toBe(mine.log[0]!.text);
+    // The log is part of the app's saved state.
+    expect(p.log.some((e) => e.memberId === t.b.id && e.kind === "reached_out")).toBe(true);
+  });
+
+  it("counts what waits for this phone's member, and only with that app's session", async () => {
+    const t = await createTestApp();
+    await startJacketDeal(t);
+    const r = await waiting(t.get(t.a, `/api/apps/${t.appId}/waiting`), ctx({ app: t.appId }));
+    expect(r.status).toBe(200);
+    const body = (await r.json()) as { questions: number; confirmations: number; total: number };
+    expect(body.total).toBe(body.questions + body.confirmations);
+    const a = await memberStatusFor(t.platform, { id: t.a.id, name: "", role: "member" });
+    expect(body.total).toBe(a.waiting.questions.length + a.waiting.confirmations.length);
+    expect((await waiting(new Request(`http://localhost/api/apps/${t.appId}/waiting`), ctx({ app: t.appId }))).status).toBe(401);
   });
 
   it("groups cards, deals, items and counts for a member who has them, and shows no message text or other member's id", async () => {

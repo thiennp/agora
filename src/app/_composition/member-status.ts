@@ -5,9 +5,11 @@ import { getPlatform, type Platform } from "./platform";
 /**
  * The member status page's data (BR-43, docs/PLAN.md §2c step 5): everything one member's agent works on in one app, grouped.
  * Built only from the existing read views, keyed by the member id. It holds decisions, counts and short labels, never message
- * text, addresses or another member's data (BR-30). The audit store is a stub today, so "what the agent did alone" is derived
- * from the member's own deals and says so.
+ * text, addresses or another member's data (BR-30). "What the agent did alone" comes from the member's own log, written by the
+ * platform as the agent works (`platform.record`, saved with the app's state), with the deal history as a fallback for apps
+ * that ran before the log existed.
  */
+const LOG_LINES = 30;
 const DAYS = 7;
 const DAY_MS = 24 * 3_600_000;
 
@@ -21,7 +23,7 @@ interface MemberStatus {
   app: { id: string; name: string };
   member: { id: string; name: string; role: "creator" | "member" };
   waiting: {
-    questions: { id: string; dealId: string; text: string; expiresAt: string }[];
+    questions: { id: string; dealId: string; text: string; expiresAt: string; answers: { id: "yes" | "no"; label: string }[]; canRemember: boolean; language: string }[];
     confirmations: { id: string; dealId: string; item: string; role: string }[];
     offers: { id: string; text: string }[];
   };
@@ -31,6 +33,8 @@ interface MemberStatus {
   itemsByStatus: { label: string; value: number }[];
   alone: { agreedWithoutYou: number; roundsHandled: number; dealsRunning: number };
   activity: { days: string[]; counts: number[] };
+  /** The member's own log, newest first: what the agent did, decided or asked, in plain words. */
+  log: { at: string; text: string; kind: string; dealId?: string }[];
   lessons: { id: string; text: string; seenTimes: number; level: string }[];
   rules: { id: string; topic: string; expiresAt?: string }[];
   /** Parts that cannot be filled yet, said on the page instead of shown empty. */
@@ -46,7 +50,7 @@ const tally = (xs: string[]) => {
 /** The member's status from the running platform of their app. An unknown member id simply has nothing (empty groups). */
 export async function memberStatusFor(p: Platform, member: { id: string; name: string; role: "creator" | "member" }, now = Date.now()): Promise<MemberStatus> {
   await p.cards.settled();
-  const questions = p.cards.questionsFor(member.id).map((q) => ({ id: q.id, dealId: q.dealId, text: q.text, expiresAt: q.expiresAt }));
+  const questions = p.cards.questionsFor(member.id).map((q) => ({ id: q.id, dealId: q.dealId, text: q.text, expiresAt: q.expiresAt, answers: q.suggestedAnswers, canRemember: q.canRemember, language: q.language }));
   const rawDeals = await p.negotiation.listForFamily(member.id);
   const itemOf = async (id: string) => {
     const i = await p.catalog.items.get(id);
@@ -68,8 +72,10 @@ export async function memberStatusFor(p: Platform, member: { id: string; name: s
   const items = mine.map((i) => ({ id: i.id, kind: i.kind, text: i.description || p.app.catalog.categories.find((c) => c.id === i.category)?.label || i.category, status: i.status }));
   const days = Array.from({ length: DAYS }, (_, k) => new Date(now - (DAYS - 1 - k) * DAY_MS).toISOString().slice(0, 10));
   const counts = days.map(() => 0);
-  for (const d of rawDeals) for (const h of d.history) {
-    const k = days.indexOf(String(h.at).slice(0, 10));
+  const mine_log = p.log.filter((e) => e.memberId === member.id);
+  const stepsOf = mine_log.length ? mine_log.map((e) => e.at) : rawDeals.flatMap((d) => d.history.map((h) => String(h.at)));
+  for (const at of stepsOf) {
+    const k = days.indexOf(at.slice(0, 10));
     if (k >= 0) counts[k]!++;
   }
   const rules = p.book.list(member.id).map((r) => ({ id: r.id, topic: r.topic.replace(/_/g, " "), expiresAt: r.expiresAt }));
@@ -88,9 +94,10 @@ export async function memberStatusFor(p: Platform, member: { id: string; name: s
       dealsRunning: deals.filter((d) => d.open).length,
     },
     activity: { days, counts },
+    log: mine_log.slice(-LOG_LINES).reverse().map((e) => ({ at: e.at, text: e.text, kind: e.kind, ...(e.dealId ? { dealId: e.dealId } : {}) })),
     lessons: await p.learning.whatILearned(member.id),
     rules,
-    missing: ["The audit log is not written yet, so this page shows what your agent did from your own deals, not a full log."],
+    missing: [],
   };
 }
 
@@ -125,8 +132,30 @@ interface MemberAction {
   state: string;
 }
 
+/**
+ * Everything the member's agent did, unsorted: their own log (what it did, decided or asked) when the app has one; for an app that
+ * ran before the log existed, the state changes of their own deals. Decisions only, never message text.
+ */
 async function allActionsOf(p: Platform, memberId: string): Promise<MemberAction[]> {
   await p.cards.settled();
+  const mine = p.log.filter((e) => e.memberId === memberId);
+  if (mine.length) {
+    const items = new Map<string, string>();
+    const itemOf = async (dealId: string) => {
+      if (!items.has(dealId)) {
+        const d = await p.negotiation.get(dealId);
+        const i = d ? await p.catalog.items.get(d.offerItemId) : null;
+        items.set(dealId, i ? i.description || i.category : "an item");
+      }
+      return items.get(dealId)!;
+    };
+    const out: MemberAction[] = [];
+    for (const e of mine) {
+      const d = e.dealId ? await p.negotiation.get(e.dealId) : null;
+      out.push({ at: e.at, dealId: e.dealId ?? "", item: e.dealId ? await itemOf(e.dealId) : "", what: e.text, state: d ? (STATE_LABEL[d.state] ?? d.state) : "" });
+    }
+    return out;
+  }
   const out: MemberAction[] = [];
   for (const d of await p.negotiation.listForFamily(memberId)) {
     const i = await p.catalog.items.get(d.offerItemId);
@@ -138,10 +167,7 @@ async function allActionsOf(p: Platform, memberId: string): Promise<MemberAction
   return out;
 }
 
-/**
- * The member's recent actions (BR-44): the state changes of their own deals, newest first. Decisions only, never message text. Like
- * "what it did alone" this stands in for the audit log, which is not written yet.
- */
+/** The member's recent actions (BR-44), newest first. */
 export async function memberActionsFor(p: Platform, memberId: string, limit = 20): Promise<MemberAction[]> {
   return (await allActionsOf(p, memberId)).sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(1, Math.min(limit, 50)));
 }
