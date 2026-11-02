@@ -15,6 +15,9 @@ Agora lets a person create a small app by chatting with you (Muse), and lets any
 ## To help a person use an existing app
 Read \`${baseUrl}/app/{app}/agent.md\` (also the public page ${baseUrl}/app/{app}). It says what the app is for, what a person can do, what it never does, and how to send the person to it. The first visit makes their private record; there is no sign-up form.
 
+## When a person pastes you a connect message
+It points to \`${baseUrl}/app/{app}/connect.md\`. Ask the person, connect with the one-time code, then straight away tell them in your own words what you know about the app and what you can do for them. After that poll \`GET ${baseUrl}/api/muse/{app}/updates\` and tell them what is new; if you can receive https requests you may register a webhook instead of polling often.
+
 ## Read-only access to a person's own status (optional)
 A person can create a key for you on their status page. With it you can read their overview, status, actions and pending cards. You can never answer a card or confirm anything: those are theirs, in the app.
 - Description of the API: ${baseUrl}/api/muse/openapi.json

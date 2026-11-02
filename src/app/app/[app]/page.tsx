@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Banner, Card } from "@/components/Card";
+import { ConnectAssistant } from "@/components/ConnectAssistant";
 import { CopyLink } from "@/components/CopyLink";
 import { UseAppForm } from "@/components/UseAppForm";
 import { appPageView, type AppPageView } from "@/app/_composition/app-views";
@@ -95,6 +96,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <Link className="btn primary" href={`/app/${app.id}/items`}>{w.style === "board" ? "Post what you offer or need" : "Add what you offer or need"}</Link>
           <Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you</Link>
         </p>
+        <ConnectAssistant appId={app.id} appName={app.name} />
         <Card title={`People using your app (${view.members.length})`}>
           {view.members.length === 0 ? (
             <p className="muted">Nobody is using it yet. Share the link to get started.</p>
@@ -122,6 +124,7 @@ export default async function AppPage({ params }: { params: Promise<{ app: strin
           <Link className="btn primary" href={`/app/${app.id}/items`}>{w.style === "board" ? "Post what you offer or need" : "Add what you offer or need"}</Link>
           <Link className="btn" href={`/app/${app.id}/muse/${view.memberId}`}>See what your agent is doing for you</Link>
         </p>
+        <ConnectAssistant appId={app.id} appName={app.name} />
         <About view={view} />
         <ForAssistant view={view} />
       </div>

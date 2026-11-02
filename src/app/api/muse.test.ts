@@ -158,7 +158,7 @@ describe("read-only access for a person's own Muse (BR-44)", () => {
     expect(init.status).toBe(200);
     const list = await (await rpc({ jsonrpc: "2.0", id: 2, method: "tools/list" })).json();
     const tools = list.result.tools as { name: string; annotations: { readOnlyHint: boolean } }[];
-    expect(tools.map((t) => t.name).sort()).toEqual(["get_app_overview", "get_my_recent_actions", "get_my_status", "get_pending_cards"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["get_app_overview", "get_my_recent_actions", "get_my_status", "get_pending_cards", "get_updates"]);
     expect(tools.every((t) => t.annotations.readOnlyHint)).toBe(true);
     const status = await (await rpc({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "get_my_status", arguments: {} } })).json();
     expect(JSON.parse(status.result.content[0].text).member).toMatchObject({ id: member.memberId });

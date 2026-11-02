@@ -1,5 +1,5 @@
 /**
- * The description a Muse reads to build a custom connector (BR-44, docs/MUSE-CONNECTOR.md). Four GET operations and nothing else:
+ * The description a Muse reads to build a custom connector (BR-44, docs/MUSE-CONNECTOR.md). Five GET operations and nothing else:
  * there is deliberately no POST, PUT, PATCH or DELETE in this document or behind these addresses.
  */
 export function museOpenApi(origin: string) {
@@ -21,6 +21,7 @@ export function museOpenApi(origin: string) {
       "/api/muse/{app}/overview": get("getAppOverview", "What the app is for, who joins, its features and rules"),
       "/api/muse/{app}/status": get("getMyStatus", "What my agent works on here: waiting on me, deals, items, what it did alone, lessons, standing rules"),
       "/api/muse/{app}/actions": get("getMyRecentActions", "My agent's latest actions, newest first", { parameters: [{ name: "limit", in: "query", required: false, schema: { type: "integer", minimum: 1, maximum: 50 } }] }),
+      "/api/muse/{app}/updates": get("getUpdates", "What is new for me since a cursor, and how many cards wait for me. Poll this; keep the returned cursor", { parameters: [{ name: "since", in: "query", required: false, schema: { type: "string" } }, { name: "limit", in: "query", required: false, schema: { type: "integer", minimum: 1, maximum: 50 } }] }),
       "/api/muse/{app}/cards": get("getPendingCards", "Questions, confirmations and offers waiting for my own decision (read only)"),
     },
   };
