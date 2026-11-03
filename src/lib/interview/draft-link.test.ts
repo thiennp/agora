@@ -99,11 +99,11 @@ describe("agent brief", () => {
     expect(md).toContain("You are Muse");
     expect(md).toContain("one plain question at a time");
     expect(md).toContain("Do not go on until they agree");
-    expect(md).toContain("https://example.test/agora/api/interview/build");
+    expect(md).not.toContain("/api/");
     expect(md).toContain("only after the person has typed");
     expect(md).toContain("numbered list");
     expect(md).toContain('type "yes"');
-    expect(md).toContain("do not click anything");
+    expect(md).toContain("You send no web requests");
     expect(md).toContain("/start?purpose=");
     expect(md).toContain("`purpose`");
     expect(md).toContain("Next, for your app:");
@@ -111,10 +111,10 @@ describe("agent brief", () => {
     expect(md).not.toMatch(/communit|placeName|languages\b.*which/i);
   });
   it("tells an assistant that cannot POST to write one link that fills in the form on our page, and to build nothing itself", () => {
-    expect(md).toContain("The form is already on our side");
+    expect(md).toContain("Everything happens on Agora's own page");
     expect(md).toContain("https://example.test/agora/start?purpose=exchange&actions=");
     expect(md).toContain("do not build a web page or a form of your own");
-    expect(md).toContain("Nothing is made until you tap Build it");
+    expect(md).toContain("Nothing is made until you tap");
     expect(md).not.toContain("<form");
   });
   it("carries the rules the simulated test found missing", () => {
