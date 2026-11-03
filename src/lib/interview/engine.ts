@@ -42,6 +42,8 @@ type Turn =
 
 const PROMISE = "Your agent will always check with you before it agrees to anything, gives money terms, shares who you are or where you live, chooses shipping, or makes a safety exception.";
 const MAX_ANSWERS = STEP_ORDER.length;
+/** Said on the summary when the model's draft failed, so the person knows the wording below came from their own words, not from the model. */
+const CODE_DRAFT_NOTE = "The Meta model could not write the description just now, so it was put together from your own words. It is safe to build; change an answer and check again if you want better wording.";
 
 /** Read the answers so far in order. Throws `invalid_answer` for a wrong step, an unusable answer or too many answers. */
 function readAnswers(answers: Answer[]): { parsed: Parsed[]; map: AnswerMap } {
@@ -98,8 +100,11 @@ async function draftFor(map: AnswerMap, parsed: Parsed[], model: InterviewModel)
   try {
     const sketch = sketchSchema.safeParse(await model.sketch(parsed));
     if (sketch.success) return { ...assemble(map, sketch.data), source: "model" };
-  } catch {
+    console.warn("[interview] the model's draft was refused:", sketch.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; "));
+  } catch (e) {
     // A model error, or a draft the app schema refuses: code drafts it instead. The person is never shown a rejected draft.
+    // The reason is logged (error name and message only, never the person's words) so a model that keeps failing is seen.
+    console.warn("[interview] the model could not draft:", e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 200) : "unknown error");
   }
   return { ...assemble(map, fallbackSketch(map) as Sketch), source: "code" };
 }
@@ -115,6 +120,7 @@ export async function advance(answers: Answer[], model: InterviewModel): Promise
   const next = order[parsed.length];
   if (next === undefined) {
     const d = await draftFor(map, parsed, model);
+    if (d.source === "code") d.notes.unshift(CODE_DRAFT_NOTE);
     return { kind: "review", draft: d.config, lines: summarize(map, d.config), description: describeApp(d.config), notes: d.notes, promise: PROMISE, source: d.source };
   }
   const step = stepOf(next);

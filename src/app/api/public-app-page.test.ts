@@ -62,7 +62,7 @@ describe("public, Muse-readable app page (BR-42, docs/PLAN.md §2c-ter)", () => 
     expect(r.status).toBe(200);
     expect(r.headers.get("content-type")).toContain("text/markdown");
     const t = await r.text();
-    for (const part of ["Club A", "Neighbours swap seeds", "What a person can do", "How it works", "must never do", "How you (Muse, Meta AI) should use this", "send no web request", "/pair", "is not built", "https://agentwitch.com/agora/app/club-a"]) {
+    for (const part of ["Club A", "Neighbours swap seeds", "What a person can do", "How it works", "must never do", "How you (Muse, Meta AI) should use this", "send no web request", "/pair", "If you cannot open pages", "My agent", "Anyone can open it in a browser", "is not built", "https://agentwitch.com/agora/app/club-a"]) {
       expect(t).toContain(part);
     }
     expect(t).not.toMatch(/community|invite/i);

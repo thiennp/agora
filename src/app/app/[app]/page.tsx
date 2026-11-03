@@ -24,7 +24,7 @@ function About({ view }: { view: Described }) {
     <>
       <Card title="What it is for">
         <p>{description.purpose}</p>
-        <p className="muted">Made for {app.participant === "person" ? "people" : `${app.participant}s`}{app.region === "Anywhere" ? "" : `, set up for ${app.region}`}. Anyone with Muse can use it.</p>
+        <p className="muted">Made for {app.participant === "person" ? "people" : `${app.participant}s`}{app.region === "Anywhere" ? "" : `, set up for ${app.region}`}. Anyone can open it in a browser.</p>
       </Card>
       <Card title="What you can do">
         <ul className="list">{description.features.map((f) => <li key={f}>{f}</li>)}</ul>

@@ -130,9 +130,23 @@ describe("the draft: the model drafts, code decides and validates", () => {
       expect(t.kind).toBe("review");
       if (t.kind !== "review") continue;
       expect(t.source).toBe("code");
-      expect(t.draft.catalog.categories.map((c) => c.label)).toEqual(["Kids clothes", "books", "toys"]);
+      expect(t.draft.catalog.categories.map((c) => c.label)).toEqual(["Kids clothes", "Books", "Toys"]);
+      expect(t.notes[0]).toContain("could not write the description");
       validateDraft(t.draft);
     }
+  });
+
+  it("trims a label that is a little too long or a list that is one item too many instead of throwing the model's draft away", async () => {
+    const long = { ...sketch, categories: [{ label: "A".repeat(55), hints: ["x".repeat(40), "ok hint"] }, ...Array.from({ length: 9 }, (_, i) => ({ label: `Thing ${i}`, hints: [] }))] };
+    const t = await advance(full, { ...none, sketch: async () => long });
+    expect(t.kind === "review" && t.source).toBe("model");
+    expect(t.kind === "review" && t.draft.catalog.categories).toHaveLength(8);
+    expect(t.kind === "review" && t.notes.join(" ")).not.toContain("could not write the description");
+  });
+
+  it("keeps a sentence-like answer whole and starts each fallback label with a capital", async () => {
+    const t = await advance(full.map((a) => (a.step === "actions" ? { step: "actions", text: "Ask for a size I need; offer shoes" } : a)), { ...none, sketch: async () => Promise.reject(new Error("down")) });
+    expect(t.kind === "review" && t.draft.catalog.categories.map((c) => c.label)).toEqual(["Ask for a size I need", "Offer shoes"]);
   });
 
   it("for learning and organising says plainly what the app will and will not do, without calling the choice unsupported", async () => {
