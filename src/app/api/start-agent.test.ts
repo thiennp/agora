@@ -26,10 +26,18 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(r.headers.get("content-type")).toContain("text/markdown");
     const t = await r.text();
     expect(t).toContain("You are Muse");
-    expect(t).toContain("/api/interview/build");
     expect(t).toContain("only after the person has typed");
     expect(t).toContain("/start?purpose=");
-    expect(t).toContain("LIVE_CRAWL_POLICY_BLOCKED");
+    expect(t).toContain("Build it");
+  });
+
+  it("asks the assistant for no web request: no POST, no API address, only Agora's own pages", async () => {
+    const t = await agentMd().text();
+    expect(t).toContain("You send no web requests");
+    expect(t).not.toMatch(/POST /);
+    expect(t).not.toContain("/api/");
+    expect(t).toContain("If you can open pages and tap buttons");
+    expect(t).toContain("If you cannot open anything");
   });
 
   it("tells Muse what typed text is, how to handle the language, names, corrections and tidy encoding", async () => {
@@ -47,9 +55,10 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     const { GET: llms } = await import("../llms.txt/route");
     const a = await (await index()).text();
     expect(await (await llms()).text()).toBe(a);
-    for (const p of ["/start/agent.md", "/app/{app}/agent.md", "/api/muse/openapi.json", "/api/muse/{app}/mcp", "typed yes"]) expect(a).toContain(p);
+    for (const p of ["/start/agent.md", "/app/{app}/agent.md", "/app/{app}/muse/{id}", "/api/muse/openapi.json", "/api/muse/{app}/mcp", "type yes"]) expect(a).toContain(p);
     expect(a).toMatch(/never answer a card|can never answer a card/);
     expect(a).not.toMatch(/POST /);
+    expect(a).toContain("You never have to send a web request");
   });
 
   it("tells the person plainly that this is about creating their app", async () => {

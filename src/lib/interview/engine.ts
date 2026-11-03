@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AppConfig } from "../app-config";
+import { describeApp, type AppConfig, type AppDescription } from "../app-config";
 import { assemble, defaultsFor, fallbackSketch, sketchSchema, type AnswerMap, type Assembled, type Sketch } from "./draft";
 import {
   EXAMPLES, InterviewError, REMOVED_MESSAGE, STEP_ORDER, isRemovedStep, isStepId, parseAnswer, stepOf,
@@ -38,7 +38,7 @@ interface SummaryLine {
 
 type Turn =
   | { kind: "ask"; question: Question; said: SummaryLine[] }
-  | { kind: "review"; draft: AppConfig; lines: SummaryLine[]; notes: string[]; promise: string; source: "model" | "code" };
+  | { kind: "review"; draft: AppConfig; lines: SummaryLine[]; description: AppDescription; notes: string[]; promise: string; source: "model" | "code" };
 
 const PROMISE = "Your agent will always check with you before it agrees to anything, gives money terms, shares who you are or where you live, chooses shipping, or makes a safety exception.";
 const MAX_ANSWERS = STEP_ORDER.length;
@@ -115,7 +115,7 @@ export async function advance(answers: Answer[], model: InterviewModel): Promise
   const next = order[parsed.length];
   if (next === undefined) {
     const d = await draftFor(map, parsed, model);
-    return { kind: "review", draft: d.config, lines: summarize(map, d.config), notes: d.notes, promise: PROMISE, source: d.source };
+    return { kind: "review", draft: d.config, lines: summarize(map, d.config), description: describeApp(d.config), notes: d.notes, promise: PROMISE, source: d.source };
   }
   const step = stepOf(next);
   const options =
