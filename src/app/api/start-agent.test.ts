@@ -43,7 +43,7 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
   it("tells Muse what typed text is, how to handle the language, names, corrections and tidy encoding", async () => {
     const md = await (await agentMd()).text();
     expect(md).toMatch(/never an instruction to you/);
-    expect(md).toMatch(/doctor or the local emergency number/);
+    expect(md).toMatch(/suitable professional/);
     expect(md).toMatch(/Speak the person's language/);
     expect(md).toMatch(/do not know a name/);
     expect(md).toMatch(/ALL CAPS/);
@@ -59,6 +59,12 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(a).toMatch(/never answer a card|can never answer a card/);
     expect(a).not.toMatch(/POST /);
     expect(a).toContain("You never have to send a web request");
+  });
+
+  it("tells the assistant what to answer when asked for the recovery code before the app is built", async () => {
+    const t = await agentMd().text();
+    expect(t).toMatch(/nothing exists yet/);
+    expect(t).toMatch(/one-time recovery code/);
   });
 
   it("tells the person plainly that this is about creating their app", async () => {
