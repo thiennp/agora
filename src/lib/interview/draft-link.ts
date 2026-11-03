@@ -104,6 +104,17 @@ export function answersFromQuery(query: Query): DraftLink {
   return old ? { answers, problem: OLD_LINK } : { answers };
 }
 
+/**
+ * What a link holds for each question, as typed, for the form on `/start` to show filled in (and editable). Unlike `answersFromQuery`
+ * it keeps every value it can read, in any order and with gaps, and does not check them: the form is checked when the person submits.
+ */
+export function draftValues(query: Query): { values: Partial<Record<StepId, string>>; problem?: string } {
+  const { values, positional, problem } = collect(query);
+  if (problem) return { values: {}, problem };
+  if (positional) STEP_ORDER.forEach((id, i) => { if (positional[i]) values[id] = positional[i]; });
+  return { values };
+}
+
 /** Answers named one per step, in any order and with gaps (`?purpose=…&name=…`): for recording progress as each answer arrives (BR-48). Unknown names and non-strings are ignored. */
 export function stepAnswersFromQuery(query: Query): Answer[] {
   const out: Answer[] = [];

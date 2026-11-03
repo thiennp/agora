@@ -28,7 +28,7 @@ describe("/start for an AI assistant (BR-40, step 0 fix)", () => {
     expect(t).toContain("You are Muse");
     expect(t).toContain("/api/interview/build");
     expect(t).toContain("only after the person has typed");
-    expect(t).toContain("/start?draft=");
+    expect(t).toContain("/start?purpose=");
     expect(t).toContain("LIVE_CRAWL_POLICY_BLOCKED");
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agentBrief, answersFromQuery, buildDraftLink, encodeAnswer, MAX_DRAFT_CHARS } from "./index";
+import { agentBrief, answersFromQuery, buildDraftLink, draftValues, encodeAnswer, MAX_DRAFT_CHARS } from "./index";
 
 /** What the page sees: the link is decoded once by the URL parser, as Next does for `searchParams`. */
 const viaUrl = (link: string) => Object.fromEntries(new URL(link).searchParams);
@@ -104,18 +104,18 @@ describe("agent brief", () => {
     expect(md).toContain("numbered list");
     expect(md).toContain('type "yes"');
     expect(md).toContain("do not click anything");
-    expect(md).toContain("/start?draft=");
+    expect(md).toContain("/start?purpose=");
     expect(md).toContain("`purpose`");
     expect(md).toContain("Next, for your app:");
     expect(md).toContain("About 6 questions");
     expect(md).not.toMatch(/communit|placeName|languages\b.*which/i);
   });
-  it("tells an assistant that cannot POST to show a GET form page straight away, and never to submit it itself", () => {
-    expect(md).toContain("Go straight to the form page");
-    expect(md).toContain('<form method="GET" action="https://example.test/agora/start"');
-    expect(md).toContain('type="hidden" name="purpose"');
-    expect(md).toContain("do not press anything yourself");
-    expect(md).toContain("Nothing is made until you tap");
+  it("tells an assistant that cannot POST to write one link that fills in the form on our page, and to build nothing itself", () => {
+    expect(md).toContain("The form is already on our side");
+    expect(md).toContain("https://example.test/agora/start?purpose=exchange&actions=");
+    expect(md).toContain("do not build a web page or a form of your own");
+    expect(md).toContain("Nothing is made until you tap Build it");
+    expect(md).not.toContain("<form");
   });
   it("carries the rules the simulated test found missing", () => {
     expect(md).toContain("1=`exchange`");
@@ -137,5 +137,18 @@ describe("agent brief", () => {
     expect((md.match(/^\d\. \*\*.*`\w+`$/gm) ?? []).length).toBe(6);
     for (const line of md.split("\n").filter((l) => /^\d\. \*\*.*`\w+`$/.test(l))) expect(line).toMatch(/\bapp\b/i);
   });
-  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(12500));
+  it("is short enough for a phone assistant", () => expect(md.length).toBeLessThan(10000));
+});
+
+describe("draftValues: what the form on /start shows filled in", () => {
+  it("reads one value per step in any order with gaps, without checking them", () => {
+    expect(draftValues({ name: "Walk", purpose: "organise" }).values).toEqual({ name: "Walk", purpose: "organise" });
+  });
+  it("reads a positional link by step order, skipping empty parts", () => {
+    expect(draftValues({ draft: "learn~~Share%20tips" }).values).toEqual({ purpose: "learn", how: "Share tips" });
+  });
+  it("says so when the link is too long or from the old questions", () => {
+    expect(draftValues({ draft: "x".repeat(2001) }).problem).toBeTruthy();
+    expect(draftValues({ draft: "a~b~c~d~e~f~g~h" }).problem).toBeTruthy();
+  });
 });
