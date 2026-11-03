@@ -2,6 +2,7 @@
   "name": "agora",
   "version": "0.1.0",
   "private": true,
+  "engines": { "node": ">=20" },
   "license": "MIT",
   "description": "Platform for community apps: members' agents act for them, in their language, with the member in control. Create an app by pasting one link into Muse.",
   "scripts": {
