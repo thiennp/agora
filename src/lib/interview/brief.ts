@@ -1,4 +1,3 @@
-import { COPY_PAGE_RULES, openPageHtml } from "../assistant-page";
 import { EXAMPLES, INTERVIEW_PURPOSE, STEP_ORDER, stepOf, type StepId } from "./script";
 
 /**
@@ -15,12 +14,6 @@ function answersFor(id: StepId): string {
 }
 
 export function agentBrief(baseUrl: string): string {
-  const page = openPageHtml({
-    action: `${baseUrl}/start`,
-    fields: STEP_ORDER.map((id) => [id, "YOUR-ANSWER"]),
-    intro: "Your app is ready to check. Press the button: a page opens with the summary. Nothing is made until you tap Build it there.",
-    button: "Check and build my app",
-  });
   const questions = STEP_ORDER.map((id, i) => {
     const s = stepOf(id);
     return `${i + 1}. **${s.ask}** \`${PARAM(id)}\`\n   ${answersFor(id)}`;
@@ -66,17 +59,13 @@ The build step checks the draft against the app rules again, so nothing you send
 
 ### If you cannot send the web requests (Meta AI cannot: blocked by policy, no internet in the code runner)
 
-If you are Meta AI, or your sandbox refuses live requests (for example LIVE_CRAWL_POLICY_BLOCKED), **do not try the two requests first and do not pretend the app exists. Go straight to the form page below.** The person's own browser sends what you cannot.
+If you are Meta AI, or your sandbox refuses live requests (for example LIVE_CRAWL_POLICY_BLOCKED), **do not try the two requests, do not build a web page or a form of your own (they are blocked too) and do not pretend the app exists.** The form is already on our side. Your whole job is to write one link, in your reply, that fills it in. **Write it as text; do not open or send it.**
 
-**Show the person this page** (below, with your answers in place of YOUR-ANSWER). The field names are the step names from the list above; put each answer in as the \`value\`, as plain words (a short code for a tap question, otherwise the person's words; the browser does the encoding, so do not encode anything yourself). ${COPY_PAGE_RULES}
+The link is \`${baseUrl}/start\` followed by \`?\` and one \`step=answer\` pair per question, pairs joined by \`&\`, the step names from the list above, for example:
 
-\`\`\`html
-${page}
-\`\`\`
+\`${baseUrl}/start?purpose=exchange&actions=Offer%20clothes&how=People%20post%20what%20they%20have&care=none&name=Clothes%20Swap%20Club&feel=friendly\`
 
-Say: "Press the button. A page opens with the summary of your app; tap Build it there. Nothing is made until you tap." The button only opens the summary: the person's tap on **Build it** on that page is what stores the app, so it is still their approval after their typed yes.
-
-If you cannot show an HTML page at all, write the plain link instead: \`${baseUrl}/start?draft=\` plus their answers in the order above, percent-encoded (space %20, comma %2C) and joined by \`~\`. Do not send or open it; give it to the person to open.
+Percent-encode the answers: space %20, comma %2C, apostrophe %27, ampersand %26, question mark %3F, hash %23, percent %25; any other non-letter becomes its UTF-8 percent form. Put every question in, using the short code (\`exchange\`, \`none\`, \`friendly\`) when one fits, otherwise the person's words. Then say: "Open this link: your app is already filled in. Check it, change anything you like and tap the button. Nothing is made until you tap Build it." Give the link on a line of its own as a normal link. The person's tap on **Build it** is what stores the app, so it is still their approval after their typed yes.
 
 ## Report your progress (skip if you cannot open links)
 
