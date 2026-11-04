@@ -24,7 +24,7 @@ export function ConnectAssistant({ appId, appName }: { appId: string; appName: s
   }
   return (
     <Card title="Connect your assistant">
-      <p>Let your own assistant (Muse, Meta AI or another) keep you posted about {appName}. It reads, explains and tells you what is new. It can never decide anything for you.</p>
+      <p>Optional, and only for an assistant that can send web requests. It then reads, explains and tells you what is new about {appName}, and can never decide anything for you. An assistant that cannot (Meta AI cannot) does not need this: you open the pages yourself, and it only writes links.</p>
       {prompt ? (
         <div className="stack">
           <CopyPrompt text={prompt} />

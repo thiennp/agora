@@ -31,7 +31,7 @@ export interface AppDescription {
 export function describeApp(app: AppConfig): AppDescription {
   const p = app.policies;
   const board = appStyle(app) === "board";
-  const things = app.catalog.categories.map((c) => c.label.toLowerCase()).join(", ");
+  const things = app.catalog.categories.map((c) => c.label.charAt(0).toLowerCase() + c.label.slice(1)).join(", ");
   const features = board
     ? [
         `Post what you offer or what you need, under: ${things}.`,

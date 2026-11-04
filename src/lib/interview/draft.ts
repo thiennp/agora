@@ -8,13 +8,19 @@ import { cleanText, slugify } from "./text";
  * behaviour (topics, pricing, handover, languages, region, safety) is set by code from the answers and the kind of app, so a draft cannot relax
  * an always-ask rule even if the model tried, and the finished config still goes through the app schema (`validateDraft`).
  */
+/**
+ * A model sometimes writes a label a little too long or one list item too many. That is trimmed, not rejected, so one slip does not throw away a
+ * good draft; a string that is too short or a list that is empty is still refused. The app schema checks the finished config again.
+ */
+const clip = (min: number, max: number) => z.string().transform((s) => s.trim().slice(0, max).trim()).pipe(z.string().min(min));
+const list = <T extends z.ZodTypeAny>(item: T, max: number) => z.array(z.unknown()).transform((xs) => xs.slice(0, max)).pipe(z.array(item));
 export const sketchSchema = z.object({
-  tagline: z.string().min(3).max(140),
-  participantNoun: z.string().min(2).max(30),
-  categories: z.array(z.object({ label: z.string().min(2).max(40), hints: z.array(z.string().min(2).max(30)).max(6).default([]) })).min(1).max(8),
-  forbidden: z.array(z.object({ label: z.string().min(2).max(40), keywords: z.array(z.string().min(2).max(30)).min(1).max(8), reason: z.string().min(3).max(160) })).max(5).default([]),
+  tagline: clip(3, 140),
+  participantNoun: clip(2, 30),
+  categories: list(z.object({ label: clip(2, 40), hints: list(clip(2, 30), 6).default([]) }), 8).refine((a) => a.length >= 1, "at least one category"),
+  forbidden: list(z.object({ label: clip(2, 40), keywords: list(clip(2, 30), 8).refine((a) => a.length >= 1, "at least one keyword"), reason: clip(3, 160) }), 5).default([]),
   /** Things the person wanted that the platform cannot do yet, in plain words. */
-  wishes: z.array(z.string().min(3).max(160)).max(4).default([]),
+  wishes: list(clip(3, 160), 4).default([]),
 });
 export type Sketch = z.infer<typeof sketchSchema>;
 
@@ -52,7 +58,8 @@ const ownRule = (a: AnswerMap): string | undefined => {
 /** Plain-words sketch made by code alone: used when the model is unavailable or its draft is rejected. Valid by construction. */
 export function fallbackSketch(a: AnswerMap): Sketch {
   const things = a.actions?.label ?? "things";
-  const labels = things.split(/,|;|\band\b|&/i).map((s) => cleanText(s, 40)).filter((s) => s.length >= 2).slice(0, 6);
+  // Split on commas and "and" only, so a sentence stays whole; each label starts with a capital.
+  const labels = [...new Set(things.split(/,|;|\band\b|&/i).map((s) => cleanText(s, 40)).filter((s) => s.length >= 2).map((s) => s.charAt(0).toUpperCase() + s.slice(1)))].slice(0, 6);
   return {
     tagline: cleanText(a.purpose?.label, 140).padEnd(3, "."),
     participantNoun: "person",
