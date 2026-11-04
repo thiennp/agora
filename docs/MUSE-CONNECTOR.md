@@ -27,12 +27,12 @@ cards waiting for you.
 ## Fastest way: paste one message (connect your assistant)
 
 1. Open the app's share link. The first visit makes your record; on the app page tap **Get the message for my assistant**.
-2. Copy the message and paste it into Muse, Meta AI or any bot that can open a link and send a POST request.
-3. The message holds a **one-time connect code** (works once, ends in 15 minutes). The assistant opens `/app/{app}/connect.md`, asks you, then swaps the code for a read-only key (`POST /api/apps/{app}/connect`).
+2. Copy the message and paste it into Muse, Meta AI or any bot that can open a link. The assistant sends no web request.
+3. The message holds one link, `/app/{app}/connect/{code}` (the **one-time connect code** works once and ends in 15 minutes). The assistant opens it, asks you, then taps **Connect** on that page (or calls the WebMCP tool `connect_assistant`), which swaps the code for a read-only key (`POST /api/apps/{app}/connect`, made by the page). `connect.md` is the same brief in markdown (open the link, tap Connect, never POST).
 4. **Right after connecting it must tell you, in its own words and tone, what it knows about the app and what it can do for you** (and what it cannot). The app gives it only a minimal description (`about` in the connect answer and the brief); making it understandable is the assistant's job.
 5. It then polls `GET /api/muse/{app}/updates` (first call returns only a cursor; later calls with `?since=<cursor>` return new deal events and how many cards wait for you) and tells you what is new. An assistant that can receive https requests may also register a webhook (below).
 
-An assistant that cannot send a POST request or set an `Authorization` header cannot connect this way; use the status page in the app instead.
+An assistant that cannot send requests or set an `Authorization` header still connects through the page, and can explain the app, but cannot poll; use the status page in the app for updates.
 
 ### Updates (polling)
 

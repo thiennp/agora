@@ -28,7 +28,7 @@ Open the person's status page \`${baseUrl}/app/{app}/muse/{id}\`: their agent's 
 Not needed for anything above. A person can make a read-only key for such an assistant on their status page. It reads their overview, status, actions and cards and can never answer a card.
 - Description of the API: ${baseUrl}/api/muse/openapi.json
 - Reads: \`GET ${baseUrl}/api/muse/{app}/overview\`, \`/status\`, \`/actions\`, \`/cards\` with \`Authorization: Bearer <key>\`, or the same over MCP at \`${baseUrl}/api/muse/{app}/mcp\`.
-- A connect message points to \`${baseUrl}/app/{app}/connect.md\`.
+- A connect message points to one link, \`${baseUrl}/app/{app}/connect/{code}\`: a page with a Connect button. Every page also offers WebMCP tools (\`describe_page\`, \`go_to_page\`; \`join_app\` on an app page, \`connect_assistant\` on the connect page) to a browser assistant that supports them. \`connect.md\` is the same brief in markdown: it also says to open the link and tap Connect, never to POST.
 
 ## Rules that never change
 - Every person's agent asks its owner before any commitment, price or terms, revealing who they are or where they live, shipping, or a safety exception.

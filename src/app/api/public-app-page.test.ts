@@ -53,7 +53,8 @@ describe("public, Muse-readable app page (BR-42, docs/PLAN.md §2c-ter)", () => 
     for (const secret of [creator.memberId, member.memberId, creator.recoveryCode ?? "", member.recoveryCode ?? "", "Bo Secretname", creator.cookie.split("=")[1]!, member.cookie.split("=")[1]!]) {
       if (secret) expect(html).not.toContain(secret);
     }
-    expect(html).not.toMatch(/community|invite|Join /i);
+    expect(html).not.toMatch(/community|invite/i);
+    expect(html).toContain("Join Club A");
   });
 
   it("serves the same page as markdown that Muse can follow without clicking, and holds no secret", async () => {
