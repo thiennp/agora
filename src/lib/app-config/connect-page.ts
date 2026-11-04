@@ -1,9 +1,13 @@
 import type { AgentPageApp } from "./agent-page";
 import type { AppDescription } from "./describe";
 
-/** What a person pastes into their own assistant (Muse, Meta AI, any bot). The one-time code is for this assistant only and ends in 15 minutes. */
+/**
+ * What a person pastes into their own assistant (Muse, Meta AI, any bot). It sends the assistant to one link only: a real page with a
+ * Connect button (and the `connect_assistant` WebMCP tool). No web request is asked of the assistant. The one-time code in the link is for
+ * this assistant only and ends in 15 minutes.
+ */
 export function connectPrompt(app: AgentPageApp, baseUrl: string, code: string): string {
-  return `I want to connect to the app "${app.name}" on Agora. Open ${baseUrl}/app/${app.id}/connect.md and follow it exactly. My one-time connect code is ${code} (it works once and ends in 15 minutes). Ask me before you connect. Right after you connect, tell me in your own words what you now know about the app and what you can do with it for me. Never decide anything for me. If you cannot open the link or send a POST request, tell me.`;
+  return `I want to connect to the app "${app.name}" on Agora. Open this link and tap Connect on the page (ask me first): ${baseUrl}/app/${app.id}/connect?code=${code} . The link works once and ends in 15 minutes. Right after you connect, tell me in your own words what you now know about the app and what you can do with it for me. Never decide anything for me. If you cannot open the link, tell me.`;
 }
 
 /** The facts an assistant is given when it connects, so it can explain the app to the person. Config only: no user, no message text. */
@@ -12,7 +16,8 @@ export function connectAbout(app: AgentPageApp, d: AppDescription) {
 }
 
 /**
- * The public page an assistant opens from the prompt (`/app/{app}/connect.md`). It teaches the connection (code to key, polling, optional
+ * The markdown brief at `/app/{app}/connect.md`, for an assistant that can send requests (the connect prompt itself points to the
+ * `/app/{app}/connect?code=…` page instead). It teaches the connection (code to key, polling, optional
  * webhook) and, above all, makes the assistant explain the app to the person in its own voice straight after connecting. It holds no code,
  * key or user: the code comes in the person's own message.
  */
@@ -26,7 +31,7 @@ ${d.purpose}
 You were sent here by a person who wants you, their own assistant, to stay in touch with this app for them. Follow the steps in order. Nothing here lets you decide anything for them.
 
 ## 1. Ask first
-Tell the person you are about to connect and ask them to say yes. Their message holds a one-time connect code. If it is missing or you cannot send a POST request, say so and stop.
+Tell the person you are about to connect and ask them to say yes. Their message holds a one-time connect code. If it is missing or you cannot send an HTTP request, say so and stop; the link in their message opens a page with a Connect button that does the same.
 
 ## 2. Connect
 \`POST ${api}/apps/${app.id}/connect\` with JSON \`{"code": "<the connect code>", "label": "<what to call yourself, optional>"}\`.

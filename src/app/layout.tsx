@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
 import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
+import { WebMcpGlobal } from "@/components/WebMcp";
 import { PUBLIC_BASE_URL } from "./_composition/public-url";
 import "./globals.css";
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <a href="#main" className="btn skip">Skip to content</a>
         <Nav />
+        <WebMcpGlobal />
         <main id="main" className="wrap">{children}</main>
       </body>
     </html>

@@ -31,7 +31,7 @@ describe("connecting a person's own assistant", () => {
     expect((await makeCode(req("POST", `/api/apps/${t.appId}/connect-code`, {}), ctx({ app: t.appId }))).status).toBe(401);
     const { code, prompt, res } = await connectAs(t);
     expect(prompt).toContain(code);
-    expect(prompt).toContain(`/app/${t.appId}/connect.md`);
+    expect(prompt).toContain(`/app/${t.appId}/connect?code=`);
     expect(prompt).toMatch(/in your own words/);
     expect(res.status).toBe(200);
     const body = await j(res);

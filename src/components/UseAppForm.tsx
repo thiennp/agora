@@ -1,40 +1,52 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Banner, Card } from "./Card";
 import { Button } from "./Button";
 import { postJson } from "./post";
+import { useWebMcpTools } from "./WebMcp";
 
 interface Joined { memberId: string; recoveryCode?: string; notice?: string; alreadyMember?: boolean }
 
 /**
- * Opening an app's page as a person is the first use (BR-42, BR-45): no sign-up form. This makes their light-identity record and a
- * session on this phone through the existing join call, then shows the recovery code once. A page read by an assistant runs no script,
- * so it creates nothing. A phone that already has a session keeps it.
+ * Opening an app's page shows what it is for; the person (or their assistant, in a browser) taps Join to make their light-identity record
+ * and a session on this browser through the join call (BR-42, BR-45): no sign-up form. The recovery code is shown once. A page read as
+ * markdown or by an assistant that runs no script creates nothing. A browser that already has a session keeps it. The WebMCP tool
+ * `join_app` does exactly what the button does.
  */
 export function UseAppForm({ appId, appName }: { appId: string; appName: string }) {
   const router = useRouter();
-  const started = useRef(false);
-  const [busy, setBusy] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<Joined | null>(null);
 
-  const start = useCallback(async () => {
+  async function join(): Promise<Joined | null> {
     setBusy(true);
     setError(null);
     const r = await postJson<Joined>(`/api/apps/${encodeURIComponent(appId)}/join`, {});
     setBusy(false);
-    if (!r.ok) return setError(r.message);
-    if (r.data.alreadyMember) return router.refresh();
-    setCreated(r.data);
-  }, [appId, router]);
+    if (!r.ok) {
+      setError(r.message);
+      return null;
+    }
+    if (r.data.alreadyMember) router.refresh();
+    else setCreated(r.data);
+    return r.data;
+  }
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    void start();
-  }, [start]);
+  useWebMcpTools([
+    {
+      name: "join_app",
+      description: `Join the app "${appName}" in this browser: makes the person's private record here. Call it only after the person said yes to joining. The answer holds a recovery code: give it to the person, it is their only way back on a new browser.`,
+      inputSchema: { type: "object", properties: {} },
+      execute: async () => {
+        const j = await join();
+        if (!j) throw new Error(error ?? "Could not join. Try again.");
+        return j.alreadyMember ? "This browser already has a record in this app." : `Joined. Recovery code (show it to the person, once): ${j.recoveryCode}`;
+      },
+    },
+  ]);
 
   if (created) {
     return (
@@ -48,15 +60,9 @@ export function UseAppForm({ appId, appName }: { appId: string; appName: string 
   }
   return (
     <Card title={`Use ${appName}`} prominent>
-      {error ? (
-        <div className="stack">
-          <Banner tone="bad">{error}</Banner>
-          <Button variant="primary" onClick={() => void start()} disabled={busy}>Try again</Button>
-        </div>
-      ) : (
-        <p aria-live="polite">{busy ? "Setting up your private record in this app…" : "Done."}</p>
-      )}
-      <p className="small muted">No sign-up and no password. Your phone holds a private session.</p>
+      <p>Tap Join to make your private record in this app. No sign-up and no password: this browser holds a private session.</p>
+      {error ? <Banner tone="bad">{error}</Banner> : null}
+      <Button variant="primary" onClick={() => void join()} disabled={busy}>{busy ? "Joining…" : `Join ${appName}`}</Button>
     </Card>
   );
 }

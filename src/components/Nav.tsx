@@ -17,6 +17,7 @@ function Links() {
     <nav className="nav" aria-label="Main">
       {item("/dashboard", "Dashboard")}
       {item("/docs", "Docs")}
+      {item("/hackaton", "Hackathon")}
       {item("/styleguide", "Styleguide")}
     </nav>
   );
