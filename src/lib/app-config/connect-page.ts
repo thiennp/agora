@@ -7,7 +7,7 @@ import type { AppDescription } from "./describe";
  * this assistant only and ends in 15 minutes.
  */
 export function connectPrompt(app: AgentPageApp, baseUrl: string, code: string): string {
-  return `I want to connect to the app "${app.name}" on Agora. Open this link and tap Connect on the page (ask me first): ${baseUrl}/app/${app.id}/connect?code=${code} . The link works once and ends in 15 minutes. Right after you connect, tell me in your own words what you now know about the app and what you can do with it for me. Never decide anything for me. If you cannot open the link, tell me.`;
+  return `Connect to my app "${app.name}" on Agora: open ${baseUrl}/app/${app.id}/connect/${code} and follow what the page says. Ask me first.`;
 }
 
 /** The facts an assistant is given when it connects, so it can explain the app to the person. Config only: no user, no message text. */
@@ -16,8 +16,8 @@ export function connectAbout(app: AgentPageApp, d: AppDescription) {
 }
 
 /**
- * The markdown brief at `/app/{app}/connect.md`, for an assistant that can send requests (the connect prompt itself points to the
- * `/app/{app}/connect?code=…` page instead). It teaches the connection (code to key, polling, optional
+ * The markdown brief at `/app/{app}/connect.md`, for an assistant that opens links (the connect prompt points to the
+ * `/app/{app}/connect/{code}` page, and this brief says the same: open it, tap Connect, send no request). It teaches the connection (code to key, polling, optional
  * webhook) and, above all, makes the assistant explain the app to the person in its own voice straight after connecting. It holds no code,
  * key or user: the code comes in the person's own message.
  */
@@ -31,11 +31,10 @@ ${d.purpose}
 You were sent here by a person who wants you, their own assistant, to stay in touch with this app for them. Follow the steps in order. Nothing here lets you decide anything for them.
 
 ## 1. Ask first
-Tell the person you are about to connect and ask them to say yes. Their message holds a one-time connect code. If it is missing or you cannot send an HTTP request, say so and stop; the link in their message opens a page with a Connect button that does the same.
+Tell the person you are about to connect and ask them to say yes. Their message holds a link, \`${baseUrl}/app/${app.id}/connect/<the connect code>\`. If the link is missing, say so and stop.
 
-## 2. Connect
-\`POST ${api}/apps/${app.id}/connect\` with JSON \`{"code": "<the connect code>", "label": "<what to call yourself, optional>"}\`.
-The answer holds: \`key\` (a read-only key, shown once: keep it, never show it to the person or put it in a link), \`about\` (what you know about the app), and the addresses you need. Use the key as \`Authorization: Bearer <key>\` on every call below.
+## 2. Connect: open the page, send no request
+Open that link and tap the Connect button on the page (or use its \`connect_assistant\` WebMCP tool if your browser has one). Do not send any HTTP request yourself, and do not POST anything. The page swaps the one-time code for the app's description and shows it to you. If you cannot open the link, tell the person and stop.
 
 ## 3. Right after connecting: tell the person what you know and what you would do
 Do this before anything else, in your own words, in the person's language and in your usual tone. Do not paste or recite the lists. The app gives you only a minimal description; the person is counting on you to make it understandable.
@@ -57,7 +56,8 @@ Rules it never breaks:
 
 ${list(d.rules)}
 
-## 4. Stay in touch: polling
+## 4. Stay in touch: polling (only if you can send requests)
+The page also shows a read-only key. Skip this section and the next unless your platform can send GET requests; if you cannot, tell the person to check the app page for news.
 \`GET ${api}/muse/${app.id}/updates\` with your key. The first call returns only a \`cursor\`. Keep it, and call again about every minute (or whenever you can) with \`?since=<cursor>\`. Each answer holds \`events\` (what changed in their deals, oldest first), \`waiting.total\` (cards that wait for their decision) and a new \`cursor\`. When \`events\` is not empty or \`waiting.total\` went up, tell the person in a few words, in your own tone. If \`more\` is true, call again at once. Also available: \`/status\`, \`/actions\`, \`/cards\`, \`/overview\` under ${api}/muse/${app.id}/ .
 
 ## 5. Faster, if you can receive requests: a webhook (optional)

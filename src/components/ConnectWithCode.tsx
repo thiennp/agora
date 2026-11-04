@@ -14,7 +14,7 @@ interface Connected {
 }
 
 /**
- * The page behind the connect message (`/app/{app}/connect?code=…`). The person's assistant opens this link and taps Connect; it swaps the
+ * The page behind the connect message (`/app/{app}/connect/{code}`). The person's assistant opens this link and taps Connect; it swaps the
  * one-time code for a read-only key and shows what the app is for, so the assistant can explain it to the person. The WebMCP tool
  * `connect_assistant` does exactly what the button does. No code is typed; the link carries it (works once, ends in 15 minutes).
  */

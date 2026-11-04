@@ -31,8 +31,8 @@ describe("connecting a person's own assistant", () => {
     expect((await makeCode(req("POST", `/api/apps/${t.appId}/connect-code`, {}), ctx({ app: t.appId }))).status).toBe(401);
     const { code, prompt, res } = await connectAs(t);
     expect(prompt).toContain(code);
-    expect(prompt).toContain(`/app/${t.appId}/connect?code=`);
-    expect(prompt).toMatch(/in your own words/);
+    expect(prompt).toContain(`/app/${t.appId}/connect/`);
+    expect(prompt.length).toBeLessThan(300); // short: the page carries the instructions
     expect(res.status).toBe(200);
     const body = await j(res);
     expect(body).toMatchObject({ connected: true, readOnly: true, keyShownOnce: true });

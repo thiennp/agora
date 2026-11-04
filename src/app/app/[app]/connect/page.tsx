@@ -5,7 +5,7 @@ import { appSummaryById } from "@/app/_composition/app-views";
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false }, referrer: "no-referrer" };
 
-/** `/app/{app}/connect?code=…`: the link in the connect message. A real page with a Connect button (and the `connect_assistant` WebMCP tool). */
+/** `/app/{app}/connect/{code}` (this form, `?code=…`, still works`: the link in the connect message. A real page with a Connect button (and the `connect_assistant` WebMCP tool). */
 export default async function ConnectPage({ params, searchParams }: { params: Promise<{ app: string }>; searchParams: Promise<{ code?: string }> }) {
   const id = (await params).app;
   const app = await appSummaryById(id);
